@@ -1,0 +1,122 @@
+/* PAGE */
+.expenses-page {
+  max-width: 900px;
+  margin: auto;
+  padding: 40px 20px;
+}
+
+.expenses-subtitle {
+  color: #64748b;
+  margin-bottom: 24px;
+}
+
+/* FILTERS */
+.expenses-filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+  margin-bottom: 32px;
+}
+
+.expenses-filters select,
+.expenses-filters input {
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+}
+
+/* LIST */
+.expenses-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* CARD */
+.expenses-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 20px;
+  border-radius: 18px;
+  background: white;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.06);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.expenses-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 30px rgba(0,0,0,0.08);
+}
+
+/* LEFT */
+.expenses-left {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.expenses-category {
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.expenses-desc {
+  font-size: 14px;
+  color: #64748b;
+}
+
+/* RIGHT */
+.expenses-right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.expenses-amount {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.expenses-amount.expense { color: #ef4444; }
+.expenses-amount.income { color: #22c55e; }
+
+/* DELETE */
+.expenses-delete {
+  border: none;
+  background: transparent;
+  font-size: 16px;
+  cursor: pointer;
+  opacity: 0.4;
+}
+
+.expenses-delete:hover {
+  opacity: 1;
+  color: #ef4444;
+}
+
+/* HEADER */
+.expenses-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.export-btn {
+  padding: 10px 16px;
+  border-radius: 12px;
+  border: none;
+  background: #6366f1;
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.export-btn:hover {
+  background: #4f46e5;
+}

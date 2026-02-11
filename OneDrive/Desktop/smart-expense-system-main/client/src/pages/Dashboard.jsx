@@ -1,0 +1,188 @@
+import { useEffect, useMemo, useState } from "react";
+import api from "../api/axios";
+
+import IncomeExpenseBar from "../components/charts/IncomeExpenseBar";
+import ExpenseCategoryDonut from "../components/charts/ExpenseCategoryDonut";
+import CashFlowLine from "../components/charts/CashFlowLine";
+
+import "../styles/dashboard.css";
+
+function Dashboard() {
+  const [transactions, setTransactions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [range, setRange] = useState("90d");
+
+  /* ===== FETCH DATA ===== */
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const res = await api.get("/transactions");
+        setTransactions(res.data);
+      } catch {
+        setError("Failed to load dashboard data");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  /* ===== RANGE TO DAYS ===== */
+  const daysBack = useMemo(() => {
+    if (range === "7d") return 7;
+    if (range === "30d") return 30;
+    if (range === "90d") return 90;
+    return 0;
+  }, [range]);
+
+  /* ===== CURRENT PERIOD ===== */
+  const filteredTransactions = useMemo(() => {
+    if (!daysBack) return transactions;
+
+    const now = new Date();
+    const fromDate = new Date();
+    fromDate.setDate(now.getDate() - daysBack);
+
+    return transactions.filter((t) => {
+      const d = new Date(t.date);
+      return d >= fromDate && d <= now;
+    });
+  }, [transactions, daysBack]);
+
+  /* ===== PREVIOUS PERIOD ===== */
+  const previousTransactions = useMemo(() => {
+    if (!daysBack) return [];
+
+    const now = new Date();
+    const prevEnd = new Date();
+    prevEnd.setDate(now.getDate() - daysBack);
+
+    const prevStart = new Date();
+    prevStart.setDate(now.getDate() - daysBack * 2);
+
+    return transactions.filter((t) => {
+      const d = new Date(t.date);
+      return d >= prevStart && d < prevEnd;
+    });
+  }, [transactions, daysBack]);
+
+  /* ===== SUMMARY ===== */
+  const summary = useMemo(() => {
+    let income = 0;
+    let expense = 0;
+
+    filteredTransactions.forEach((t) => {
+      if (t.type === "income") income += t.amount;
+      else expense += t.amount;
+    });
+
+    return {
+      income,
+      expense,
+      balance: income - expense,
+    };
+  }, [filteredTransactions]);
+
+  /* ===== COMPARISON ===== */
+  const comparison = useMemo(() => {
+    let currentExpense = 0;
+    let previousExpense = 0;
+
+    filteredTransactions.forEach((t) => {
+      if (t.type === "expense") currentExpense += t.amount;
+    });
+
+    previousTransactions.forEach((t) => {
+      if (t.type === "expense") previousExpense += t.amount;
+    });
+
+    if (previousExpense === 0) return null;
+
+    const diff = ((currentExpense - previousExpense) / previousExpense) * 100;
+
+    return {
+      isIncrease: diff > 0,
+      value: Math.abs(diff).toFixed(1),
+    };
+  }, [filteredTransactions, previousTransactions]);
+
+  /* ===== STATES ===== */
+  if (loading) return <p className="dashboard-loading">Loading dashboard…</p>;
+  if (error) return <p className="dashboard-error">{error}</p>;
+
+  return (
+    <div className="dashboard-page">
+      {/* HEADER */}
+      <div className="dashboard-header">
+        <div>
+          <h2>Dashboard</h2>
+          <p className="dashboard-subtitle">Your financial overview</p>
+        </div>
+
+        {/* DROPDOWN FILTER */}
+        <select
+          className="range-dropdown"
+          value={range}
+          onChange={(e) => setRange(e.target.value)}
+        >
+          <option value="7d">Last 7 days</option>
+          <option value="30d">Last 30 days</option>
+          <option value="90d">Last 90 days</option>
+        </select>
+      </div>
+
+      {/* SUMMARY */}
+      <div className="summary-grid">
+        <div className="summary-card balance">
+          <span>Balance</span>
+          <strong>₹ {summary.balance}</strong>
+        </div>
+
+        <div className="summary-card income">
+          <span>Total Income</span>
+          <strong>₹ {summary.income}</strong>
+        </div>
+
+        <div className="summary-card expense">
+          <span>Total Expense</span>
+          <strong>₹ {summary.expense}</strong>
+        </div>
+      </div>
+
+      {/* INSIGHTS */}
+      <div className="charts-section">
+        <h3 className="section-title">Insights</h3>
+
+          {comparison && (
+            <p className="comparison-text">
+              {comparison.isIncrease ? "▲" : "▼"} Expenses{" "}
+              {comparison.isIncrease ? "increased" : "decreased"} by{" "}
+              <strong>{comparison.value}%</strong> compared to the previous period
+            </p>
+          )}
+
+
+        <div className="charts-grid">
+          <div className="chart-card">
+            <h4>Income vs Expense</h4>
+            <IncomeExpenseBar transactions={filteredTransactions} />
+          </div>
+
+          <div className="chart-card">
+            <h4>Expense Breakdown</h4>
+            <ExpenseCategoryDonut transactions={filteredTransactions} />
+          </div>
+
+          <div className="chart-card full-width">
+            <h4>Cash Flow</h4>
+            <CashFlowLine transactions={filteredTransactions} />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default Dashboard;

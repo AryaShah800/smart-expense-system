@@ -1,0 +1,124 @@
+.transaction-page {
+  padding: 40px 16px;
+  background: #f8fafc;
+}
+
+.transaction-card {
+  margin: 0 auto;               /* ⭐ THIS LINE FIXES EVERYTHING */
+  background: white;
+  width: 100%;
+  max-width: 480px;
+  padding: 32px;
+  border-radius: 20px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+}
+
+
+.transaction-card h2 {
+  font-size: 26px;
+  margin-bottom: 4px;
+}
+
+.subtitle {
+  color: #64748b;
+  margin-bottom: 24px;
+}
+
+/* Toggle */
+.type-toggle {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.type-toggle button {
+  flex: 1;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  background: white;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.type-toggle .active {
+  color: white;
+  border: none;
+}
+
+.type-toggle .expense.active {
+  background: #ef4444;
+}
+
+.type-toggle .income.active {
+  background: #22c55e;
+}
+
+/* Form */
+.transaction-card form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.amount-field {
+  display: flex;
+  align-items: center;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 0 14px;
+}
+
+.amount-field span {
+  font-size: 20px;
+  color: #64748b;
+  margin-right: 6px;
+}
+
+.amount-field input {
+  border: none;
+  font-size: 20px;
+  padding: 14px 0;
+  width: 100%;
+}
+
+.amount-field input:focus {
+  outline: none;
+}
+
+.transaction-card input,
+.transaction-card select {
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  font-size: 15px;
+}
+
+.transaction-card input:focus,
+.transaction-card select:focus {
+  outline: none;
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+
+.transaction-card button[type="submit"] {
+  margin-top: 8px;
+  padding: 14px;
+  border-radius: 14px;
+  border: none;
+  background: #6366f1;
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.transaction-card button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.error-text {
+  color: #ef4444;
+  margin-bottom: 12px;
+}

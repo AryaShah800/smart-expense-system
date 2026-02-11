@@ -1,0 +1,40 @@
+.group-page {
+  max-width: 1000px;
+  margin: 40px auto;
+  padding: 0 20px;
+}
+
+.group-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.group-actions button {
+  margin-left: 10px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: none;
+  background: #6366f1;
+  color: white;
+  cursor: pointer;
+}
+
+.members-section,
+.expenses-section {
+  margin-bottom: 30px;
+}
+
+.expense-card {
+  display: flex;
+  justify-content: space-between;
+  padding: 14px;
+  background: white;
+  border-radius: 10px;
+  margin-bottom: 10px;
+}
+
+.amount {
+  font-weight: 600;
+}
