@@ -1,0 +1,364 @@
+/* ===== PAGE ===== */
+.dashboard-page {
+  padding: 32px 32px;
+  background: #f8fafc;
+  min-height: calc(100vh - 70px);
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* ===== HEADER ===== */
+.dashboard-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 32px;
+}
+
+.welcome-section h1 {
+  font-size: 28px;
+  font-weight: 800;
+  color: #1e293b;
+  margin-bottom: 4px;
+}
+
+.dashboard-subtitle {
+  color: #64748b;
+  font-size: 15px;
+}
+
+/* Dropdown */
+.range-dropdown {
+  padding: 10px 16px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  background: white;
+  font-size: 14px;
+  font-weight: 600;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.range-dropdown:hover {
+  border-color: #cbd5e1;
+}
+
+.range-dropdown:focus {
+  outline: none;
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+/* ===== SUMMARY GRID ===== */
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 24px;
+  margin-bottom: 40px;
+}
+
+.summary-card {
+  background: white;
+  padding: 24px;
+  border-radius: 20px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: transform 0.2s, box-shadow 0.2s;
+  border: 1px solid #f1f5f9;
+}
+
+.summary-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08);
+}
+
+.summary-card span {
+  font-size: 14px;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.summary-card strong {
+  font-size: 28px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+/* Card Variations */
+.summary-card.balance {
+  background: linear-gradient(135deg, #4f46e5, #4338ca);
+  border: none;
+}
+
+.summary-card.balance span {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.summary-card.balance strong {
+  color: white;
+}
+
+.summary-card.income strong {
+  color: #16a34a;
+}
+
+.summary-card.expense strong {
+  color: #dc2626;
+}
+
+
+/* ===== MAIN GRID LAYOUT ===== */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  /* Charts take 2/3, List takes 1/3 */
+  gap: 32px;
+}
+
+/* CHARTS COLUMN */
+.charts-column {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.section-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #334155;
+  margin-bottom: 16px;
+}
+
+.chart-card {
+  background: white;
+  padding: 24px;
+  border-radius: 20px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  border: 1px solid #f1f5f9;
+}
+
+.chart-card h4 {
+  font-size: 15px;
+  font-weight: 600;
+  color: #64748b;
+  margin-bottom: 16px;
+}
+
+/* Insight Card */
+.insight-card {
+  background: #eff6ff;
+  border: 1px solid #dbeafe;
+  padding: 16px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #1e293b;
+  font-size: 15px;
+}
+
+.insight-icon {
+  font-size: 20px;
+}
+
+.insight-card span.pos {
+  color: #16a34a;
+  font-weight: 700;
+}
+
+.insight-card span.neg {
+  color: #dc2626;
+  font-weight: 700;
+}
+
+/* RECENT ACTIVITY COLUMN */
+.recent-column {
+  display: flex;
+  flex-direction: column;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.view-all-link {
+  font-size: 13px;
+  font-weight: 600;
+  color: #6366f1;
+  text-decoration: none;
+}
+
+.view-all-link:hover {
+  text-decoration: underline;
+}
+
+.recent-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* REUSED EXPENSE CARD STYLES */
+.expenses-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: white;
+  padding: 12px 16px;
+  border-radius: 16px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+  border: 1px solid #f1f5f9;
+  transition: all 0.2s;
+}
+
+.expenses-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px -4px rgba(0, 0, 0, 0.08);
+}
+
+.card-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  flex-shrink: 0;
+  font-size: 18px;
+}
+
+.card-icon.income {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.card-icon.expense {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.card-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.card-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.card-category {
+  font-weight: 600;
+  font-size: 14px;
+  color: #1e293b;
+}
+
+.card-amount {
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.card-amount.income {
+  color: #16a34a;
+}
+
+.card-amount.expense {
+  color: #ef4444;
+}
+
+.card-desc {
+  font-size: 12px;
+  color: #94a3b8;
+  max-width: 140px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.card-date {
+  font-size: 11px;
+  color: #64748b;
+  background: #f1f5f9;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+/* EMPTY STATE */
+.empty-dashboard {
+  text-align: center;
+  padding: 80px 20px;
+  background: white;
+  border-radius: 24px;
+  border: 1px dashed #e2e8f0;
+}
+
+.empty-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.empty-dashboard h3 {
+  font-size: 20px;
+  color: #1e293b;
+  margin-bottom: 8px;
+}
+
+.empty-dashboard p {
+  color: #64748b;
+  margin-bottom: 24px;
+}
+
+.cta-button {
+  padding: 12px 20px;
+  background: #0f172a;
+  color: white;
+  border-radius: 12px;
+  text-decoration: none;
+  font-weight: 600;
+  display: inline-block;
+  transition: all 0.2s;
+}
+
+.cta-button:hover {
+  background: #1e293b;
+  transform: translateY(-2px);
+}
+
+/* RESPONSIVE */
+@media (max-width: 1024px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard-header-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .welcome-section h1 {
+    font-size: 24px;
+  }
+
+  .filter-wrapper {
+    width: 100%;
+  }
+
+  .range-dropdown {
+    width: 100%;
+  }
+}
