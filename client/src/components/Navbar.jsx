@@ -116,7 +116,10 @@ function Navbar() {
               <Link to="/dashboard" className={location.pathname === "/dashboard" ? "active" : ""}>Dashboard</Link>
               <Link to="/add-transaction" className={location.pathname === "/add-transaction" ? "active" : ""}>Add Transaction</Link>
               <Link to="/expenses" className={location.pathname === "/expenses" ? "active" : ""}>Expenses</Link>
+<<<<<<< HEAD
               <Link to="/budgets" className={location.pathname === "/budgets" ? "active" : ""}>Budgets</Link>
+=======
+>>>>>>> b32fcb37c5c7dd229814a2683f6e4e705f3400c2
               <Link to="/groups" className={location.pathname.startsWith("/groups") ? "active" : ""}>Groups</Link>
             </div>
 

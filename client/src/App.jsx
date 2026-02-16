@@ -8,7 +8,10 @@ import AddTransaction from "./pages/AddTransaction";
 import Expenses from "./pages/Expenses";
 import Groups from "./pages/Groups";
 import GroupDetails from "./pages/GroupDetails";
+<<<<<<< HEAD
 import Budgets from "./pages/Budgets";
+=======
+>>>>>>> b32fcb37c5c7dd229814a2683f6e4e705f3400c2
 
 import ProtectedRoute from "./components/ProtectedRoute";
 import Layout from "./components/Layout";
@@ -35,7 +38,10 @@ function App() {
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/add-transaction" element={<AddTransaction />} />
             <Route path="/expenses" element={<Expenses />} />
+<<<<<<< HEAD
             <Route path="/budgets" element={<Budgets />} />
+=======
+>>>>>>> b32fcb37c5c7dd229814a2683f6e4e705f3400c2
             <Route path="/groups" element={<Groups />} />
             <Route path="/groups/:id" element={<GroupDetails />} /> 
           </Route>

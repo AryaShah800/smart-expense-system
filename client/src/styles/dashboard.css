@@ -361,6 +361,7 @@
   .range-dropdown {
     width: 100%;
   }
+<<<<<<< HEAD
 }
 
 /* ===== BUDGET SECTION ===== */
@@ -496,4 +497,6 @@
   background: #f8fafc;
   border-color: #cbd5e1;
   color: #1e293b;
+=======
+>>>>>>> b32fcb37c5c7dd229814a2683f6e4e705f3400c2
 }
