@@ -1,0 +1,230 @@
+.transaction-page {
+  padding: 40px 16px;
+  background: #f8fafc;
+  /* Lighter background */
+  min-height: 80vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.transaction-card {
+  background: white;
+  width: 100%;
+  max-width: 440px;
+  padding: 32px;
+  border-radius: 20px;
+  /* Softer, more diffuse shadow */
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+  border: 1px solid #f1f5f9;
+}
+
+.transaction-card h2 {
+  font-size: 22px;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 6px;
+  text-align: center;
+}
+
+.subtitle {
+  color: #94a3b8;
+  margin-bottom: 28px;
+  text-align: center;
+  font-size: 14px;
+}
+
+/* Toggle */
+.type-toggle {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+  background: #f8fafc;
+  padding: 4px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+}
+
+.toggle-btn {
+  flex: 1;
+  padding: 10px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: #64748b;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 14px;
+}
+
+.toggle-btn:hover {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.toggle-btn.active {
+  color: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.toggle-btn.expense.active {
+  background: #ef4444;
+}
+
+.toggle-btn.income.active {
+  background: #22c55e;
+}
+
+/* Form */
+.transaction-card form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-group label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #475569;
+  margin-left: 2px;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+/* Common Input Styles */
+.form-group input,
+.form-group select,
+.input-wrapper {
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  font-size: 15px;
+  color: #1e293b;
+  background: white;
+  width: 100%;
+  transition: all 0.2s;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.input-wrapper:focus-within {
+  outline: none;
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+/* Currency Wrapper */
+.input-wrapper {
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+  /* Reset padding for wrapper */
+  background: white;
+  overflow: hidden;
+}
+
+.currency-symbol {
+  color: #64748b;
+  font-size: 16px;
+  font-weight: 500;
+  margin-right: 4px;
+}
+
+.input-wrapper input {
+  border: none;
+  padding: 12px 0;
+  /* Vertical padding only */
+  margin: 0;
+  border-radius: 0;
+  box-shadow: none !important;
+  /* Remove focus shadow from inner input */
+}
+
+.input-wrapper input:focus {
+  outline: none;
+  border: none;
+}
+
+/* Remove Spinners */
+/* Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type=number] {
+  -moz-appearance: textfield;
+}
+
+/* Category Row */
+.category-row {
+  display: flex;
+  gap: 8px;
+}
+
+.add-category-btn {
+  padding: 0;
+  width: 46px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  background: white;
+  color: #64748b;
+  font-size: 22px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.add-category-btn:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  color: #334155;
+}
+
+/* Submit Button */
+.submit-btn {
+  margin-top: 10px;
+  padding: 14px;
+  border-radius: 12px;
+  border: none;
+  background: #0f172a;
+  color: white;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.submit-btn:hover {
+  background: #1e293b;
+  transform: translateY(-1px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.submit-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.error-text {
+  background: #fef2f2;
+  color: #ef4444;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  margin-bottom: 24px;
+  border: 1px solid #fee2e2;
+  text-align: center;
+}
