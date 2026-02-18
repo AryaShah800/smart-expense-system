@@ -1,10 +1,14 @@
 /* PAGE LAYOUT */
 .group-details-page {
-  max-width: 1000px;
-  margin: 0 auto;
-  padding: 32px;
-  min-height: calc(100vh - 70px);
+  padding: clamp(16px, 4vw, 24px);
   background: #f8fafc;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 /* HEADER */
@@ -12,22 +16,25 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 24px;
+  margin-bottom: clamp(16px, 3vw, 24px);
+  flex-wrap: wrap;
+  gap: clamp(12px, 2vw, 16px);
 }
 
 .group-title h2 {
-  font-size: 28px;
+  font-size: clamp(20px, 5vw, 28px);
   font-weight: 800;
   color: #1e293b;
   margin-bottom: 8px;
+  word-break: break-word;
 }
 
 .group-meta {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: clamp(8px, 2vw, 12px);
   color: #64748b;
-  font-size: 14px;
+  font-size: clamp(12px, 2vw, 14px);
   flex-wrap: wrap;
 }
 
@@ -90,16 +97,19 @@
 /* ACTION BAR */
 .action-bar {
   display: flex;
-  gap: 16px;
-  margin-bottom: 32px;
+  gap: clamp(10px, 2vw, 16px);
+  margin-bottom: clamp(20px, 4vw, 32px);
+  flex-wrap: wrap;
 }
 
 .action-btn {
   flex: 1;
-  padding: 14px;
+  min-width: 140px;
+  min-height: var(--touch-min, 44px);
+  padding: clamp(12px, 2vw, 14px);
   border-radius: 12px;
   font-weight: 600;
-  font-size: 15px;
+  font-size: clamp(14px, 2vw, 15px);
   border: none;
   cursor: pointer;
   display: flex;
@@ -139,28 +149,29 @@
 .summary-banner {
   background: linear-gradient(135deg, #f8fafc, #f1f5f9);
   border: 1px solid #e2e8f0;
-  padding: 24px;
+  padding: clamp(16px, 4vw, 24px);
   border-radius: 16px;
   text-align: center;
-  margin-bottom: 40px;
+  margin-bottom: clamp(24px, 4vw, 40px);
 }
 
 .summary-banner h3 {
-  font-size: 20px;
+  font-size: clamp(16px, 4vw, 20px);
   color: #334155;
   font-weight: 700;
   margin: 0;
+  word-break: break-word;
 }
 
 /* MAIN GRID */
 .details-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 40px;
+  gap: clamp(20px, 4vw, 40px);
 }
 
 .section-label {
-  font-size: 16px;
+  font-size: clamp(14px, 2.5vw, 16px);
   font-weight: 700;
   color: #94a3b8;
   text-transform: uppercase;
@@ -183,12 +194,14 @@
   justify-content: space-between;
   align-items: center;
   background: white;
-  padding: 16px;
+  padding: clamp(12px, 2.5vw, 16px);
   border-radius: 14px;
   margin-bottom: 12px;
   border: 1px solid #f1f5f9;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
   transition: transform 0.2s;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .expense-item:hover {
@@ -319,10 +332,14 @@
 }
 
 /* RESPONSIVE */
-@media (max-width: 768px) {
+@media (max-width: 767px) {
+  .group-details-page {
+    padding: clamp(12px, 3vw, 20px);
+  }
+
   .details-grid {
     grid-template-columns: 1fr;
-    gap: 24px;
+    gap: clamp(16px, 3vw, 24px);
   }
 
   .group-header {
@@ -333,5 +350,77 @@
   .btn-delete {
     width: 100%;
     text-align: center;
+    min-height: var(--touch-min, 44px);
+  }
+
+  .action-bar {
+    flex-direction: column;
+  }
+
+  .action-btn {
+    min-width: unset;
+    width: 100%;
+  }
+
+  .summary-banner {
+    padding: 16px;
+  }
+
+  .balances-card {
+    padding: clamp(14px, 3vw, 20px);
+  }
+
+  .balance-row {
+    padding: 10px 0;
+    font-size: clamp(13px, 2vw, 14px);
+  }
+
+  .expense-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .btn-trash {
+    min-width: var(--touch-min, 44px);
+    min-height: var(--touch-min, 44px);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 599px) {
+  .group-details-page {
+    padding: clamp(8px, 2vw, 16px);
+  }
+
+  .group-title h2 {
+    font-size: clamp(18px, 4vw, 22px);
+  }
+
+  .section-label {
+    font-size: 13px;
+  }
+
+  .settlement-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .btn-pay {
+    min-height: var(--touch-min, 44px);
+    padding: 8px 14px;
+  }
+}
+
+@media (max-width: 359px) {
+  .action-btn {
+    font-size: 13px;
+  }
+
+  .balance-row {
+    flex-wrap: wrap;
+    gap: 4px;
   }
 }

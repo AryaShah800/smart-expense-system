@@ -3,33 +3,36 @@
   position: fixed;
   inset: 0;
   background: rgba(15, 23, 42, 0.6);
-  /* Darker, more professional overlay */
   backdrop-filter: blur(4px);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
   animation: fadeIn 0.2s ease-out;
+  padding: clamp(12px, 4vw, 24px);
+  padding-left: max(clamp(12px, 4vw, 24px), env(safe-area-inset-left));
+  padding-right: max(clamp(12px, 4vw, 24px), env(safe-area-inset-right));
+  padding-bottom: max(clamp(12px, 4vw, 24px), env(safe-area-inset-bottom));
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* MODAL CONTAINER */
 .modal {
   background: white;
-  padding: 24px;
-  /* Reduced padding */
-  border-radius: 24px;
+  padding: clamp(16px, 4vw, 24px);
+  border-radius: clamp(16px, 4vw, 24px);
   width: 100%;
-  max-width: 440px;
+  max-width: min(440px, calc(100vw - 24px));
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
   position: relative;
   animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   border: 1px solid rgba(255, 255, 255, 0.5);
-  max-height: 90vh;
-  /* Prevent overflow */
+  max-height: 85vh;
+  max-height: 85dvh;
   overflow-y: auto;
-  /* Enable scrolling */
   scrollbar-width: thin;
-  /* Firefox scrollbar */
+  margin: auto;
 }
 
 /* HEADER */
@@ -41,25 +44,29 @@
 }
 
 .modal-header h3 {
-  font-size: 22px;
+  font-size: clamp(18px, 4vw, 22px);
   font-weight: 700;
   color: #1e293b;
   margin: 0;
+  word-break: break-word;
 }
 
 .btn-close {
   background: #f1f5f9;
   border: none;
-  width: 32px;
-  height: 32px;
+  min-width: var(--touch-min, 44px);
+  min-height: var(--touch-min, 44px);
+  width: clamp(32px, 7vw, 40px);
+  height: clamp(32px, 7vw, 40px);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   color: #64748b;
-  font-size: 18px;
+  font-size: clamp(16px, 3vw, 18px);
   transition: all 0.2s;
+  flex-shrink: 0;
 }
 
 .btn-close:hover {
@@ -138,16 +145,19 @@
   display: flex;
   gap: 12px;
   margin-top: 8px;
+  flex-wrap: wrap;
 }
 
 .modal-btn {
   flex: 1;
-  padding: 12px;
+  min-width: 120px;
+  min-height: var(--touch-min, 44px);
+  padding: clamp(10px, 2vw, 12px);
   border-radius: 12px;
   font-weight: 600;
   border: none;
   cursor: pointer;
-  font-size: 15px;
+  font-size: clamp(14px, 2vw, 15px);
   transition: all 0.2s;
 }
 
@@ -291,13 +301,14 @@
 }
 
 .amount-input-big {
-  font-size: 40px;
+  font-size: clamp(28px, 8vw, 40px);
   font-weight: 800;
   color: #0f172a;
   border: none;
   outline: none;
   background: transparent;
-  width: 160px;
+  width: min(160px, 45vw);
+  min-width: 80px;
   text-align: left;
   line-height: 1;
   padding: 0;
@@ -314,10 +325,12 @@
   display: flex;
   gap: 16px;
   margin-bottom: 24px;
+  flex-wrap: wrap;
 }
 
 .form-group {
   flex: 1;
+  min-width: 0;
 }
 
 .form-group label {
@@ -521,5 +534,85 @@
 
 /* Modal sizing tweak */
 .modal-lg {
-  max-width: 500px;
+  max-width: min(500px, calc(100vw - 24px));
+}
+
+/* ===== MODAL RESPONSIVE ===== */
+@media (max-width: 599px) {
+  .modal-overlay {
+    padding: 8px;
+    align-items: flex-start;
+    padding-top: max(24px, env(safe-area-inset-top));
+  }
+
+  .modal {
+    max-height: none;
+    padding: clamp(14px, 3vw, 18px);
+  }
+
+  .form-row {
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .form-group {
+    width: 100%;
+  }
+
+  .modal-actions {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .modal-btn {
+    width: 100%;
+    min-width: unset;
+  }
+
+  .amount-section {
+    padding: 12px;
+  }
+
+  .currency-symbol-big {
+    font-size: clamp(24px, 6vw, 32px);
+  }
+
+  .members-list-scroll {
+    max-height: 160px;
+  }
+
+  .member-row {
+    padding: 10px;
+  }
+
+  .member-avatar {
+    width: 36px;
+    height: 36px;
+    font-size: 14px;
+    margin-right: 12px;
+  }
+
+  .split-tabs {
+    flex-wrap: wrap;
+  }
+
+  .split-tab {
+    min-height: var(--touch-min, 44px);
+  }
+}
+
+@media (max-width: 359px) {
+  .modal {
+    padding: 12px;
+  }
+
+  .modal-header h3 {
+    font-size: 16px;
+  }
+
+  .amount-input-big {
+    font-size: 24px;
+    width: 100px;
+  }
 }

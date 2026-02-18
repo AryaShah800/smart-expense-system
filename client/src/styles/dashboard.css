@@ -1,47 +1,70 @@
 /* ===== PAGE ===== */
 .dashboard-page {
-  padding: 32px 32px;
+  padding: clamp(16px, 4vw, 24px);
   background: #f8fafc;
-  min-height: calc(100vh - 70px);
+  display: flex;
+  flex-direction: column;
+  flex: 1;
   max-width: 1400px;
   margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.dashboard-loading,
+.dashboard-error {
+  text-align: center;
+  padding: clamp(24px, 6vw, 48px) clamp(16px, 4vw, 24px);
+  font-size: clamp(14px, 2vw, 16px);
+  color: var(--muted, #64748b);
+  width: 100%;
+}
+
+.dashboard-error {
+  color: var(--danger, #ef4444);
 }
 
 /* ===== HEADER ===== */
 .dashboard-header-row {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
-  align-items: flex-end;
+  align-items: flex-start;
+  gap: 24px;
   margin-bottom: 32px;
 }
 
 .welcome-section h1 {
-  font-size: 28px;
+  font-size: 32px;
   font-weight: 800;
   color: #1e293b;
   margin-bottom: 4px;
+  word-break: break-word;
 }
 
 .dashboard-subtitle {
   color: #64748b;
-  font-size: 15px;
+  font-size: 14px;
 }
 
 /* Dropdown */
 .range-dropdown {
-  padding: 10px 16px;
-  border-radius: 12px;
+  padding: 10px 14px;
+  border-radius: 10px;
   border: 1px solid #e2e8f0;
   background: white;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   color: #475569;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.25s ease;
+  min-width: 140px;
+  width: auto;
 }
 
 .range-dropdown:hover {
   border-color: #cbd5e1;
+  background: #f8fafc;
 }
 
 .range-dropdown:focus {
@@ -53,30 +76,30 @@
 /* ===== SUMMARY GRID ===== */
 .summary-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 24px;
-  margin-bottom: 40px;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
+  margin-bottom: 32px;
 }
 
 .summary-card {
   background: white;
-  padding: 24px;
-  border-radius: 20px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  padding: 20px;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   display: flex;
   flex-direction: column;
   gap: 8px;
   transition: transform 0.2s, box-shadow 0.2s;
-  border: 1px solid #f1f5f9;
+  border: 1px solid #e5e7eb;
 }
 
 .summary-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
 }
 
 .summary-card span {
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 600;
   color: #64748b;
   text-transform: uppercase;
@@ -84,9 +107,10 @@
 }
 
 .summary-card strong {
-  font-size: 28px;
+  font-size: 24px;
   font-weight: 700;
   color: #1e293b;
+  word-break: break-word;
 }
 
 /* Card Variations */
@@ -111,24 +135,23 @@
   color: #dc2626;
 }
 
-
 /* ===== MAIN GRID LAYOUT ===== */
 .dashboard-grid {
   display: grid;
   grid-template-columns: 2fr 1fr;
-  /* Charts take 2/3, List takes 1/3 */
-  gap: 32px;
+  gap: 24px;
 }
 
 /* CHARTS COLUMN */
 .charts-column {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 20px;
+  min-width: 0;
 }
 
 .section-title {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 700;
   color: #334155;
   margin-bottom: 16px;
@@ -136,34 +159,38 @@
 
 .chart-card {
   background: white;
-  padding: 24px;
-  border-radius: 20px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-  border: 1px solid #f1f5f9;
+  padding: clamp(16px, 3vw, 20px);
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e5e7eb;
+  min-height: 300px;
+  overflow: hidden;
 }
 
 .chart-card h4 {
-  font-size: 15px;
+  font-size: clamp(13px, 2vw, 15px);
   font-weight: 600;
   color: #64748b;
-  margin-bottom: 16px;
+  margin-bottom: clamp(12px, 2vw, 16px);
 }
 
 /* Insight Card */
 .insight-card {
   background: #eff6ff;
   border: 1px solid #dbeafe;
-  padding: 16px;
+  padding: clamp(12px, 2vw, 16px);
   border-radius: 16px;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: clamp(8px, 2vw, 12px);
   color: #1e293b;
-  font-size: 15px;
+  font-size: clamp(13px, 2vw, 15px);
+  flex-wrap: wrap;
 }
 
 .insight-icon {
-  font-size: 20px;
+  font-size: clamp(18px, 3vw, 20px);
+  flex-shrink: 0;
 }
 
 .insight-card span.pos {
@@ -180,20 +207,25 @@
 .recent-column {
   display: flex;
   flex-direction: column;
+  gap: clamp(12px, 2vw, 16px);
+  min-width: 0;
 }
 
 .section-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: clamp(12px, 2vw, 16px);
+  flex-wrap: wrap;
+  gap: var(--gap-sm);
 }
 
 .view-all-link {
-  font-size: 13px;
+  font-size: clamp(11px, 2vw, 13px);
   font-weight: 600;
   color: #6366f1;
   text-decoration: none;
+  white-space: nowrap;
 }
 
 .view-all-link:hover {
@@ -203,20 +235,21 @@
 .recent-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: clamp(10px, 2vw, 12px);
 }
 
 /* REUSED EXPENSE CARD STYLES */
 .expenses-card {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: clamp(8px, 2vw, 12px);
   background: white;
-  padding: 12px 16px;
+  padding: clamp(10px, 2vw, 16px);
   border-radius: 16px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
   border: 1px solid #f1f5f9;
   transition: all 0.2s;
+  min-width: 0;
 }
 
 .expenses-card:hover {
@@ -225,15 +258,16 @@
 }
 
 .card-icon {
-  width: 40px;
-  height: 40px;
+  width: clamp(36px, 8vw, 44px);
+  height: clamp(36px, 8vw, 44px);
   border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 700;
   flex-shrink: 0;
-  font-size: 18px;
+  font-size: clamp(16px, 3vw, 20px);
+  min-width: 36px;
 }
 
 .card-icon.income {
@@ -251,23 +285,29 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
+  min-width: 0;
 }
 
 .card-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
+  gap: var(--gap-sm);
 }
 
 .card-category {
   font-weight: 600;
-  font-size: 14px;
+  font-size: clamp(12px, 2vw, 14px);
   color: #1e293b;
+  word-break: break-word;
 }
 
 .card-amount {
   font-weight: 700;
-  font-size: 14px;
+  font-size: clamp(12px, 2vw, 14px);
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .card-amount.income {
@@ -279,7 +319,7 @@
 }
 
 .card-desc {
-  font-size: 12px;
+  font-size: clamp(11px, 1.8vw, 12px);
   color: #94a3b8;
   max-width: 140px;
   white-space: nowrap;
@@ -288,40 +328,43 @@
 }
 
 .card-date {
-  font-size: 11px;
+  font-size: clamp(10px, 1.5vw, 11px);
   color: #64748b;
   background: #f1f5f9;
   padding: 2px 6px;
   border-radius: 4px;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 /* EMPTY STATE */
 .empty-dashboard {
   text-align: center;
-  padding: 80px 20px;
+  padding: clamp(40px, 10vw, 80px) clamp(20px, 5vw, 40px);
   background: white;
   border-radius: 24px;
   border: 1px dashed #e2e8f0;
 }
 
 .empty-icon {
-  font-size: 48px;
-  margin-bottom: 16px;
+  font-size: clamp(36px, 8vw, 48px);
+  margin-bottom: clamp(12px, 3vw, 16px);
 }
 
 .empty-dashboard h3 {
-  font-size: 20px;
+  font-size: clamp(18px, 4vw, 22px);
   color: #1e293b;
-  margin-bottom: 8px;
+  margin-bottom: clamp(6px, 1vw, 8px);
 }
 
 .empty-dashboard p {
   color: #64748b;
-  margin-bottom: 24px;
+  margin-bottom: clamp(16px, 3vw, 24px);
+  max-width: 100%;
 }
 
 .cta-button {
-  padding: 12px 20px;
+  padding: clamp(8px, 2vw, 12px) clamp(16px, 3vw, 20px);
   background: #0f172a;
   color: white;
   border-radius: 12px;
@@ -329,6 +372,9 @@
   font-weight: 600;
   display: inline-block;
   transition: all 0.2s;
+  font-size: clamp(12px, 2vw, 14px);
+  border: none;
+  cursor: pointer;
 }
 
 .cta-button:hover {
@@ -336,39 +382,11 @@
   transform: translateY(-2px);
 }
 
-/* RESPONSIVE */
-@media (max-width: 1024px) {
-  .dashboard-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-@media (max-width: 768px) {
-  .dashboard-header-row {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 16px;
-  }
-
-  .welcome-section h1 {
-    font-size: 24px;
-  }
-
-  .filter-wrapper {
-    width: 100%;
-  }
-
-  .range-dropdown {
-    width: 100%;
-  }
-<<<<<<< HEAD
-}
-
 /* ===== BUDGET SECTION ===== */
 .budget-list {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: clamp(12px, 3vw, 20px);
 }
 
 .budget-item {
@@ -380,14 +398,16 @@
 .budget-header {
   display: flex;
   justify-content: space-between;
-  font-size: 14px;
+  font-size: clamp(12px, 2vw, 14px);
   font-weight: 600;
   color: #334155;
+  flex-wrap: wrap;
+  gap: var(--gap-sm);
 }
 
 .budget-values {
   color: #64748b;
-  font-size: 13px;
+  font-size: clamp(11px, 1.8vw, 13px);
 }
 
 .progress-track {
@@ -396,6 +416,7 @@
   background: #f1f5f9;
   border-radius: 4px;
   overflow: hidden;
+  margin-top: 4px;
 }
 
 .progress-fill {
@@ -409,32 +430,26 @@
 .progress-fill.danger { background: #ef4444; }
 
 .budget-subtext {
-  font-size: 11px;
+  font-size: clamp(10px, 1.5vw, 11px);
   color: #94a3b8;
   text-align: right;
 }
 
 /* ===== PROJECTED CARD ===== */
-/* ... existing styles ... */
-
-/* ===== PROJECTED CARD (Purple Gradient) ===== */
-/* Update the .summary-card.projected class */
 .summary-card.projected {
   background: linear-gradient(135deg, #8b5cf6, #6d28d9);
   border: none;
   position: relative;
   overflow: hidden;
-  
-  /* REDUCE PADDING if it feels too big vertically */
-  padding: 20px; 
+  padding: clamp(16px, 4vw, 24px);
   display: flex;
   flex-direction: column;
-  justify-content: center; /* Centers content vertically */
+  justify-content: center;
 }
 
 .summary-card.projected span {
-  color: rgba(255, 255, 255, 0.8); /* Semi-transparent white */
-  font-size: 14px;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: clamp(11px, 1.8vw, 14px);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -443,13 +458,13 @@
 
 .summary-card.projected strong {
   color: white;
-  font-size: 28px;
+  font-size: clamp(20px, 4vw, 28px);
   font-weight: 700;
   z-index: 2;
   margin-top: 4px;
+  word-break: break-word;
 }
 
-/* Optional: Add a decorative background circle for "texture" */
 .summary-card.projected::before {
   content: "";
   position: absolute;
@@ -463,7 +478,7 @@
 }
 
 .summary-card.projected::after {
-  content: "🔮"; /* Icon in the corner */
+  content: "🔮";
   position: absolute;
   bottom: 10px;
   right: 15px;
@@ -475,28 +490,153 @@
 /* ===== HEADER ACTION BUTTON ===== */
 .header-actions {
   display: flex;
-  gap: 12px;
+  gap: clamp(8px, 2vw, 12px);
   align-items: center;
+  flex-wrap: wrap;
 }
 
 .btn-export {
   background: white;
   border: 1px solid #e2e8f0;
-  padding: 10px 16px;
+  padding: clamp(8px, 1.5vw, 10px) clamp(12px, 2vw, 16px);
   border-radius: 12px;
   font-weight: 600;
   color: #475569;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: clamp(6px, 1.5vw, 8px);
   transition: all 0.2s;
+  font-size: clamp(12px, 2vw, 14px);
+  white-space: nowrap;
 }
 
 .btn-export:hover {
   background: #f8fafc;
   border-color: #cbd5e1;
   color: #1e293b;
-=======
->>>>>>> b32fcb37c5c7dd229814a2683f6e4e705f3400c2
+}
+
+/* ===== RESPONSIVE BREAKPOINTS ===== */
+
+/* Large Desktop (>= 1024px) - default styling above */
+
+/* Tablet (768px - 1023px) */
+@media (max-width: 1023px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+    gap: clamp(16px, 3vw, 24px);
+  }
+
+  .recent-column {
+    order: 2;
+  }
+
+  .chart-card {
+    min-height: 250px;
+  }
+}
+
+/* Small Tablet (600px - 767px) */
+@media (max-width: 767px) {
+  .dashboard-page {
+    padding: clamp(12px, 4vw, 20px);
+  }
+
+  .dashboard-header-row {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .welcome-section h1 {
+    word-break: break-word;
+  }
+
+  .range-dropdown {
+    width: 100%;
+    min-width: unset;
+  }
+
+  .summary-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .chart-card {
+    min-height: 200px;
+  }
+
+  .expenses-card {
+    padding: clamp(8px, 2vw, 12px);
+  }
+
+  .card-icon {
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+  }
+}
+
+/* Mobile (< 600px) */
+@media (max-width: 599px) {
+  .dashboard-page {
+    padding: clamp(8px, 3vw, 16px);
+  }
+
+  .summary-grid {
+    grid-template-columns: 1fr;
+    gap: clamp(12px, 2vw, 16px);
+  }
+
+  .summary-card {
+    padding: clamp(12px, 3vw, 16px);
+  }
+
+  .chart-card {
+    min-height: 180px;
+    padding: clamp(12px, 3vw, 16px);
+  }
+
+  .expenses-card {
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  .card-row {
+    width: 100%;
+  }
+
+  .card-amount {
+    align-self: flex-start;
+  }
+
+  .dashboard-grid {
+    gap: clamp(12px, 3vw, 16px);
+  }
+
+  .budget-item {
+    gap: 4px;
+  }
+}
+
+/* Extra Small Devices (< 360px) */
+@media (max-width: 359px) {
+  .summary-card {
+    padding: 10px;
+  }
+
+  .chart-card {
+    min-height: 160px;
+    padding: 10px;
+  }
+
+  .summary-card span {
+    font-size: 10px;
+    letter-spacing: 0px;
+  }
+
+  .card-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 }

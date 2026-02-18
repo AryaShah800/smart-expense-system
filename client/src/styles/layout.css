@@ -1,33 +1,30 @@
-.navbar {
-  background-color: #2f3640;
-  padding: 15px;
+/* App layout - main content area (navbar uses navbar.css) */
+.app-layout {
   display: flex;
-  gap: 20px;
-}
-
-.navbar a {
-  color: white;
-  text-decoration: none;
-  font-weight: 500;
-}
-
-.navbar a:hover {
-  text-decoration: underline;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100dvh;
+  width: 100%;
 }
 
 .page-content {
-  padding: 40px;
+  flex: 1;
+  width: 100%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-.logout-btn {
-  margin-left: auto;
-  background-color: #c0392b;
-  color: white;
-  border: none;
-  padding: 6px 12px;
-  cursor: pointer;
+@media (max-width: 767px) {
+  .page-content {
+    padding: 0;
+  }
 }
 
-.logout-btn:hover {
-  background-color: #e74c3c;
+@media (max-width: 359px) {
+  .page-content {
+    padding: 0;
+  }
 }

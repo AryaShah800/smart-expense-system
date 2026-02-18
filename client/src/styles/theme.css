@@ -13,8 +13,32 @@
   --radius: 14px;
   --shadow: 0 10px 25px rgba(0, 0, 0, 0.06);
 
-  /* Spacing */
-  --gap-sm: 8px;
-  --gap-md: 16px;
-  --gap-lg: 24px;
+  /* Spacing - Responsive */
+  --gap-xs: clamp(4px, 1vw, 8px);
+  --gap-sm: clamp(8px, 2vw, 12px);
+  --gap-md: clamp(12px, 3vw, 20px);
+  --gap-lg: clamp(16px, 4vw, 32px);
+  --gap-xl: clamp(24px, 5vw, 40px);
+  
+  /* Padding - Responsive */
+  --px-mobile: clamp(16px, 5vw, 24px);
+  --px-desktop: clamp(24px, 6vw, 32px);
+  
+  /* Typography - Responsive */
+  --font-xs: clamp(11px, 2vw, 13px);
+  --font-sm: clamp(13px, 2.2vw, 14px);
+  --font-base: clamp(14px, 2.5vw, 16px);
+  --font-lg: clamp(16px, 3vw, 18px);
+  --font-xl: clamp(18px, 3.5vw, 24px);
+  --font-2xl: clamp(20px, 4vw, 28px);
+  --font-3xl: clamp(24px, 5vw, 32px);
+
+  /* Breakpoints */
+  --mobile: 320px;
+  --tablet: 768px;
+  --laptop: 1024px;
+  --desktop: 1440px;
+
+  /* Touch targets - min 44px for accessibility */
+  --touch-min: 44px;
 }

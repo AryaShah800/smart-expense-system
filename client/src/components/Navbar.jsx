@@ -9,11 +9,12 @@ function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
   
-  // 1. Get user and logout function from Context
+  // Get user and logout function from Context
   const { user, logout } = useAuth();
   
   const [notifications, setNotifications] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const dropdownRef = useRef(null);
 
   const fetchNotifications = async () => {
@@ -102,6 +103,14 @@ function Navbar() {
 
   const unreadCount = notifications.filter(n => !n.isRead).length;
 
+  const toggleMobileMenu = () => {
+    setMobileMenuOpen(!mobileMenuOpen);
+  };
+
+  const closeMobileMenu = () => {
+    setMobileMenuOpen(false);
+  };
+
   return (
     <nav className="navbar">
       <div className="navbar-inner">
@@ -112,16 +121,17 @@ function Navbar() {
 
         {user ? (
           <>
-            <div className="nav-links">
-              <Link to="/dashboard" className={location.pathname === "/dashboard" ? "active" : ""}>Dashboard</Link>
-              <Link to="/add-transaction" className={location.pathname === "/add-transaction" ? "active" : ""}>Add Transaction</Link>
-              <Link to="/expenses" className={location.pathname === "/expenses" ? "active" : ""}>Expenses</Link>
-<<<<<<< HEAD
-              <Link to="/budgets" className={location.pathname === "/budgets" ? "active" : ""}>Budgets</Link>
-=======
->>>>>>> b32fcb37c5c7dd229814a2683f6e4e705f3400c2
-              <Link to="/groups" className={location.pathname.startsWith("/groups") ? "active" : ""}>Groups</Link>
+            <div className={`nav-links ${mobileMenuOpen ? 'active' : ''}`}>
+              <Link to="/dashboard" className={location.pathname === "/dashboard" ? "active" : ""} onClick={closeMobileMenu}>Dashboard</Link>
+              <Link to="/add-transaction" className={location.pathname === "/add-transaction" ? "active" : ""} onClick={closeMobileMenu}>Add Transaction</Link>
+              <Link to="/expenses" className={location.pathname === "/expenses" ? "active" : ""} onClick={closeMobileMenu}>Expenses</Link>
+              <Link to="/budgets" className={location.pathname === "/budgets" ? "active" : ""} onClick={closeMobileMenu}>Budgets</Link>
+              <Link to="/groups" className={location.pathname.startsWith("/groups") ? "active" : ""} onClick={closeMobileMenu}>Groups</Link>
             </div>
+
+            <button className="menu-toggle" onClick={toggleMobileMenu}>
+              ☰
+            </button>
 
             <div className="nav-right">
               <div className="notification-wrapper" ref={dropdownRef}>
@@ -156,8 +166,8 @@ function Navbar() {
           </>
         ) : (
           <div className="nav-right">
-            <Link to="/login" style={{ textDecoration: 'none', color: '#475569', fontWeight: 500 }}>Login</Link>
-            <Link to="/signup" style={{ padding: '8px 16px', background: '#6366f1', color: 'white', borderRadius: '8px', textDecoration: 'none', fontWeight: 500 }}>Signup</Link>
+            <Link to="/login" className="nav-auth-link login">Login</Link>
+            <Link to="/signup" className="nav-auth-link signup">Signup</Link>
           </div>
         )}
       </div>
