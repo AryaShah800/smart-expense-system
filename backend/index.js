@@ -26,10 +26,11 @@ const PORT = process.env.PORT || 7000;
 const app = express();
 const httpServer = createServer(app); // 3. Wrap Express
 
+
 // 4. Initialize Socket.io
 const io = new Server(httpServer, {
   cors: {
-    origin: "http://localhost:5173",
+    origin: ["http://localhost:5173", "http://localhost:4173", "http://localhost:4174"],
     credentials: true,
   },
 });
@@ -59,7 +60,7 @@ app.use(cookieParser());
 
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: ["http://localhost:5173", "http://localhost:4173", "http://localhost:4174","http://192.168.29.208:4173","http://192.168.29.208:4174",],
     credentials: true,
   })
 );

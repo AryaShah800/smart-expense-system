@@ -12,6 +12,7 @@ import CashFlowLine from "../components/charts/CashFlowLine";
 import BudgetOverview from "../components/dashboard/BudgetOverview"; // Import New Component
 
 import "../styles/dashboard.css";
+import "../styles/responsive.css";
 
 function Dashboard() {
   const [transactions, setTransactions] = useState([]);
@@ -112,8 +113,13 @@ function Dashboard() {
   if (loading) return <p className="dashboard-loading">Loading financial data...</p>;
   if (error) return <p className="dashboard-error">{error}</p>;
 
+  const formatCur = (n) =>
+    new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(n);
+
   return (
-    <div className="dashboard-page">
+    <>
+      {/* ========== DESKTOP LAYOUT (unchanged, md and above) ========== */}
+      <div className="dashboard-page show-from-md-block">
       {/* HEADER */}
       <div className="dashboard-header-row">
         <div className="welcome-section">
@@ -236,7 +242,95 @@ function Dashboard() {
         </div>
       )}
     </div>
+
+      {/* ========== MOBILE LAYOUT (below md only: compact, p-4, gap-4, rounded-xl) ========== */}
+      <div className="dashboard-mobile hide-from-md">
+        <div className="dashboard-mobile-actions">
+          <select
+            className="range-dropdown"
+            value={range}
+            onChange={(e) => setRange(e.target.value)}
+            style={{ padding: "0.5rem 0.75rem", borderRadius: "0.5rem", border: "1px solid #e5e7eb", fontSize: "0.875rem" }}
+          >
+            <option value="7d">Last 7 days</option>
+            <option value="30d">Last 30 days</option>
+            <option value="90d">Last 90 days</option>
+          </select>
+          <button type="button" onClick={handleExport} className="btn-export" style={{ padding: "0.5rem 1rem", fontSize: "0.875rem" }}>
+            📥 Export
+          </button>
+        </div>
+        <Notifications />
+        <div className="summary-mobile-balance">
+          <span>Total Balance</span>
+          <strong>{formatCur(summary.balance)}</strong>
+        </div>
+        <div className="summary-mobile-grid">
+          <div className="summary-mobile-card income">
+            <span>Income</span>
+            <strong>{formatCur(summary.income)}</strong>
+          </div>
+          <div className="summary-mobile-card expense">
+            <span>Expense</span>
+            <strong>{formatCur(summary.expense)}</strong>
+          </div>
+        </div>
+        <div className="projection-mobile-card">
+          <span>Projected (Month End)</span>
+          <strong>{formatCur(projection)}</strong>
+        </div>
+        {transactions.length === 0 ? (
+          <div className="summary-mobile-card" style={{ textAlign: "center", padding: "1.5rem" }}>
+            <div style={{ fontSize: "1.5rem", marginBottom: "0.5rem" }}>📊</div>
+            <h3 style={{ margin: "0 0 0.25rem 0", fontSize: "1rem" }}>No transactions yet</h3>
+            <p style={{ fontSize: "0.875rem", color: "#6b7280", marginBottom: "1rem" }}>Start tracking to see insights.</p>
+            <Link to="/add-transaction" className="cta-button" style={{ display: "inline-block", padding: "0.5rem 1rem", borderRadius: "0.75rem", background: "#4f46e5", color: "white", textDecoration: "none", fontSize: "0.875rem" }}>
+              Add First Transaction
+            </Link>
+          </div>
+        ) : (
+          <>
+            <div className="chart-card-mobile">
+              <h4>Income vs Expense</h4>
+              <IncomeExpenseBar transactions={filteredTransactions} />
+            </div>
+            <div className="chart-card-mobile">
+              <h4>Spending Categories</h4>
+              <ExpenseCategoryDonut transactions={filteredTransactions} />
+            </div>
+            <div className="chart-card-mobile">
+              <h4>Cash Flow Trend</h4>
+              <CashFlowLine transactions={filteredTransactions} />
+            </div>
+            <BudgetOverview budgetStatus={budgetStatus} />
+            <div>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.5rem" }}>
+                <h3 style={{ margin: 0, fontSize: "0.875rem", fontWeight: 600 }}>Recent Activity</h3>
+                <Link to="/expenses" style={{ fontSize: "0.75rem", fontWeight: 500, color: "#4f46e5" }}>View All</Link>
+              </div>
+              {transactions
+                .sort((a, b) => new Date(b.date) - new Date(a.date))
+                .slice(0, 5)
+                .map((t) => (
+                  <div key={t._id} className="recent-item-mobile">
+                    <div className={`icon ${t.type}`}>{t.categoryId?.name?.[0] || "?"}</div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontWeight: 600, fontSize: "0.875rem" }}>{t.categoryId?.name || "Other"}</div>
+                      <div style={{ fontSize: "0.75rem", color: "#6b7280" }}>{t.description || "No description"}</div>
+                    </div>
+                    <div style={{ textAlign: "right" }}>
+                      <span className={`amount ${t.type}`}>{t.type === "expense" ? "-" : "+"}₹{t.amount}</span>
+                      <div style={{ fontSize: "0.75rem", color: "#6b7280" }}>
+                        {new Date(t.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+            </div>
+          </>
+        )}
+      </div>
+    </>
   );
 }
-
 export default Dashboard;

@@ -1,14 +1,24 @@
 import Navbar from "./Navbar";
+import Header from "./Header";
+import BottomNavigation from "./BottomNavigation";
 import { Outlet } from "react-router-dom";
 import "../styles/layout.css";
+import "../styles/responsive.css";
 
 function Layout() {
   return (
     <div className="app-layout">
+      {/* Desktop: full navbar (hidden on mobile) */}
       <Navbar />
-      <main className="page-content">
-        <Outlet />
+      {/* Mobile: compact header (hidden on desktop) */}
+      <Header />
+      <main className="page-content main-mobile-pb">
+        <div className="mobile-content-wrap">
+          <Outlet />
+        </div>
       </main>
+      {/* Mobile: bottom nav (hidden on desktop) */}
+      <BottomNavigation />
     </div>
   );
 }

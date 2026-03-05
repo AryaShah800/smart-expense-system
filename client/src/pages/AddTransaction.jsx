@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import api from "../api/axios";
 import Modal from "../components/Modal";
 import "../styles/addTransaction.css";
+import "../styles/responsive.css";
 
 function AddTransaction() {
   const navigate = useNavigate();
@@ -79,7 +80,7 @@ function AddTransaction() {
           </button>
         </div>
 
-        <form onSubmit={handleSubmit}>
+        <form id="add-transaction-form" onSubmit={handleSubmit}>
 
           <div className="form-group">
             <label>Amount</label>
@@ -142,10 +143,25 @@ function AddTransaction() {
             />
           </div>
 
-          <button type="submit" disabled={loading} className="submit-btn">
+          {/* Desktop: normal submit button (visible md and above) */}
+          <div className="show-from-md-block">
+            <button type="submit" disabled={loading} className="submit-btn">
+              {loading ? "Saving..." : "Save Transaction"}
+            </button>
+          </div>
+        </form>
+        {/* Mobile only: sticky save button (visible below md) */}
+        <div className="sticky-save-bar-mobile hide-from-md">
+          <button
+            type="submit"
+            form="add-transaction-form"
+            disabled={loading}
+            className="submit-btn"
+            style={{ width: "100%", minHeight: "44px", borderRadius: "0.75rem" }}
+          >
             {loading ? "Saving..." : "Save Transaction"}
           </button>
-        </form>
+        </div>
 
         <Modal
           isOpen={isModalOpen}
@@ -211,5 +227,5 @@ function AddTransaction() {
     </div >
   );
 }
-
 export default AddTransaction;
+

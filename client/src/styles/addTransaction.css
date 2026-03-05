@@ -238,6 +238,28 @@ input[type=number] {
   word-break: break-word;
 }
 
+/* ===== MOBILE ONLY (below md): compact form ===== */
+@media (max-width: 767px) {
+  .transaction-card form {
+    gap: 1rem;
+  }
+  .transaction-card .form-group label {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #6b7280;
+  }
+  .transaction-card .form-group input,
+  .transaction-card .form-group select,
+  .transaction-card .input-wrapper {
+    min-height: 3rem;
+    font-size: 0.875rem;
+  }
+  .transaction-card {
+    padding: 1rem;
+    border-radius: 0.75rem;
+  }
+}
+
 /* ===== RESPONSIVE ===== */
 @media (max-width: 599px) {
   .transaction-page {

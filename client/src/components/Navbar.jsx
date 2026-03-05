@@ -112,7 +112,7 @@ function Navbar() {
   };
 
   return (
-    <nav className="navbar">
+    <nav className="navbar hide-below-md">
       <div className="navbar-inner">
         <div className="nav-left">
           <div className="logo">SE</div>
