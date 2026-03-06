@@ -40,10 +40,7 @@ const app = express();
 const httpServer = createServer(app);
 
 const io = new Server(httpServer, {
-  cors: {
-    origin: allowedOrigins,
-    credentials: true,
-  },
+  cors: corsOptions,
 });
 
 app.set("io", io);
@@ -63,10 +60,7 @@ io.on("connection", (socket) => {
 
 app.use(express.json());
 app.use(cookieParser());
-app.use(cors({
-  origin: allowedOrigins,
-  credentials: true,
-}));
+app.use(cors(corsOptions));
 
 app.use("/api/auth", userRoutes);
 app.use("/api/users", userRoutes);
