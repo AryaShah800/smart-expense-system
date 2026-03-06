@@ -22,7 +22,12 @@ const PORT = process.env.PORT || 7000;
 
 const corsOptions = {
   origin: function (origin, callback) {
-    if (!origin || origin.endsWith(".vercel.app") || origin.startsWith("http://localhost") || origin.startsWith("http://192.168.")) {
+    if (
+      !origin ||
+      origin.endsWith(".vercel.app") ||
+      origin.startsWith("http://localhost") ||
+      origin.startsWith("http://192.168.")
+    ) {
       callback(null, true);
     } else {
       callback(new Error("Not allowed by CORS"));
@@ -33,14 +38,24 @@ const corsOptions = {
 
 const app = express();
 const httpServer = createServer(app);
-const io = new Server(httpServer, { cors: corsOptions });
+
+const io = new Server(httpServer, {
+  cors: corsOptions,
+});
 
 app.set("io", io);
 
 io.on("connection", (socket) => {
   console.log("User connected:", socket.id);
-  socket.on("join_room", (userId) => { socket.join(userId); });
-  socket.on("disconnect", () => { console.log("User disconnected"); });
+
+  socket.on("join_room", (userId) => {
+    socket.join(userId);
+    console.log(`User ${userId} joined room`);
+  });
+
+  socket.on("disconnect", () => {
+    console.log("User disconnected");
+  });
 });
 
 app.use(express.json());
@@ -56,11 +71,16 @@ app.use("/api/groups", groupRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/reports", reportRoutes);
 
-app.get("/", (req, res) => { res.send({ activeStatus: true, error: false }); });
+app.get("/", (req, res) => {
+  res.send({ activeStatus: true, error: false });
+});
 
-mongoose.connect(process.env.MONGO_URI)
+mongoose
+  .connect(process.env.MONGO_URI)
   .then(() => {
     console.log("MongoDB connected");
-    httpServer.listen(PORT, () => console.log(`Server at http://localhost:${PORT}`));
+    httpServer.listen(PORT, () =>
+      console.log(`Server at http://localhost:${PORT}`)
+    );
   })
   .catch((err) => console.error("MongoDB error:", err));
