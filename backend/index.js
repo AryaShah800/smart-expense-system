@@ -20,14 +20,21 @@ import reportRoutes from "./routes/report.js";
 
 const PORT = process.env.PORT || 7000;
 
-const allowedOrigins = [
-  "http://localhost:5173",
-  "http://localhost:4173",
-  "http://localhost:4174",
-  "http://192.168.29.208:4173",
-  "http://192.168.29.208:4174",
-  ...(process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(",").map(o => o.trim()) : []),
-].filter(Boolean);
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (
+      !origin ||
+      origin.endsWith(".vercel.app") ||
+      origin.startsWith("http://localhost") ||
+      origin.startsWith("http://192.168.")
+    ) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true,
+};
 
 const app = express();
 const httpServer = createServer(app);
