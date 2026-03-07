@@ -31,18 +31,61 @@ export default defineConfig({
       },
       workbox: {
         runtimeCaching: [
+          // 1. Cache GET requests for offline viewing (Network First)
           {
-            // This matches your backend API URL
-            urlPattern: /^http:\/\/192\.168\.\d+\.\d+:7000\/api\/.*/i, 
+            urlPattern: /\/api\//i, // Matches any URL containing /api/
             handler: 'NetworkFirst',
+            method: 'GET',
             options: {
               cacheName: 'api-cache',
               expiration: {
-                maxEntries: 100, // Keep the last 100 API requests
-                maxAgeSeconds: 60 * 60 * 24 * 7 // Keep for 1 week
+                maxEntries: 200,
+                maxAgeSeconds: 60 * 60 * 24 * 7 // 1 week
               },
               cacheableResponse: {
                 statuses: [0, 200]
+              }
+            }
+          },
+          // 2. Background Sync for POST (Offline saving)
+          {
+            urlPattern: /\/api\//i,
+            handler: 'NetworkOnly',
+            method: 'POST',
+            options: {
+              backgroundSync: {
+                name: 'offline-mutations-queue',
+                options: {
+                  maxRetentionTime: 24 * 60 // Retry for up to 24 hours
+                }
+              }
+            }
+          },
+          // 3. Background Sync for PUT (Offline updates)
+          {
+            urlPattern: /\/api\//i,
+            handler: 'NetworkOnly',
+            method: 'PUT',
+            options: {
+              backgroundSync: {
+                name: 'offline-mutations-queue',
+                options: {
+                  maxRetentionTime: 24 * 60
+                }
+              }
+            }
+          },
+          // 4. Background Sync for DELETE (Offline deletions)
+          {
+            urlPattern: /\/api\//i,
+            handler: 'NetworkOnly',
+            method: 'DELETE',
+            options: {
+              backgroundSync: {
+                name: 'offline-mutations-queue',
+                options: {
+                  maxRetentionTime: 24 * 60
+                }
               }
             }
           }
