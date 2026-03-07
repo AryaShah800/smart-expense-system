@@ -424,3 +424,11 @@
     gap: 4px;
   }
 }
+
+/* Additional padding to prevent bottom nav overlap */
+@media (max-width: 767px) {
+  .group-details-page {
+    padding-bottom: 6rem;   /* Space above bottom nav so content isn't hidden */
+    overflow: visible;
+  }
+}

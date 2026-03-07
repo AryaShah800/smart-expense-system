@@ -238,7 +238,7 @@ function GroupDetails() {
               return (
                 <div key={index} className="settlement-card">
                   <div className="settlement-text">
-                    <strong>{s.from}</strong> pays <strong>{s.to}</strong> <span className="settlement-amount">{formatCurrency(s.amount)}</span>
+                    <strong>{s.from === currentUser?.user?.username ? "You" : s.from}</strong> pays <strong>{s.to === currentUser?.user?.username ? "you" : s.to}</strong> <span className="settlement-amount">{formatCurrency(s.amount)}</span>
                   </div>
 
                   {isMyDebt && (

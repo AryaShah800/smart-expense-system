@@ -48,11 +48,12 @@
 }
 @media (max-width: 767px) {
   .mobile-content-wrap {
-    max-width: 28rem;
+    max-width: 100%;          /* was 28rem — remove the constraint */
     margin-left: auto;
     margin-right: auto;
-    padding-left: 1rem;
-    padding-right: 1rem;
+    padding-left: 0;
+    padding-right: 0;
+    overflow: visible;      /* ADD this */
   }
 }
 
@@ -273,21 +274,24 @@
   gap: 0.5rem;
 }
 .dashboard-mobile .summary-mobile-balance {
-  background: #4f46e5;
-  color: white;
-  padding: 1rem;
-  border-radius: 0.75rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  background: linear-gradient(135deg, #4f46e5, #4338ca);
+  border-radius: 0.875rem;
+  padding: 1.25rem;
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
 }
 .dashboard-mobile .summary-mobile-balance span {
-  font-size: 0.75rem;
-  opacity: 0.9;
+  font-size: 0.7rem;
+  font-weight: 600;
+  opacity: 0.8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 .dashboard-mobile .summary-mobile-balance strong {
-  font-size: 1.25rem;
+  font-size: 1.75rem;
+  font-weight: 800;
   display: block;
   margin-top: 0.25rem;
-}
+} 
 .dashboard-mobile .summary-mobile-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -313,20 +317,37 @@
 .dashboard-mobile .summary-mobile-card.income strong { color: #22c55e; }
 .dashboard-mobile .summary-mobile-card.expense strong { color: #ef4444; }
 .dashboard-mobile .projection-mobile-card {
-  background: white;
-  border: 1px solid #f3f4f6;
+  background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+  border: none;
   border-radius: 0.75rem;
-  padding: 1rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  padding: 1rem 1.25rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 4px 12px rgba(109, 40, 217, 0.25);
 }
-.dashboard-mobile .projection-mobile-card span { font-size: 0.75rem; color: #6b7280; }
-.dashboard-mobile .projection-mobile-card strong { font-size: 1.125rem; margin-top: 0.25rem; display: block; }
+.dashboard-mobile .projection-mobile-card span {
+  font-size: 0.75rem;
+  color: rgba(255,255,255,0.8);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.dashboard-mobile .projection-mobile-card strong {
+  font-size: 1.25rem;
+  color: white;
+  font-weight: 700;
+  margin-top: 0;
+  display: block;
+} 
 .dashboard-mobile .chart-card-mobile {
   background: white;
   border: 1px solid #f3f4f6;
-  border-radius: 0.75rem;
+  border-radius: 0.875rem;
   padding: 1rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  min-height: 220px;        /* ADD THIS */
+  overflow: hidden;
 }
 .dashboard-mobile .chart-card-mobile h4 {
   font-size: 0.875rem;
