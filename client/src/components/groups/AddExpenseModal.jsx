@@ -1,8 +1,11 @@
 import { useEffect, useState } from "react";
+import { useAuth } from "../../context/AuthContext";
 import api from "../../api/axios";
 import "../../styles/Modal.css";
 
 function AddExpenseModal({ groupId, groupMembers, onClose, onAdded }) {
+  const { user: currentUser } = useAuth();
+
   const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
   const [categoryId, setCategoryId] = useState("");
@@ -10,6 +13,11 @@ function AddExpenseModal({ groupId, groupMembers, onClose, onAdded }) {
   const [loading, setLoading] = useState(false);
   const [splitType, setSplitType] = useState("equal");
   const [paidBy, setPaidBy] = useState(""); // Fix #1: Add paidBy state
+
+  // create deduped member list for dropdown
+  const uniqueMembers = (groupMembers || []).filter((member, index, self) =>
+    index === self.findIndex(m => m._id === member._id)
+  );
 
   const [involvedUsers, setInvolvedUsers] = useState([]);
   const [customSplits, setCustomSplits] = useState([]);
@@ -136,10 +144,10 @@ function AddExpenseModal({ groupId, groupMembers, onClose, onAdded }) {
                 value={paidBy}
                 onChange={(e) => setPaidBy(e.target.value)}
               >
-                <option value="">You (Me)</option>
-                {groupMembers?.map(member => (
+                <option value="">Select payer</option>
+                {uniqueMembers.map(member => (
                   <option key={member._id} value={member._id}>
-                    {member.username}
+                    {member._id === currentUser?._id ? `${member.username} (You)` : member.username}
                   </option>
                 ))}
               </select>
