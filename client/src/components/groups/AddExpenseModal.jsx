@@ -147,7 +147,7 @@ function AddExpenseModal({ groupId, groupMembers, onClose, onAdded }) {
                 <option value="">Select payer</option>
                 {uniqueMembers.map(member => (
                   <option key={member._id} value={member._id}>
-                    {member._id === currentUser?._id ? `${member.username} (You)` : member.username}
+                    {member._id === currentUser?._id ? "You" : member.username}
                   </option>
                 ))}
               </select>
