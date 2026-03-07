@@ -33,7 +33,7 @@
 }
 @media (max-width: 767px) {
   .main-mobile-pb {
-    padding-bottom: 5rem;
+    padding-bottom: calc(5rem + env(safe-area-inset-bottom));
   }
 }
 
@@ -91,8 +91,8 @@
   margin: 0;
 }
 .notification-panel-close {
-  min-width: 44px;
-  min-height: 44px;
+  min-width: 48px;
+  min-height: 48px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -163,8 +163,8 @@
 }
 .mobile-header-bell {
   position: relative;
-  min-width: 44px;
-  min-height: 44px;
+  min-width: 48px;
+  min-height: 48px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -222,8 +222,8 @@
   align-items: center;
   justify-content: center;
   gap: 2px;
-  min-height: 44px;
-  min-width: 44px;
+  min-height: 48px;
+  min-width: 48px;
   padding: 4px 8px;
   text-decoration: none;
   color: #6b7280;
@@ -362,7 +362,7 @@
 /* Sticky save bar (Add Transaction) - mobile only */
 .sticky-save-bar-mobile {
   position: fixed;
-  bottom: 4rem;
+  bottom: calc(4rem + env(safe-area-inset-bottom));
   left: 0;
   right: 0;
   padding: 1rem;

@@ -27,10 +27,12 @@ function Dashboard() {
     const fetchData = async () => {
       try {
         setLoading(true);
+        // Fix #5: Add timezone parameter for correct month calculation (especially for IST users)
+        const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
         // Fetch Transactions and Budget Status in parallel
         const [txRes, budgetRes] = await Promise.all([
           api.get("/transactions"),
-          api.get("/budgets/status") // Ensure backend route exists
+          api.get("/budgets/status", { params: { timezone: userTimezone } })
         ]);
         
         setTransactions(txRes.data);

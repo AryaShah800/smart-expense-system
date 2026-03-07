@@ -9,6 +9,7 @@ function AddExpenseModal({ groupId, groupMembers, onClose, onAdded }) {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(false);
   const [splitType, setSplitType] = useState("equal");
+  const [paidBy, setPaidBy] = useState(""); // Fix #1: Add paidBy state
 
   const [involvedUsers, setInvolvedUsers] = useState([]);
   const [customSplits, setCustomSplits] = useState([]);
@@ -49,7 +50,8 @@ function AddExpenseModal({ groupId, groupMembers, onClose, onAdded }) {
         description: description || "Expense",
         amount: Number(amount),
         categoryId,
-        splitType
+        splitType,
+        paidBy: paidBy || undefined // Fix #1: Include paidBy in payload
       };
 
       if (splitType === "equal") {
@@ -97,7 +99,7 @@ function AddExpenseModal({ groupId, groupMembers, onClose, onAdded }) {
             </div>
           </div>
 
-          {/* 2. DESCRIPTION & CATEGORY */}
+          {/* 2. DESCRIPTION & CATEGORY & PAIDBY */}
           <div className="form-row">
             <div className="form-group flex-grow">
               <label>Description</label>
@@ -120,6 +122,25 @@ function AddExpenseModal({ groupId, groupMembers, onClose, onAdded }) {
                 <option value="">⚙️ General</option>
                 {categories.map(cat => (
                   <option key={cat._id} value={cat._id}>{cat.icon} {cat.name}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* Fix #1: Add Paid By selector */}
+          <div className="form-row">
+            <div className="form-group">
+              <label>Paid By</label>
+              <select
+                className="modal-select"
+                value={paidBy}
+                onChange={(e) => setPaidBy(e.target.value)}
+              >
+                <option value="">You (Me)</option>
+                {groupMembers?.map(member => (
+                  <option key={member._id} value={member._id}>
+                    {member.username}
+                  </option>
                 ))}
               </select>
             </div>

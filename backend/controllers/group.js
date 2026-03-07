@@ -68,6 +68,7 @@ export const deleteGroup = async (req, res) => {
 
     await GroupExpense.deleteMany({ groupId: id });
     await Settlement.deleteMany({ groupId: id });
+    await GroupCategory.deleteMany({ groupId: id, isDefault: false });
     await Group.findByIdAndDelete(id);
 
     res.json({ message: "Group deleted successfully" });
@@ -177,13 +178,19 @@ export const getGroupCategories = async (req, res) => {
 export const addGroupExpense = async (req, res) => {
   try {
     const { id: groupId } = req.params;
-    const { description, amount, splitType, splits, involvedUsers, categoryId } = req.body;
+    const { description, amount, splitType, splits, involvedUsers, categoryId, paidBy } = req.body;
 
     if (!description || !amount || amount <= 0) return res.status(400).json({ message: "Invalid data" });
 
     const group = await Group.findById(groupId);
     if (!group) return res.status(404).json({ message: "Group not found" });
     if (!group.members.some(m => m.equals(req.user._id))) return res.status(403).json({ message: "Access denied" });
+
+    // Fix #1: Allow paidBy to be passed in request body with fallback to req.user._id
+    const paidByUserId = paidBy || req.user._id;
+    if (!group.members.some(m => m.equals(paidByUserId))) {
+      return res.status(400).json({ message: "Payer must be a member of the group" });
+    }
 
     let finalSplits = [];
 
@@ -192,8 +199,14 @@ export const addGroupExpense = async (req, res) => {
         ? involvedUsers
         : group.members.map(m => m.toString());
 
-      const share = amount / usersToSplit.length;
-      finalSplits = usersToSplit.map(userId => ({ userId, shareAmount: share }));
+      // Fix #4: Fix penny drop bug with proper rounding
+      const baseShare = Math.round((amount / usersToSplit.length) * 100) / 100;
+      const remainder = Math.round((amount - baseShare * usersToSplit.length) * 100) / 100;
+      
+      finalSplits = usersToSplit.map((userId, index) => ({
+        userId,
+        shareAmount: index === 0 ? baseShare + remainder : baseShare
+      }));
     }
     else if (splitType === "percentage") {
       const totalPercent = splits.reduce((sum, s) => sum + Number(s.shareAmount), 0);
@@ -218,7 +231,7 @@ export const addGroupExpense = async (req, res) => {
       description,
       amount,
       category: categoryId || null,
-      paidBy: req.user._id,
+      paidBy: paidByUserId,
       splitType,
       splits: finalSplits
     });
@@ -362,14 +375,23 @@ export const getGroupExpenses = async (req, res) => {
 export const addSettlement = async (req, res) => {
   try {
     const { id: groupId } = req.params;
-    const { toUserId, amount } = req.body; 
+    const { fromUserId, toUserId, amount } = req.body; 
 
     if (!amount || amount <= 0) return res.status(400).json({ message: "Invalid amount" });
 
+    // Fix #2: Allow fromUser and toUser to be specified in request body
+    const fromUser = fromUserId || req.user._id;
+    const toUser = toUserId;
+    
+    // Validate that req.user._id is one of fromUser or toUser
+    if (!fromUser.equals(req.user._id) && !toUser.equals(req.user._id)) {
+      return res.status(403).json({ message: "You must be one of the settlement participants" });
+    }
+
     const settlement = new Settlement({
       groupId,
-      fromUser: req.user._id, 
-      toUser: toUserId,
+      fromUser, 
+      toUser,
       amount
     });
 

@@ -17,7 +17,9 @@ function Budgets() {
         api.get("/categories"),
         api.get("/budgets")
       ]);
-      setCategories(catRes.data);
+      // Fix #6: Filter categories to show only expense categories for budgets
+      const expenseCategories = catRes.data.filter(cat => cat.type === 'expense');
+      setCategories(expenseCategories);
       setBudgets(budgetRes.data);
     } catch (error) {
       console.error("Failed to fetch data");
@@ -46,7 +48,8 @@ function Budgets() {
       setSelectedCategory("");
       alert("Budget set successfully!");
     } catch (error) {
-      alert("Failed to set budget");
+      // Fix #6: Better error handling to show server validation messages
+      alert(error.response?.data?.message || "Failed to set budget");
     }
   };
 
@@ -105,7 +108,7 @@ function Budgets() {
         <div className="budget-list-card">
           <h3>Current Limits</h3>
           <div className="budget-list">
-            {categories.map(cat => {
+            {categories.filter(cat => cat.type === 'expense').map(cat => {
               const limit = getBudgetForCategory(cat._id);
               return (
                 <div key={cat._id} className="budget-row">
