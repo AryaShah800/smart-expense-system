@@ -89,12 +89,14 @@ export const verifyEmail = async (req, res) => {
     user.otpExpires = undefined;
     await user.save();
 
-    generateToken(res, user._id); // Authenticate user immediately after verification
+    // Capture the token!
+    const token = generateToken(res, user._id);
 
     res.json({
       _id: user._id,
       username: user.username,
       email: user.email,
+      token, // <-- Add the token to the response here too
       message: "Email verified successfully!"
     });
 
@@ -117,12 +119,14 @@ export const login = async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ message: "Invalid credentials" });
 
-    generateToken(res, user._id);
+    // Capture the token!
+    const token = generateToken(res, user._id);
 
     res.json({
       _id: user._id,
       username: user.username,
       email: user.email,
+      token, // <-- Add the token to the response here
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -227,5 +231,39 @@ export const markNotificationsRead = async (req, res) => {
     res.json({ message: "Notifications marked as read" });
   } catch (error) {
     res.status(500).json({ message: error.message });
+  }
+};
+
+/* ===================== 4. USER SETTINGS ===================== */
+
+export const updateProfile = async (req, res) => {
+  try {
+    const { username, currency, theme } = req.body;
+    const userId = req.user._id;
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Update fields if they are provided in the request
+    if (username) user.username = username;
+    if (currency) user.currency = currency;
+    if (theme) user.theme = theme;
+
+    const updatedUser = await user.save();
+
+    // Return the updated user data (excluding password)
+    res.json({
+      _id: updatedUser._id,
+      username: updatedUser.username,
+      email: updatedUser.email,
+      currency: updatedUser.currency,
+      theme: updatedUser.theme
+    });
+
+  } catch (error) {
+    console.error("Update Profile Error:", error);
+    res.status(500).json({ message: "Failed to update profile" });
   }
 };

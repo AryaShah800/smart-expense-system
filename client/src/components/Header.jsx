@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, Link } from "react-router-dom"; // Import Link
 import api from "../api/axios";
 import { socket } from "../api/socket";
 import { useAuth } from "../context/AuthContext";
@@ -11,6 +11,7 @@ const routeTitles = {
   "/expenses": "Transactions",
   "/budgets": "Budgets",
   "/groups": "Groups",
+  "/settings": "Settings", // Add Settings title
 };
 
 function getPageTitle(pathname) {
@@ -71,17 +72,24 @@ export default function Header() {
       <header className="mobile-header hide-from-md">
         <h1 className="mobile-header-title">{title}</h1>
         {user && (
-          <button
-            type="button"
-            onClick={handleBellClick}
-            className="mobile-header-bell"
-            aria-label="Notifications"
-          >
-            <span className="mobile-header-bell-icon">🔔</span>
-            {unreadCount > 0 && (
-              <span className="mobile-header-badge">{unreadCount > 9 ? "9+" : unreadCount}</span>
-            )}
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+            <button
+              type="button"
+              onClick={handleBellClick}
+              className="mobile-header-bell"
+              aria-label="Notifications"
+            >
+              <span className="mobile-header-bell-icon">🔔</span>
+              {unreadCount > 0 && (
+                <span className="mobile-header-badge">{unreadCount > 9 ? "9+" : unreadCount}</span>
+              )}
+            </button>
+            
+            {/* New Settings Gear Icon */}
+            <Link to="/settings" style={{ textDecoration: 'none', fontSize: '20px' }} aria-label="Settings">
+              ⚙️
+            </Link>
+          </div>
         )}
       </header>
       <NotificationPanel

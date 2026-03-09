@@ -9,6 +9,7 @@ import Expenses from "./pages/Expenses";
 import Groups from "./pages/Groups";
 import GroupDetails from "./pages/GroupDetails";
 import Budgets from "./pages/Budgets";
+import Settings from "./pages/Settings";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 import Layout from "./components/Layout";
@@ -38,6 +39,7 @@ function App() {
             <Route path="/budgets" element={<Budgets />} />
             <Route path="/groups" element={<Groups />} />
             <Route path="/groups/:id" element={<GroupDetails />} /> 
+            <Route path="/settings" element={<Settings />} />
           </Route>
         </Routes>
       </BrowserRouter>

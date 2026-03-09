@@ -5,7 +5,11 @@ const userSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   
-  // 🔥 NEW FIELDS FOR OTP VERIFICATION
+  // 🔥 PREFERENCES (NEW)
+  currency: { type: String, default: "INR" },
+  theme: { type: String, default: "light" },
+
+  // 🔥 FIELDS FOR OTP VERIFICATION
   isVerified: { type: Boolean, default: false },
   otp: { type: String },
   otpExpires: { type: Date },

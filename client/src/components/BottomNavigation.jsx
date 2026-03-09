@@ -1,9 +1,8 @@
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { Link, useLocation } from "react-router-dom";
 
 const navItems = [
   { path: "/dashboard", label: "Home", icon: "🏠" },
-  { path: "/expenses", label: "Transactions", icon: "📋" },
+  { path: "/expenses", label: "Transactions", icon: "�" },
   { path: "/add-transaction", label: "Add", icon: "+", isCenter: true },
   { path: "/budgets", label: "Budgets", icon: "📊" },
   { path: "/groups", label: "Groups", icon: "👥" },
@@ -11,13 +10,6 @@ const navItems = [
 
 export default function BottomNavigation() {
   const location = useLocation();
-  const { logout } = useAuth();
-  const navigate = useNavigate();
-
-  const handleLogout = () => {
-    logout();
-    navigate("/login");
-  };
 
   return (
     <>
@@ -52,15 +44,6 @@ export default function BottomNavigation() {
           );
         })}
       </nav>
-
-      {/* Floating logout button — mobile only */}
-      <button
-        className="mobile-logout-btn hide-from-md"
-        onClick={handleLogout}
-        aria-label="Logout"
-      >
-        🚪
-      </button>
     </>
   );
 }

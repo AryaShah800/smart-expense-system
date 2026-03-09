@@ -161,7 +161,10 @@ function Navbar() {
                 )}
               </div>
 
-              <button className="logout-btn" onClick={handleLogout}>Logout</button>
+              {/* Swap the logout button for a link to the new settings page */}
+              <Link to="/settings" className="nav-auth-link" style={{ marginLeft: '15px' }}>
+                ⚙️ Settings
+              </Link>
             </div>
           </>
         ) : (

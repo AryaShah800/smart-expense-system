@@ -2,7 +2,8 @@ import express from "express";
 import { 
   login, signup, logout, verifyEmail, // ✅ Added verifyEmail
   getInvitations, respondToInvitation,
-  getNotifications, markNotificationsRead 
+  getNotifications, markNotificationsRead,
+  updateProfile // ✅ Import the new controller
 } from "../controllers/user.js";
 import auth from "../middlewares/auth.js";
 
@@ -16,6 +17,9 @@ router.post("/logout", logout);
 router.get("/me", auth, (req, res) => {
   res.status(200).json({ success: true, user: req.user });
 });
+
+/* USER SETTINGS */
+router.put("/profile", auth, updateProfile); // 🔥 NEW UPDATE ROUTE
 
 /* INVITATIONS */
 router.get("/invitations", auth, getInvitations);

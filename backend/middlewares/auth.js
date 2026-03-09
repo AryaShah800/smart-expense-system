@@ -3,7 +3,13 @@ import User from "../models/user.js";
 
 const authenticate = async (req, res, next) => {
   try {
-    const token = req.cookies.jwt;
+    // 1. Check for the token in the cookies
+    let token = req.cookies.jwt;
+
+    // 2. Fallback: Check for the token in the Authorization header
+    if (!token && req.headers.authorization && req.headers.authorization.startsWith("Bearer")) {
+      token = req.headers.authorization.split(" ")[1];
+    }
 
     if (!token) {
       return res.status(401).json({ message: "Not authorized, no token" });
@@ -11,9 +17,7 @@ const authenticate = async (req, res, next) => {
 
     const JWT_SECRET = process.env.JWT_SECRET;
     if (!JWT_SECRET) {
-      return res
-        .status(500)
-        .json({ message: "JWT secret not configured" });
+      return res.status(500).json({ message: "JWT secret not configured" });
     }
 
     const decoded = jwt.verify(token, JWT_SECRET);
@@ -27,9 +31,7 @@ const authenticate = async (req, res, next) => {
     next();
   } catch (error) {
     console.error("Auth error:", error.message);
-    return res
-      .status(401)
-      .json({ message: "Not authorized, token failed" });
+    return res.status(401).json({ message: "Not authorized, token failed" });
   }
 };
 
