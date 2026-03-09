@@ -391,3 +391,28 @@
   border-top: 1px solid #f3f4f6;
   z-index: 40;
 }
+
+/* Floating logout — top right, mobile only */
+.mobile-logout-btn {
+  position: fixed;
+  top: 0.6rem;
+  right: 0.75rem;
+  z-index: 50;
+  background: #fee2e2;
+  border: none;
+  border-radius: 50%;
+  width: 2.25rem;
+  height: 2.25rem;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.mobile-logout-btn:active {
+  background: #fecaca;
+  transform: scale(0.95);
+}

@@ -8,15 +8,33 @@ function ProtectedRoute({ children }) {
 
   useEffect(() => {
     const checkAuth = async () => {
+      // 1. Check localStorage first — if no user, redirect immediately
+      const savedUser = localStorage.getItem("user");
+      if (!savedUser) {
+        setAuthorized(false);
+        setLoading(false);
+        return;
+      }
+
+      // 2. User exists in localStorage — optimistically allow access
+      setAuthorized(true);
+      setLoading(false);
+
+      // 3. Verify with server in background (don't block UI)
       try {
         await api.get("/auth/me");
-        setAuthorized(true);
-      } catch {
-        setAuthorized(false);
-      } finally {
-        setLoading(false);
+        // Still valid — do nothing
+      } catch (err) {
+        // Only logout on 401 (truly expired session)
+        // NOT on network errors (Render cold start, offline, etc.)
+        if (err.response?.status === 401) {
+          localStorage.removeItem("user");
+          setAuthorized(false);
+        }
+        // 500, network error, timeout → stay logged in
       }
     };
+
     checkAuth();
   }, []);
 
