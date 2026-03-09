@@ -1,12 +1,15 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api/axios";
+import { useAuth } from "../context/AuthContext";
+import { getCurrencySymbol } from "../utils/currency";
 import Modal from "../components/Modal";
 import "../styles/addTransaction.css";
 import "../styles/responsive.css";
 
 function AddTransaction() {
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const [type, setType] = useState("expense");
   const [amount, setAmount] = useState("");
@@ -85,7 +88,7 @@ function AddTransaction() {
           <div className="form-group">
             <label>Amount</label>
             <div className="input-wrapper">
-              <span className="currency-symbol">₹</span>
+              <span className="currency-symbol">{getCurrencySymbol(user?.currency)}</span>
               <input
                 type="number"
                 placeholder="0"

@@ -6,6 +6,8 @@ import {
   ResponsiveContainer,
   Legend,
 } from "recharts";
+import { useAuth } from "../../context/AuthContext";
+import { formatAmount } from "../../utils/currency";
 
 const COLORS = [
   "#2563eb", // blue-600
@@ -18,6 +20,8 @@ const COLORS = [
 ];
 
 function ExpenseCategoryDonut({ transactions }) {
+  const { user } = useAuth();
+
   const map = {};
   let totalExpense = 0;
 
@@ -38,7 +42,10 @@ function ExpenseCategoryDonut({ transactions }) {
     return <p style={{ textAlign: "center", color: "#666" }}>No expense data</p>;
   }
 
-  const formatCurrency = (value) => `₹${value.toLocaleString()}`;
+  const currencySymbols = { INR: '₹', USD: '$', EUR: '€', GBP: '£' };
+  const symbol = currencySymbols[user?.currency] || '₹';
+
+  const formatCurrency = (value) => `${symbol}${value.toLocaleString()}`;
 
   const renderTooltip = ({ active, payload }) => {
     if (active && payload && payload.length) {

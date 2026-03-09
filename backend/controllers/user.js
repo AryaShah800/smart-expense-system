@@ -96,6 +96,8 @@ export const verifyEmail = async (req, res) => {
       _id: user._id,
       username: user.username,
       email: user.email,
+      currency: user.currency,
+      theme: user.theme,
       token, // <-- Add the token to the response here too
       message: "Email verified successfully!"
     });
@@ -126,6 +128,8 @@ export const login = async (req, res) => {
       _id: user._id,
       username: user.username,
       email: user.email,
+      currency: user.currency,
+      theme: user.theme,
       token, // <-- Add the token to the response here
     });
   } catch (error) {

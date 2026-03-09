@@ -7,8 +7,12 @@ import {
   ResponsiveContainer,
   CartesianGrid,
 } from "recharts";
+import { useAuth } from "../../context/AuthContext";
+import { formatAmount, getCurrencySymbol } from "../../utils/currency";
 
 function CashFlowLine({ transactions }) {
+  const { user } = useAuth();
+
   const sorted = [...transactions].sort(
     (a, b) => new Date(a.date) - new Date(b.date)
   );
@@ -25,7 +29,7 @@ function CashFlowLine({ transactions }) {
     };
   });
 
-  const formatCurrency = (value) => `₹${value.toLocaleString()}`;
+  const formatCurrency = (value) => formatAmount(value, user?.currency);
 
   return (
     <>
@@ -50,7 +54,7 @@ function CashFlowLine({ transactions }) {
             axisLine={false}
             tickLine={false}
             tick={{ fill: "#666", fontSize: 12 }}
-            tickFormatter={(value) => `₹${value}`}
+            tickFormatter={(value) => `${getCurrencySymbol(user?.currency)}${value}`}
           />
           <Tooltip
             formatter={(value) => [formatCurrency(value), "Balance"]}

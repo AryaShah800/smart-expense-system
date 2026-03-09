@@ -1,8 +1,14 @@
 import { useState } from "react";
 import api from "../../api/axios";
+import { useAuth } from "../../context/AuthContext";
 import "../../styles/Modal.css";
 
 function SettleUpModal({ groupId, groupMembers, onClose, onSettled }) {
+  const { user } = useAuth();
+
+  const currencySymbols = { INR: '₹', USD: '$', EUR: '€', GBP: '£' };
+  const symbol = currencySymbols[user?.currency] || '₹';
+
   const [fromUserId, setFromUserId] = useState(""); // Fix #2: Add fromUserId state
   const [toUserId, setToUserId] = useState("");
   const [amount, setAmount] = useState("");
@@ -80,7 +86,7 @@ function SettleUpModal({ groupId, groupMembers, onClose, onSettled }) {
 
           <label className="modal-section-label">Amount</label>
           <div className="modal-amount-wrapper small">
-            <span className="currency-symbol">₹</span>
+            <span className="currency-symbol">{symbol}</span>
             <input
               type="number"
               className="modal-input"

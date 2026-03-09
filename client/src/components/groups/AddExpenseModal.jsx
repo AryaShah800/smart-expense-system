@@ -6,6 +6,9 @@ import "../../styles/Modal.css";
 function AddExpenseModal({ groupId, groupMembers, onClose, onAdded }) {
   const { user: currentUser } = useAuth();
 
+  const currencySymbols = { INR: '₹', USD: '$', EUR: '€', GBP: '£' };
+  const symbol = currencySymbols[currentUser?.currency] || '₹';
+
   const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
   const [categoryId, setCategoryId] = useState("");
@@ -93,7 +96,7 @@ function AddExpenseModal({ groupId, groupMembers, onClose, onAdded }) {
           <div className="amount-section">
             <label className="input-label-center">Total Amount</label>
             <div className="amount-display-wrapper">
-              <span className="currency-symbol-big">₹</span>
+              <span className="currency-symbol-big">{symbol}</span>
               <input
                 type="number"
                 className="amount-input-big"
@@ -170,7 +173,7 @@ function AddExpenseModal({ groupId, groupMembers, onClose, onAdded }) {
                 className={`split-tab ${splitType === 'exact' ? 'active' : ''}`}
                 onClick={() => setSplitType('exact')}
               >
-                ₹ Exact
+                {symbol} Exact
               </button>
               <button
                 type="button"
@@ -215,7 +218,7 @@ function AddExpenseModal({ groupId, groupMembers, onClose, onAdded }) {
                           onChange={(e) => handleCustomSplitChange(member._id, e.target.value)}
                           onWheel={(e) => e.target.blur()}
                         />
-                        <span className="unit-label">{splitType === 'percentage' ? '%' : '₹'}</span>
+                        <span className="unit-label">{splitType === 'percentage' ? '%' : symbol}</span>
                       </div>
                     )}
                   </div>

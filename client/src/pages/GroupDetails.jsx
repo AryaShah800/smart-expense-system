@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import api from "../api/axios";
+import { useAuth } from "../context/AuthContext";
+import { getCurrencySymbol } from "../utils/currency";
 import AddExpenseModal from "../components/groups/AddExpenseModal";
 import SettleUpModal from "../components/groups/SettleUpModal";
 import InviteMemberModal from "../components/groups/InviteMemberModal";
@@ -9,6 +11,7 @@ import "../styles/GroupDetails.css";
 function GroupDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const [group, setGroup] = useState(null);
   const [expenses, setExpenses] = useState([]);
@@ -170,7 +173,7 @@ function GroupDetails() {
           className="action-btn btn-settle-up"
           onClick={() => setShowSettleModal(true)}
         >
-          <span>₹</span> Settle Up
+          <span>{getCurrencySymbol(user?.currency)}</span> Settle Up
         </button>
       </div>
 

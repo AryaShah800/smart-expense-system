@@ -2,21 +2,22 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import api from "../api/axios";
-import { exportTransactionsPdf } from "../utils/exportPdf"; // Import Export Utility
+import { exportTransactionsPdf } from "../utils/exportPdf";
+import { formatAmount } from "../utils/currency";
 
 import SummaryCards from "../components/dashboard/SummaryCards";
 import Notifications from "../components/dashboard/Notifications";
 import IncomeExpenseBar from "../components/charts/IncomeExpenseBar";
 import ExpenseCategoryDonut from "../components/charts/ExpenseCategoryDonut";
 import CashFlowLine from "../components/charts/CashFlowLine";
-import BudgetOverview from "../components/dashboard/BudgetOverview"; // Import New Component
+import BudgetOverview from "../components/dashboard/BudgetOverview";
 
 import "../styles/dashboard.css";
 import "../styles/responsive.css";
 
 function Dashboard() {
   const [transactions, setTransactions] = useState([]);
-  const [budgetStatus, setBudgetStatus] = useState([]); // State for budgets
+  const [budgetStatus, setBudgetStatus] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [range, setRange] = useState("90d");
@@ -222,7 +223,7 @@ function Dashboard() {
                         <div className="card-row top">
                           <span className="card-category">{t.categoryId?.name || "Other"}</span>
                           <span className={`card-amount ${t.type}`}>
-                            {t.type === "expense" ? "-" : "+"}₹{t.amount}
+                            {t.type === "expense" ? "-" : "+"}{formatAmount(t.amount, user?.currency)}
                           </span>
                         </div>
 
@@ -321,7 +322,7 @@ function Dashboard() {
                       <div style={{ fontSize: "0.75rem", color: "#6b7280" }}>{t.description || "No description"}</div>
                     </div>
                     <div style={{ textAlign: "right" }}>
-                      <span className={`amount ${t.type}`}>{t.type === "expense" ? "-" : "+"}₹{t.amount}</span>
+                      <span className={`amount ${t.type}`}>{t.type === "expense" ? "-" : "+"}{formatAmount(t.amount, user?.currency)}</span>
                       <div style={{ fontSize: "0.75rem", color: "#6b7280" }}>
                         {new Date(t.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
                       </div>
