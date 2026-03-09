@@ -22,7 +22,7 @@ function Login() {
 
     try {
       // 3. Capture the response from the server
-      const res = await api.post("/auth/login", { email, password });
+      const res = await api.post("/users/login", { email, password });
 
       // 4. Update the global state with user data (id, username, etc.)
       login(res.data);

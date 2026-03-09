@@ -36,7 +36,7 @@ function GroupDetails() {
         api.get(`/groups/${id}`),
         api.get(`/groups/${id}/expenses`),
         api.get(`/groups/${id}/splits`),
-        api.get(`/auth/me`)
+        api.get(`/users/me`)
       ]);
 
       setGroup(groupRes.data);

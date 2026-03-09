@@ -22,7 +22,7 @@ function ProtectedRoute({ children }) {
 
       // 3. Verify with server in background (don't block UI)
       try {
-        await api.get("/auth/me");
+        await api.get("/users/me");
         // Still valid — do nothing
       } catch (err) {
         // Only logout on 401 (truly expired session)

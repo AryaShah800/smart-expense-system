@@ -19,7 +19,7 @@ function Signup() {
     setLoading(true);
     setError("");
     try {
-      await api.post("/auth/signup", formData);
+      await api.post("/users/signup", formData);
       setStep(2);
     } catch (err) {
       setError(err.response?.data?.message || "Signup failed");
@@ -33,7 +33,7 @@ function Signup() {
     setLoading(true);
     setError("");
     try {
-      const res = await api.post("/auth/verify-otp", { email: formData.email, otp });
+      const res = await api.post("/users/verify-otp", { email: formData.email, otp });
       localStorage.setItem("user", JSON.stringify(res.data));
       navigate("/dashboard");
     } catch (err) {

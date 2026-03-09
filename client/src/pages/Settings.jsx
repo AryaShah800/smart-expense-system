@@ -1,68 +1,61 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
 import '../styles/settings.css';
 
 const Settings = () => {
-  const { user, logout, updateUser } = useAuth();
+  const { user, login, logout } = useAuth(); // 'login' function updates context/localStorage
   const navigate = useNavigate();
-  
-  const [username, setUsername] = useState('');
-  const [currency, setCurrency] = useState('INR');
-  const [theme, setTheme] = useState('Light');
+
+  // 1. Setup state with user's current data
+  const [formData, setFormData] = useState({
+    username: user?.username || '',
+    currency: user?.currency || 'INR',
+    theme: user?.theme || 'light',
+  });
+
   const [isSaving, setIsSaving] = useState(false);
-  const [saveMessage, setSaveMessage] = useState('');
+  const [message, setMessage] = useState('');
 
-  // Load settings from user object on mount
-  useEffect(() => {
-    if (user) {
-      setUsername(user.username || '');
-      setCurrency(user.currency || 'INR');
-      setTheme(user.theme || 'Light');
-    }
-  }, [user]);
+  // 2. Handle input changes
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
 
-  const handleSaveSettings = async () => {
-    if (!username.trim()) {
-      setSaveMessage('Username cannot be empty');
-      return;
-    }
-
+  // 3. Save profile to backend
+  const handleSave = async () => {
     setIsSaving(true);
+    setMessage('');
     try {
-      // Call backend API to update profile
-      const response = await api.put('/users/profile', {
-        username: username.trim(),
-        currency,
-        theme
-      });
+      // Send the updated data to the backend
+      const res = await api.put('/users/profile', formData);
 
-      // Update the AuthContext with the new user data
-      updateUser(response.data);
+      // Update global context & localStorage with the new user data
+      // We merge the existing user object with the new data from backend
+      login({ ...user, ...res.data });
 
-      // Update localStorage for immediate UI feedback
-      localStorage.setItem('preferredCurrency', currency);
-      localStorage.setItem('preferredTheme', theme);
-
-      setSaveMessage('Settings saved successfully!');
-      setTimeout(() => setSaveMessage(''), 3000);
+      setMessage('Settings saved successfully!');
     } catch (error) {
-      console.error('Error saving settings:', error);
-      setSaveMessage(error.response?.data?.message || 'Failed to save settings');
-      setTimeout(() => setSaveMessage(''), 3000);
+      console.error(error);
+      setMessage('Failed to save settings.');
     } finally {
       setIsSaving(false);
     }
   };
 
-  const handleLogout = () => {
-    logout(); // Clears localStorage and context
-    navigate('/login'); // Redirects to login page
+  const handleLogout = async () => {
+    try {
+      await api.post('/users/logout');
+      logout();
+      navigate('/login');
+    } catch (err) {
+      console.error(err);
+    }
   };
-
-  const currencies = ['INR', 'USD', 'EUR', 'GBP', 'AUD', 'CAD', 'JPY'];
-  const themes = ['Light', 'Dark', 'Auto'];
 
   return (
     <div className="settings-container">
@@ -70,20 +63,20 @@ const Settings = () => {
         <h2>Settings</h2>
       </div>
 
+      {message && <div className={`settings-message ${message.includes('success') ? 'success' : 'error'}`}>{message}</div>}
+
       <div className="settings-section">
         <h3>Account</h3>
         <div className="settings-card">
           <div className="settings-item">
-            <div className="settings-item-info">
-              <span className="settings-label">Username</span>
-              <input
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                className="settings-input"
-                placeholder="Enter username"
-              />
-            </div>
+            <span className="settings-label">Username</span>
+            <input
+              type="text"
+              name="username"
+              className="settings-input"
+              value={formData.username}
+              onChange={handleChange}
+            />
           </div>
           <div className="settings-item">
             <div className="settings-item-info">
@@ -98,49 +91,42 @@ const Settings = () => {
         <h3>Preferences</h3>
         <div className="settings-card">
           <div className="settings-item">
-            <div className="settings-item-info">
-              <span className="settings-label">Default Currency</span>
-              <select
-                value={currency}
-                onChange={(e) => setCurrency(e.target.value)}
-                className="settings-select"
-              >
-                {currencies.map((curr) => (
-                  <option key={curr} value={curr}>{curr}</option>
-                ))}
-              </select>
-            </div>
+            <span className="settings-label">Default Currency</span>
+            <select
+              name="currency"
+              className="settings-select"
+              value={formData.currency}
+              onChange={handleChange}
+            >
+              <option value="INR">₹ INR</option>
+              <option value="USD">$ USD</option>
+              <option value="EUR">€ EUR</option>
+              <option value="GBP">£ GBP</option>
+            </select>
           </div>
           <div className="settings-item">
-            <div className="settings-item-info">
-              <span className="settings-label">Theme</span>
-              <select
-                value={theme}
-                onChange={(e) => setTheme(e.target.value)}
-                className="settings-select"
-              >
-                {themes.map((thm) => (
-                  <option key={thm} value={thm}>{thm}</option>
-                ))}
-              </select>
-            </div>
+            <span className="settings-label">Theme</span>
+            <select
+              name="theme"
+              className="settings-select"
+              value={formData.theme}
+              onChange={handleChange}
+            >
+              <option value="light">Light</option>
+              <option value="dark">Dark</option>
+            </select>
           </div>
         </div>
       </div>
 
-      {saveMessage && (
-        <div className={`settings-message ${saveMessage.includes('success') ? 'success' : 'error'}`}>
-          {saveMessage}
-        </div>
-      )}
-
-      <div className="settings-button-group">
-        <button 
-          className="save-button" 
-          onClick={handleSaveSettings}
+      {/* Save Button */}
+      <div className="settings-save-section">
+        <button
+          className="save-button-large"
+          onClick={handleSave}
           disabled={isSaving}
         >
-          {isSaving ? 'Saving...' : 'Save Settings'}
+          {isSaving ? 'Saving...' : 'Save Changes'}
         </button>
       </div>
 

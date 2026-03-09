@@ -76,7 +76,7 @@ function Navbar() {
   const handleLogout = async () => {
     try {
       // 1. Notify backend
-      await api.post("/auth/logout");
+      await api.post("/users/logout");
       
       // 2. Clear global state via context (removes from localStorage automatically)
       logout(); 

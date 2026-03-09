@@ -28,7 +28,7 @@ export const AuthProvider = ({ children }) => {
 
   const refreshUser = async () => {
     try {
-      const response = await api.get("/auth/me");
+      const response = await api.get("/users/me");
       if (response.data.success) {
         updateUser(response.data.user);
       }
