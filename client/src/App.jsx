@@ -14,6 +14,11 @@ import Settings from "./pages/Settings";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Layout from "./components/Layout";
 
+// Smart redirect for root path: sends logged-in users to dashboard
+const RootRedirect = () => {
+  const savedUser = localStorage.getItem("user");
+  return savedUser ? <Navigate to="/dashboard" replace /> : <Navigate to="/login" replace />;
+};
 function App() {
   return (
     // 2. Wrap EVERYTHING in AuthProvider
@@ -21,7 +26,7 @@ function App() {
       <BrowserRouter>
         <Routes>
           {/* Public routes */}
-          <Route path="/" element={<Navigate to="/login" />} />
+          <Route path="/" element={<RootRedirect />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
 

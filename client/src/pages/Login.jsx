@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, Navigate } from "react-router-dom";
 import api from "../api/axios";
 import { useAuth } from "../context/AuthContext"; // 1. Import useAuth
 import Branding from "../components/Branding";
@@ -14,6 +14,9 @@ function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  const savedUser = localStorage.getItem("user");
+  if (savedUser) return <Navigate to="/dashboard" replace />;
 
   const handleSubmit = async (e) => {
     e.preventDefault();

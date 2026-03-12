@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, Navigate } from "react-router-dom";
 import api from "../api/axios";
 import Branding from "../components/Branding";
 import "../styles/auth.css";
@@ -13,6 +13,9 @@ function Signup() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+
+  const savedUser = localStorage.getItem("user");
+  if (savedUser) return <Navigate to="/dashboard" replace />;
 
   const handleSignupSubmit = async (e) => {
     e.preventDefault();
