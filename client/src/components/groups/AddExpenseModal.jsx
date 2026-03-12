@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import api from "../../api/axios";
 import "../../styles/Modal.css";
+import { getCurrencySymbol } from "../../utils/currencyFormatter";
 
 function AddExpenseModal({ groupId, groupMembers, onClose, onAdded }) {
   const { user: currentUser } = useAuth();
@@ -13,6 +14,7 @@ function AddExpenseModal({ groupId, groupMembers, onClose, onAdded }) {
   const [loading, setLoading] = useState(false);
   const [splitType, setSplitType] = useState("equal");
   const [paidBy, setPaidBy] = useState(""); // Fix #1: Add paidBy state
+
 
   // create deduped member list for dropdown
   const uniqueMembers = (groupMembers || []).filter((member, index, self) =>
@@ -92,8 +94,8 @@ function AddExpenseModal({ groupId, groupMembers, onClose, onAdded }) {
           {/* 1. CENTERED AMOUNT INPUT */}
           <div className="amount-section">
             <label className="input-label-center">Total Amount</label>
-            <div className="amount-display-wrapper">
-              <span className="currency-symbol-big">₹</span>
+              <div className="amount-display-wrapper">
+              <span className="currency-symbol-big">{getCurrencySymbol(currentUser?.currency)}</span>
               <input
                 type="number"
                 className="amount-input-big"
@@ -215,7 +217,7 @@ function AddExpenseModal({ groupId, groupMembers, onClose, onAdded }) {
                           onChange={(e) => handleCustomSplitChange(member._id, e.target.value)}
                           onWheel={(e) => e.target.blur()}
                         />
-                        <span className="unit-label">{splitType === 'percentage' ? '%' : '₹'}</span>
+                        <span className="unit-label">{splitType === 'percentage' ? '%' : getCurrencySymbol(currentUser?.currency)}</span>
                       </div>
                     )}
                   </div>

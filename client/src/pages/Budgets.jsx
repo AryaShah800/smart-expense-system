@@ -1,8 +1,11 @@
 import { useEffect, useState } from "react";
 import api from "../api/axios";
 import "../styles/budgets.css";
+import { useAuth } from "../context/AuthContext";
+import formatCurrency from "../utils/currencyFormatter";
 
 function Budgets() {
+  const { user } = useAuth();
   const [budgets, setBudgets] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -90,7 +93,7 @@ function Budgets() {
             </div>
 
             <div className="form-group">
-              <label>Monthly Limit (₹)</label>
+              <label>Monthly Limit ({user?.currency || 'INR'})</label>
               <input 
                 type="number" 
                 value={amount} 
@@ -118,7 +121,7 @@ function Budgets() {
                   </div>
                   <div className="budget-value">
                     {limit > 0 ? (
-                      <span className="active-limit">₹ {limit.toLocaleString()}</span>
+                      <span className="active-limit">{formatCurrency(limit, user?.currency)}</span>
                     ) : (
                       <span className="no-limit">No Limit</span>
                     )}

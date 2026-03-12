@@ -42,3 +42,88 @@
   /* Touch targets - min 44px for accessibility */
   --touch-min: 44px;
 }
+
+/* --- 🔥 Dark Mode Overrides --- */
+[data-theme="dark"] {
+  --bg: #0f172a;        /* Deep blue/black background */
+  --card: #1e293b;      /* Slightly lighter card background */
+  --text: #f8fafc;      /* White/light gray text */
+  --muted: #94a3b8;     /* Muted text color */
+  --border: #334155;    /* Dark border color */
+  --shadow: 0 10px 25px rgba(0, 0, 0, 0.4); /* Stronger shadow */
+}
+
+/* Broader dark mode overrides for legacy hard-coded styles */
+[data-theme="dark"] {
+  /* Layout & surface */
+  background-color: var(--bg);
+  color: var(--text);
+}
+
+[data-theme="dark"] body,
+[data-theme="dark"] .app-layout,
+[data-theme="dark"] .page-content,
+[data-theme="dark"] .dashboard-page,
+[data-theme="dark"] .transaction-page {
+  background-color: var(--bg) !important;
+  color: var(--text) !important;
+}
+
+[data-theme="dark"] .auth-card,
+[data-theme="dark"] .transaction-card,
+[data-theme="dark"] .summary-card,
+[data-theme="dark"] .chart-card,
+[data-theme="dark"] .expenses-card,
+[data-theme="dark"] .budget-list-card,
+[data-theme="dark"] .budget-form-card,
+[data-theme="dark"] .modal,
+[data-theme="dark"] .modal .modal-body,
+[data-theme="dark"] .modal .modal-header {
+  background-color: var(--card) !important;
+  color: var(--text) !important;
+  border-color: var(--border) !important;
+  box-shadow: var(--shadow) !important;
+}
+
+[data-theme="dark"] .card-content,
+[data-theme="dark"] .expense-item,
+[data-theme="dark"] .recent-item-mobile {
+  background-color: transparent !important;
+  color: var(--text) !important;
+}
+
+[data-theme="dark"] .card-amount,
+[data-theme="dark"] .amount,
+[data-theme="dark"] .amount-highlight,
+[data-theme="dark"] .settlement-amount,
+[data-theme="dark"] .balance-amount {
+  color: var(--text) !important;
+}
+
+[data-theme="dark"] .nav-right,
+[data-theme="dark"] header,
+[data-theme="dark"] .navbar,
+[data-theme="dark"] .topbar {
+  background-color: var(--card) !important;
+  color: var(--text) !important;
+  border-bottom: 1px solid var(--border) !important;
+}
+
+[data-theme="dark"] .btn-export,
+[data-theme="dark"] .btn-save,
+[data-theme="dark"] .btn-pay,
+[data-theme="dark"] .btn-submit-main,
+[data-theme="dark"] .submit-btn {
+  color: #fff !important;
+}
+
+[data-theme="dark"] input,
+[data-theme="dark"] select,
+[data-theme="dark"] textarea {
+  background-color: #111827 !important;
+  color: var(--text) !important;
+  border: 1px solid var(--border) !important;
+}
+
+[data-theme="dark"] .progress-track { background-color: rgba(255,255,255,0.04); }
+

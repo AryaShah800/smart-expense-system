@@ -6,8 +6,11 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
+import { useAuth } from "../context/AuthContext";
+import formatCurrency from "../utils/currencyFormatter";
 
 function CashFlowArea({ transactions }) {
+  const { user } = useAuth();
   const sorted = [...transactions].sort(
     (a, b) => new Date(a.date) - new Date(b.date)
   );
@@ -33,8 +36,8 @@ function CashFlowArea({ transactions }) {
       <ResponsiveContainer width="100%" height={280}>
         <AreaChart data={data}>
           <XAxis dataKey="date" />
-          <YAxis />
-          <Tooltip />
+          <YAxis tickFormatter={(value) => formatCurrency(value, user?.currency)} />
+          <Tooltip formatter={(value) => formatCurrency(value, user?.currency)} />
           <Area
             type="monotone"
             dataKey="balance"

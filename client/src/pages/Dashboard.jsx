@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import formatCurrency, { getCurrencySymbol } from "../utils/currencyFormatter";
 import api from "../api/axios";
 import { exportTransactionsPdf } from "../utils/exportPdf"; // Import Export Utility
 
@@ -115,8 +116,8 @@ function Dashboard() {
   if (loading) return <p className="dashboard-loading">Loading financial data...</p>;
   if (error) return <p className="dashboard-error">{error}</p>;
 
-  const formatCur = (n) =>
-    new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(n);
+  // replace hardcoded formatter with shared util
+  // (we'll import and use formatCurrency below in JSX)
 
   return (
     <>
@@ -222,7 +223,7 @@ function Dashboard() {
                         <div className="card-row top">
                           <span className="card-category">{t.categoryId?.name || "Other"}</span>
                           <span className={`card-amount ${t.type}`}>
-                            {t.type === "expense" ? "-" : "+"}₹{t.amount}
+                             {t.type === "expense" ? "-" : "+"}{formatCurrency(t.amount, user?.currency)}
                           </span>
                         </div>
 
@@ -265,21 +266,21 @@ function Dashboard() {
         <Notifications />
         <div className="summary-mobile-balance">
           <span>Total Balance</span>
-          <strong>{formatCur(summary.balance)}</strong>
+          <strong>{formatCurrency(summary.balance, user?.currency)}</strong>
         </div>
         <div className="summary-mobile-grid">
           <div className="summary-mobile-card income">
             <span>Income</span>
-            <strong>{formatCur(summary.income)}</strong>
+            <strong>{formatCurrency(summary.income, user?.currency)}</strong>
           </div>
           <div className="summary-mobile-card expense">
             <span>Expense</span>
-            <strong>{formatCur(summary.expense)}</strong>
+            <strong>{formatCurrency(summary.expense, user?.currency)}</strong>
           </div>
         </div>
         <div className="projection-mobile-card">
           <span>Projected (Month End)</span>
-          <strong>{formatCur(projection)}</strong>
+          <strong>{formatCurrency(projection, user?.currency)}</strong>
         </div>
         {transactions.length === 0 ? (
           <div className="summary-mobile-card" style={{ textAlign: "center", padding: "1.5rem" }}>
@@ -321,7 +322,7 @@ function Dashboard() {
                       <div style={{ fontSize: "0.75rem", color: "#6b7280" }}>{t.description || "No description"}</div>
                     </div>
                     <div style={{ textAlign: "right" }}>
-                      <span className={`amount ${t.type}`}>{t.type === "expense" ? "-" : "+"}₹{t.amount}</span>
+                        <span className={`amount ${t.type}`}>{t.type === "expense" ? "-" : "+"}{formatCurrency(t.amount, user?.currency)}</span>
                       <div style={{ fontSize: "0.75rem", color: "#6b7280" }}>
                         {new Date(t.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
                       </div>

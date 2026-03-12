@@ -6,6 +6,8 @@ import {
   ResponsiveContainer,
   Legend,
 } from "recharts";
+import { useAuth } from "../../context/AuthContext";
+import formatCurrency from "../../utils/currencyFormatter";
 
 const COLORS = [
   "#2563eb", // blue-600
@@ -38,7 +40,7 @@ function ExpenseCategoryDonut({ transactions }) {
     return <p style={{ textAlign: "center", color: "#666" }}>No expense data</p>;
   }
 
-  const formatCurrency = (value) => `₹${value.toLocaleString()}`;
+  const { user } = useAuth();
 
   const renderTooltip = ({ active, payload }) => {
     if (active && payload && payload.length) {
@@ -47,7 +49,7 @@ function ExpenseCategoryDonut({ transactions }) {
       return (
         <div style={{ backgroundColor: "#fff", padding: "10px", borderRadius: "8px", boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}>
           <p style={{ margin: 0, fontWeight: "bold" }}>{name}</p>
-          <p style={{ margin: 0 }}>{formatCurrency(value)} ({percent}%)</p>
+          <p style={{ margin: 0 }}>{formatCurrency(value, user?.currency)} ({percent}%)</p>
         </div>
       );
     }

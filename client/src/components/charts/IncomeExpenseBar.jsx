@@ -8,6 +8,8 @@ import {
   CartesianGrid,
   Cell,
 } from "recharts";
+import { useAuth } from "../../context/AuthContext";
+import formatCurrency from "../../utils/currencyFormatter";
 
 const data = [
   { name: "Income", amount: 0, color: "#22c55e" }, // Green
@@ -28,7 +30,7 @@ function IncomeExpenseBar({ transactions }) {
     { name: "Expense", amount: expense, color: "#ef4444" },
   ];
 
-  const formatCurrency = (value) => `₹${value.toLocaleString()}`;
+  const { user } = useAuth();
 
   return (
     <>
@@ -47,11 +49,11 @@ function IncomeExpenseBar({ transactions }) {
             axisLine={false}
             tickLine={false}
             tick={{ fill: "#666", fontSize: 12 }}
-            tickFormatter={(value) => `₹${value}`}
+            tickFormatter={(value) => formatCurrency(value, user?.currency)}
           />
           <Tooltip
             cursor={{ fill: "transparent" }}
-            formatter={(value) => [formatCurrency(value), "Amount"]}
+            formatter={(value) => [formatCurrency(value, user?.currency), "Amount"]}
             contentStyle={{
               borderRadius: "8px",
               border: "none",

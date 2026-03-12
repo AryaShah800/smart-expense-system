@@ -5,6 +5,7 @@ import AddExpenseModal from "../components/groups/AddExpenseModal";
 import SettleUpModal from "../components/groups/SettleUpModal";
 import InviteMemberModal from "../components/groups/InviteMemberModal";
 import "../styles/GroupDetails.css";
+import formatCurrency, { getCurrencySymbol } from "../utils/currencyFormatter";
 
 function GroupDetails() {
   const { id } = useParams();
@@ -21,14 +22,7 @@ function GroupDetails() {
   const [showSettleModal, setShowSettleModal] = useState(false);
   const [showInviteModal, setShowInviteModal] = useState(false);
 
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 2
-    }).format(amount);
-  };
+  // use shared formatter
 
   const fetchData = async () => {
     try {
@@ -98,9 +92,9 @@ function GroupDetails() {
 
     if (myBalance) {
       if (myBalance.balance < -0.01) {
-        summaryText = `You owe ${formatCurrency(Math.abs(myBalance.balance))}`;
+        summaryText = `You owe ${formatCurrency(Math.abs(myBalance.balance), currentUser?.currency)}`;
       } else if (myBalance.balance > 0.01) {
-        summaryText = `You are owed ${formatCurrency(myBalance.balance)}`;
+        summaryText = `You are owed ${formatCurrency(myBalance.balance, currentUser?.currency)}`;
       } else {
         // I am settled, but check if the group is
         if (hasAnySettlements) {
@@ -170,7 +164,7 @@ function GroupDetails() {
           className="action-btn btn-settle-up"
           onClick={() => setShowSettleModal(true)}
         >
-          <span>₹</span> Settle Up
+          <span>{getCurrencySymbol(currentUser?.currency)}</span> Settle Up
         </button>
       </div>
 
@@ -195,7 +189,7 @@ function GroupDetails() {
                   <div className="expense-meta">
                     <span className="user-highlight">
                       {exp.paidBy?.username === currentUser?.user?.username ? "You" : exp.paidBy?.username}
-                    </span> paid <span className="amount-highlight">{formatCurrency(exp.amount)}</span>
+                    </span> paid <span className="amount-highlight">{formatCurrency(exp.amount, currentUser?.currency)}</span>
                   </div>
                 </div>
 
@@ -223,7 +217,7 @@ function GroupDetails() {
               <div key={index} className="balance-row">
                 <span className="balance-user">{b.userId === myId ? <strong>You</strong> : b.username}</span>
                 <span className={`balance-amount ${b.balance > 0.01 ? "pos" : b.balance < -0.01 ? "neg" : "settled"}`}>
-                  {b.balance > 0.01 ? `+${formatCurrency(b.balance)}` : b.balance < -0.01 ? `-${formatCurrency(Math.abs(b.balance))}` : "Settled"}
+                  {b.balance > 0.01 ? `+${formatCurrency(b.balance, currentUser?.currency)}` : b.balance < -0.01 ? `-${formatCurrency(Math.abs(b.balance), currentUser?.currency)}` : "Settled"}
                 </span>
               </div>
             ))}
@@ -238,7 +232,7 @@ function GroupDetails() {
               return (
                 <div key={index} className="settlement-card">
                   <div className="settlement-text">
-                    <strong>{s.from === currentUser?.user?.username ? "You" : s.from}</strong> pays <strong>{s.to === currentUser?.user?.username ? "you" : s.to}</strong> <span className="settlement-amount">{formatCurrency(s.amount)}</span>
+                    <strong>{s.from === currentUser?.user?.username ? "You" : s.from}</strong> pays <strong>{s.to === currentUser?.user?.username ? "you" : s.to}</strong> <span className="settlement-amount">{formatCurrency(s.amount, currentUser?.currency)}</span>
                   </div>
 
                   {isMyDebt && (

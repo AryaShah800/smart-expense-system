@@ -2,8 +2,11 @@ import { useEffect, useMemo, useState } from "react";
 import api from "../api/axios";
 import "../styles/expenses.css";
 import { exportTransactionsPdf } from "../utils/exportPdf";
+import { useAuth } from "../context/AuthContext";
+import formatCurrency from "../utils/currencyFormatter";
 
 function Expenses() {
+  const { user } = useAuth();
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -11,7 +14,6 @@ function Expenses() {
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
-  const user = JSON.parse(localStorage.getItem("user"));
 
   useEffect(() => {
     fetchTransactions();
@@ -114,7 +116,7 @@ function Expenses() {
               <div className="card-row top">
                 <span className="card-category">{t.categoryId?.name || "Other"}</span>
                 <span className={`card-amount ${t.type}`}>
-                  {t.type === "expense" ? "-" : "+"}₹{t.amount}
+                  {t.type === "expense" ? "-" : "+"}{formatCurrency(t.amount, user?.currency)}
                 </span>
               </div>
 
