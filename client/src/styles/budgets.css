@@ -1,6 +1,6 @@
 .budgets-page {
   padding: 24px;
-  background: #f8fafc;
+  background: var(--bg); /* Theme aware */
   display: flex;
   flex-direction: column;
   flex: 1;
@@ -16,13 +16,13 @@
 
 .budgets-header h2 {
   font-size: clamp(22px, 5vw, 32px);
-  color: #1e293b;
+  color: var(--text); /* Theme aware */
   margin-bottom: clamp(4px, 1vw, 8px);
   word-break: break-word;
 }
 
 .budgets-header p {
-  color: #64748b;
+  color: var(--muted); /* Theme aware */
   font-size: clamp(13px, 2vw, 15px);
 }
 
@@ -34,18 +34,18 @@
 
 /* CARDS */
 .budget-form-card, .budget-list-card {
-  background: white;
+  background: var(--card); /* Theme aware */
   padding: clamp(16px, 4vw, 24px);
   border-radius: 20px;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+  border: 1px solid var(--border); /* Theme aware */
+  box-shadow: var(--shadow); /* Theme aware */
 }
 
 .budget-form-card h3, .budget-list-card h3 {
   font-size: clamp(16px, 3vw, 18px);
   margin-bottom: clamp(16px, 3vw, 24px);
-  color: #334155;
-  border-bottom: 1px solid #f1f5f9;
+  color: var(--text); /* Theme aware */
+  border-bottom: 1px solid var(--border); /* Theme aware */
   padding-bottom: clamp(8px, 1.5vw, 12px);
 }
 
@@ -58,33 +58,33 @@
   display: block;
   font-size: clamp(12px, 2vw, 14px);
   font-weight: 600;
-  color: #475569;
+  color: var(--text); /* Theme aware */
   margin-bottom: clamp(6px, 1vw, 8px);
 }
 
 .form-group select, .form-group input {
   width: 100%;
   padding: clamp(10px, 2vw, 12px);
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--border); /* Theme aware */
   border-radius: 12px;
   font-size: clamp(13px, 2vw, 14px);
-  background: #f8fafc;
-  color: #1e293b;
+  background: var(--bg); /* Theme aware */
+  color: var(--text); /* Theme aware */
   transition: all 0.2s;
   font-family: inherit;
 }
 
 .form-group select:focus, .form-group input:focus {
   outline: none;
-  background: white;
-  border-color: #6366f1;
+  background: var(--card); /* Theme aware */
+  border-color: var(--primary); /* Theme aware */
   box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.1);
 }
 
 .btn-save {
   width: 100%;
   padding: clamp(10px, 2vw, 12px);
-  background: #0f172a;
+  background: var(--primary); /* Theme aware */
   color: white;
   border: none;
   border-radius: 12px;
@@ -95,7 +95,7 @@
 }
 
 .btn-save:hover {
-  background: #1e293b;
+  opacity: 0.9;
   transform: translateY(-2px);
 }
 
@@ -116,16 +116,16 @@
   align-items: center;
   padding: clamp(10px, 2vw, 12px) clamp(12px, 2vw, 16px);
   border-radius: 12px;
-  background: #f8fafc;
-  border: 1px solid #f1f5f9;
+  background: var(--bg); /* Theme aware */
+  border: 1px solid var(--border); /* Theme aware */
   transition: all 0.2s;
   flex-wrap: wrap;
   gap: clamp(8px, 2vw, 12px);
 }
 
 .budget-row:hover {
-  background: #f1f5f9;
-  border-color: #e2e8f0;
+  background: var(--card); /* Theme aware */
+  border-color: var(--primary); /* Theme aware */
 }
 
 .budget-info {
@@ -139,13 +139,13 @@
 .budget-category {
   font-weight: 600;
   font-size: clamp(13px, 2vw, 14px);
-  color: #1e293b;
+  color: var(--text); /* Theme aware */
   word-break: break-word;
 }
 
 .budget-details {
   font-size: clamp(11px, 1.8vw, 13px);
-  color: #94a3b8;
+  color: var(--muted); /* Theme aware */
 }
 
 .budget-actions {
@@ -155,8 +155,8 @@
 }
 
 .btn-delete {
-  background: #fee2e2;
-  color: #dc2626;
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--danger);
   border: none;
   padding: clamp(6px, 1vw, 8px) clamp(12px, 2vw, 16px);
   border-radius: 8px;
@@ -168,7 +168,7 @@
 }
 
 .btn-delete:hover {
-  background: #fecaca;
+  background: rgba(239, 68, 68, 0.2);
   transform: translateY(-1px);
 }
 
@@ -182,14 +182,15 @@
 .progress-bar {
   width: 100%;
   height: 8px;
-  background: #e2e8f0;
+  background: var(--bg); /* Theme aware */
   border-radius: 4px;
   overflow: hidden;
+  border: 1px solid var(--border); /* Better visibility in dark mode */
 }
 
 .progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #6366f1, #4f46e5);
+  background: var(--primary); /* Theme aware */
   transition: width 0.5s ease-out;
 }
 
@@ -197,83 +198,7 @@
   display: flex;
   justify-content: space-between;
   font-size: clamp(11px, 1.8vw, 12px);
-  color: #64748b;
-}
-
-/* ===== RESPONSIVE BREAKPOINTS ===== */
-
-@media (max-width: 1023px) {
-  .budgets-container {
-    grid-template-columns: 1fr;
-    gap: clamp(16px, 3vw, 24px);
-  }
-}
-
-@media (max-width: 767px) {
-  .budgets-page {
-    padding: clamp(12px, 4vw, 24px);
-  }
-
-  .budgets-container {
-    display: flex;
-    flex-direction: column;
-    gap: clamp(12px, 3vw, 16px);
-  }
-
-  .budget-form-card, .budget-list-card {
-    padding: clamp(12px, 3vw, 16px);
-  }
-
-  .budget-row {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .budget-actions {
-    width: 100%;
-    justify-content: flex-start;
-  }
-}
-
-@media (max-width: 599px) {
-  .budgets-page {
-    padding: clamp(8px, 3vw, 16px);
-  }
-
-  .budget-form-card h3, .budget-list-card h3 {
-    font-size: clamp(14px, 2.5vw, 16px);
-  }
-
-  .budget-row {
-    padding: clamp(8px, 2vw, 10px) clamp(10px, 2vw, 12px);
-    gap: var(--gap-sm);
-  }
-
-  .budget-info {
-    width: 100%;
-  }
-
-  .form-group select, .form-group input {
-    padding: clamp(8px, 1.5vw, 10px);
-  }
-
-  .btn-save {
-    padding: clamp(8px, 1.5vw, 10px);
-  }
-}
-
-@media (max-width: 359px) {
-  .budget-row {
-    flex-direction: column;
-  }
-
-  .budget-actions {
-    width: 100%;
-  }
-
-  .btn-delete {
-    flex: 1;
-  }
+  color: var(--muted); /* Theme aware */
 }
 
 .budget-info {
@@ -288,23 +213,45 @@
 
 .cat-name {
   font-weight: 600;
-  color: #334155;
+  color: var(--text); /* Theme aware */
 }
 
 .active-limit {
   font-weight: 700;
-  color: #16a34a;
+  color: var(--success); /* Theme aware */
 }
 
 .no-limit {
   font-size: 13px;
-  color: #94a3b8;
+  color: var(--muted); /* Theme aware */
   font-style: italic;
 }
 
-/* RESPONSIVE */
-@media (max-width: 768px) {
-  .budgets-container {
-    grid-template-columns: 1fr;
-  }
+/* ===== RESPONSIVE BREAKPOINTS ===== */
+
+@media (max-width: 1023px) {
+  .budgets-container { grid-template-columns: 1fr; gap: clamp(16px, 3vw, 24px); }
+}
+
+@media (max-width: 767px) {
+  .budgets-page { padding: clamp(12px, 4vw, 24px); }
+  .budgets-container { display: flex; flex-direction: column; gap: clamp(12px, 3vw, 16px); }
+  .budget-form-card, .budget-list-card { padding: clamp(12px, 3vw, 16px); }
+  .budget-row { flex-direction: column; align-items: flex-start; }
+  .budget-actions { width: 100%; justify-content: flex-start; }
+}
+
+@media (max-width: 599px) {
+  .budgets-page { padding: clamp(8px, 3vw, 16px); }
+  .budget-form-card h3, .budget-list-card h3 { font-size: clamp(14px, 2.5vw, 16px); }
+  .budget-row { padding: clamp(8px, 2vw, 10px) clamp(10px, 2vw, 12px); gap: var(--gap-sm); }
+  .budget-info { width: 100%; }
+  .form-group select, .form-group input { padding: clamp(8px, 1.5vw, 10px); }
+  .btn-save { padding: clamp(8px, 1.5vw, 10px); }
+}
+
+@media (max-width: 359px) {
+  .budget-row { flex-direction: column; }
+  .budget-actions { width: 100%; }
+  .btn-delete { flex: 1; }
 }

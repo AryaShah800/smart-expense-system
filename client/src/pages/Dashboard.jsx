@@ -1,23 +1,23 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import formatCurrency, { getCurrencySymbol } from "../utils/currencyFormatter";
+import formatCurrency from "../utils/currencyFormatter"; // Removed getCurrencySymbol as it wasn't used
 import api from "../api/axios";
-import { exportTransactionsPdf } from "../utils/exportPdf"; // Import Export Utility
+import { exportTransactionsPdf } from "../utils/exportPdf"; 
 
 import SummaryCards from "../components/dashboard/SummaryCards";
 import Notifications from "../components/dashboard/Notifications";
 import IncomeExpenseBar from "../components/charts/IncomeExpenseBar";
 import ExpenseCategoryDonut from "../components/charts/ExpenseCategoryDonut";
 import CashFlowLine from "../components/charts/CashFlowLine";
-import BudgetOverview from "../components/dashboard/BudgetOverview"; // Import New Component
+import BudgetOverview from "../components/dashboard/BudgetOverview";
 
 import "../styles/dashboard.css";
 import "../styles/responsive.css";
 
 function Dashboard() {
   const [transactions, setTransactions] = useState([]);
-  const [budgetStatus, setBudgetStatus] = useState([]); // State for budgets
+  const [budgetStatus, setBudgetStatus] = useState([]); 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [range, setRange] = useState("90d");
@@ -28,9 +28,7 @@ function Dashboard() {
     const fetchData = async () => {
       try {
         setLoading(true);
-        // Fix #5: Add timezone parameter for correct month calculation (especially for IST users)
         const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-        // Fetch Transactions and Budget Status in parallel
         const [txRes, budgetRes] = await Promise.all([
           api.get("/transactions"),
           api.get("/budgets/status", { params: { timezone: userTimezone } })
@@ -89,7 +87,6 @@ function Dashboard() {
     const currentDay = now.getDate();
     const totalDays = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
     
-    // Filter expenses for THIS MONTH only
     const thisMonthExpenses = transactions.filter(t => {
       const d = new Date(t.date);
       return d.getMonth() === now.getMonth() && 
@@ -97,7 +94,6 @@ function Dashboard() {
              t.type === 'expense';
     }).reduce((sum, t) => sum + t.amount, 0);
 
-    // Calculate velocity
     if (currentDay === 0) return 0;
     const dailyAverage = thisMonthExpenses / currentDay;
     return Math.round(dailyAverage * totalDays);
@@ -116,144 +112,138 @@ function Dashboard() {
   if (loading) return <p className="dashboard-loading">Loading financial data...</p>;
   if (error) return <p className="dashboard-error">{error}</p>;
 
-  // replace hardcoded formatter with shared util
-  // (we'll import and use formatCurrency below in JSX)
-
   return (
     <>
-      {/* ========== DESKTOP LAYOUT (unchanged, md and above) ========== */}
+      {/* ========== DESKTOP LAYOUT ========== */}
       <div className="dashboard-page show-from-md-block">
-      {/* HEADER */}
-      <div className="dashboard-header-row">
-        <div className="welcome-section">
-          <h1>Hello, {user?.username?.split(" ")[0] || "User"}! 👋</h1>
-          <p className="dashboard-subtitle">Financial Overview & Projections</p>
-        </div>
-
-        <div className="header-actions">
-           {/* EXPORT BUTTON */}
-          <button onClick={handleExport} className="btn-export">
-            <span>📥</span> Export Report
-          </button>
-
-          {/* RANGE FILTER */}
-          <div className="filter-wrapper">
-            <select
-              className="range-dropdown"
-              value={range}
-              onChange={(e) => setRange(e.target.value)}
-            >
-              <option value="7d">Last 7 days</option>
-              <option value="30d">Last 30 days</option>
-              <option value="90d">Last 90 days</option>
-            </select>
-          </div>
-        </div>
-      </div>
-
-      <Notifications />
-
-      {/* SUMMARY CARDS + PROJECTION */}
-      <div className="summary-grid">
-        <SummaryCards
-          income={summary.income}
-          expense={summary.expense}
-          balance={summary.balance}
-        />
-        {/* ADDING PROJECTION CARD MANUALLY TO GRID */}
-        <div className="summary-card projected">
-          <span>Projected (Month End)</span>
-          <strong>
-            {new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(projection)}
-          </strong>
-        </div>
-      </div>
-
-      {transactions.length === 0 ? (
-        <div className="empty-dashboard">
-          <div className="empty-icon">📊</div>
-          <h3>No transactions yet</h3>
-          <p>Start tracking your expenses to see insights here.</p>
-          <Link to="/add-transaction" className="cta-button">
-            Add First Transaction
-          </Link>
-        </div>
-      ) : (
-        <div className="dashboard-grid">
-          {/* LEFT COLUMN: CHARTS */}
-          <div className="charts-column">
-            <div className="chart-card">
-              <h4>Income vs Expense</h4>
-              <IncomeExpenseBar transactions={filteredTransactions} />
-            </div>
-
-            <div className="chart-card">
-              <h4>Spending Categories</h4>
-              <ExpenseCategoryDonut transactions={filteredTransactions} />
-            </div>
-
-            <div className="chart-card">
-              <h4>Cash Flow Trend</h4>
-              <CashFlowLine transactions={filteredTransactions} />
-            </div>
+        {/* HEADER */}
+        <div className="dashboard-header-row">
+          <div className="welcome-section">
+            <h1>Hello, {user?.username?.split(" ")[0] || "User"}! 👋</h1>
+            <p className="dashboard-subtitle">Financial Overview & Projections</p>
           </div>
 
-          {/* RIGHT COLUMN: RECENT + BUDGETS */}
-          <div className="recent-column" style={{ gap: '24px' }}>
-             {/* NEW BUDGET SECTION */}
-            <BudgetOverview budgetStatus={budgetStatus} />
+          <div className="header-actions">
+            <button onClick={handleExport} className="btn-export">
+              <span>📥</span> Export Report
+            </button>
 
-            <div className="recent-section-wrapper">
-              <div className="section-header">
-                <h3 className="section-title">Recent Activity</h3>
-                <Link to="/expenses" className="view-all-link">View All</Link>
+            <div className="filter-wrapper">
+              <select
+                className="range-dropdown"
+                value={range}
+                onChange={(e) => setRange(e.target.value)}
+              >
+                <option value="7d">Last 7 days</option>
+                <option value="30d">Last 30 days</option>
+                <option value="90d">Last 90 days</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <Notifications />
+
+        {/* SUMMARY CARDS + PROJECTION */}
+        <div className="summary-grid">
+          <SummaryCards
+            income={summary.income}
+            expense={summary.expense}
+            balance={summary.balance}
+          />
+          {/* FIX: Replaced hardcoded INR format with formatCurrency utility */}
+          <div className="summary-card projected">
+            <span>Projected (Month End)</span>
+            <strong>
+              {formatCurrency(projection, user?.currency)}
+            </strong>
+          </div>
+        </div>
+
+        {transactions.length === 0 ? (
+          <div className="empty-dashboard">
+            <div className="empty-icon">📊</div>
+            <h3>No transactions yet</h3>
+            <p>Start tracking your expenses to see insights here.</p>
+            <Link to="/add-transaction" className="cta-button">
+              Add First Transaction
+            </Link>
+          </div>
+        ) : (
+          <div className="dashboard-grid">
+            {/* LEFT COLUMN: CHARTS */}
+            <div className="charts-column">
+              <div className="chart-card">
+                <h4>Income vs Expense</h4>
+                <IncomeExpenseBar transactions={filteredTransactions} />
               </div>
 
-              <div className="recent-list">
-                {transactions
-                  .sort((a, b) => new Date(b.date) - new Date(a.date))
-                  .slice(0, 5)
-                  .map((t) => (
-                    <div key={t._id} className="expenses-card mini">
-                      <div className={`card-icon ${t.type}`}>
-                        {t.categoryId?.name?.[0] || "?"}
-                      </div>
+              <div className="chart-card">
+                <h4>Spending Categories</h4>
+                <ExpenseCategoryDonut transactions={filteredTransactions} />
+              </div>
 
-                      <div className="card-content">
-                        <div className="card-row top">
-                          <span className="card-category">{t.categoryId?.name || "Other"}</span>
-                          <span className={`card-amount ${t.type}`}>
-                             {t.type === "expense" ? "-" : "+"}{formatCurrency(t.amount, user?.currency)}
-                          </span>
+              <div className="chart-card">
+                <h4>Cash Flow Trend</h4>
+                <CashFlowLine transactions={filteredTransactions} />
+              </div>
+            </div>
+
+            {/* RIGHT COLUMN: RECENT + BUDGETS */}
+            <div className="recent-column" style={{ gap: '24px' }}>
+              <BudgetOverview budgetStatus={budgetStatus} />
+
+              <div className="recent-section-wrapper">
+                <div className="section-header">
+                  <h3 className="section-title">Recent Activity</h3>
+                  <Link to="/expenses" className="view-all-link">View All</Link>
+                </div>
+
+                <div className="recent-list">
+                  {transactions
+                    .sort((a, b) => new Date(b.date) - new Date(a.date))
+                    .slice(0, 5)
+                    .map((t) => (
+                      <div key={t._id} className="expenses-card mini">
+                        <div className={`card-icon ${t.type}`}>
+                          {t.categoryId?.name?.[0] || "?"}
                         </div>
 
-                        <div className="card-row bottom">
-                          <span className="card-desc">{t.description || "No description"}</span>
-                          <span className="card-date">
-                            {new Date(t.date).toLocaleDateString("en-US", {
-                              month: "short",
-                              day: "numeric",
-                            })}
-                          </span>
+                        <div className="card-content">
+                          <div className="card-row top">
+                            <span className="card-category">{t.categoryId?.name || "Other"}</span>
+                            <span className={`card-amount ${t.type}`}>
+                               {t.type === "expense" ? "-" : "+"}{formatCurrency(t.amount, user?.currency)}
+                            </span>
+                          </div>
+
+                          <div className="card-row bottom">
+                            <span className="card-desc">{t.description || "No description"}</span>
+                            <span className="card-date">
+                              {new Date(t.date).toLocaleDateString("en-US", {
+                                month: "short",
+                                day: "numeric",
+                              })}
+                            </span>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
 
-      {/* ========== MOBILE LAYOUT (below md only: compact, p-4, gap-4, rounded-xl) ========== */}
+      {/* ========== MOBILE LAYOUT ========== */}
       <div className="dashboard-mobile hide-from-md">
         <div className="dashboard-mobile-actions">
           <select
             className="range-dropdown"
             value={range}
             onChange={(e) => setRange(e.target.value)}
-            style={{ padding: "0.5rem 0.75rem", borderRadius: "0.5rem", border: "1px solid #e5e7eb", fontSize: "0.875rem" }}
+            style={{ padding: "0.5rem 0.75rem", borderRadius: "0.5rem", border: "1px solid var(--border)", fontSize: "0.875rem", background: "var(--bg)", color: "var(--text)" }}
           >
             <option value="7d">Last 7 days</option>
             <option value="30d">Last 30 days</option>
@@ -263,11 +253,14 @@ function Dashboard() {
             📥 Export
           </button>
         </div>
+        
         <Notifications />
+        
         <div className="summary-mobile-balance">
           <span>Total Balance</span>
           <strong>{formatCurrency(summary.balance, user?.currency)}</strong>
         </div>
+        
         <div className="summary-mobile-grid">
           <div className="summary-mobile-card income">
             <span>Income</span>
@@ -278,16 +271,19 @@ function Dashboard() {
             <strong>{formatCurrency(summary.expense, user?.currency)}</strong>
           </div>
         </div>
+        
+        {/* FIX: Ensure formatCurrency receives user.currency explicitly to prevent default mismatches */}
         <div className="projection-mobile-card">
           <span>Projected (Month End)</span>
           <strong>{formatCurrency(projection, user?.currency)}</strong>
         </div>
+        
         {transactions.length === 0 ? (
           <div className="summary-mobile-card" style={{ textAlign: "center", padding: "1.5rem" }}>
             <div style={{ fontSize: "1.5rem", marginBottom: "0.5rem" }}>📊</div>
-            <h3 style={{ margin: "0 0 0.25rem 0", fontSize: "1rem" }}>No transactions yet</h3>
-            <p style={{ fontSize: "0.875rem", color: "#6b7280", marginBottom: "1rem" }}>Start tracking to see insights.</p>
-            <Link to="/add-transaction" className="cta-button" style={{ display: "inline-block", padding: "0.5rem 1rem", borderRadius: "0.75rem", background: "#4f46e5", color: "white", textDecoration: "none", fontSize: "0.875rem" }}>
+            <h3 style={{ margin: "0 0 0.25rem 0", fontSize: "1rem", color: "var(--text)" }}>No transactions yet</h3>
+            <p style={{ fontSize: "0.875rem", color: "var(--muted)", marginBottom: "1rem" }}>Start tracking to see insights.</p>
+            <Link to="/add-transaction" className="cta-button" style={{ display: "inline-block", padding: "0.5rem 1rem", borderRadius: "0.75rem", background: "var(--primary)", color: "white", textDecoration: "none", fontSize: "0.875rem" }}>
               Add First Transaction
             </Link>
           </div>
@@ -308,22 +304,22 @@ function Dashboard() {
             <BudgetOverview budgetStatus={budgetStatus} />
             <div>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.5rem" }}>
-                <h3 style={{ margin: 0, fontSize: "0.875rem", fontWeight: 600 }}>Recent Activity</h3>
-                <Link to="/expenses" style={{ fontSize: "0.75rem", fontWeight: 500, color: "#4f46e5" }}>View All</Link>
+                <h3 style={{ margin: 0, fontSize: "0.875rem", fontWeight: 600, color: "var(--text)" }}>Recent Activity</h3>
+                <Link to="/expenses" style={{ fontSize: "0.75rem", fontWeight: 500, color: "var(--primary)" }}>View All</Link>
               </div>
               {transactions
                 .sort((a, b) => new Date(b.date) - new Date(a.date))
                 .slice(0, 5)
                 .map((t) => (
-                  <div key={t._id} className="recent-item-mobile">
+                  <div key={t._id} className="recent-item-mobile" style={{ background: "var(--card)", border: "1px solid var(--border)" }}>
                     <div className={`icon ${t.type}`}>{t.categoryId?.name?.[0] || "?"}</div>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontWeight: 600, fontSize: "0.875rem" }}>{t.categoryId?.name || "Other"}</div>
-                      <div style={{ fontSize: "0.75rem", color: "#6b7280" }}>{t.description || "No description"}</div>
+                      <div style={{ fontWeight: 600, fontSize: "0.875rem", color: "var(--text)" }}>{t.categoryId?.name || "Other"}</div>
+                      <div style={{ fontSize: "0.75rem", color: "var(--muted)" }}>{t.description || "No description"}</div>
                     </div>
                     <div style={{ textAlign: "right" }}>
                         <span className={`amount ${t.type}`}>{t.type === "expense" ? "-" : "+"}{formatCurrency(t.amount, user?.currency)}</span>
-                      <div style={{ fontSize: "0.75rem", color: "#6b7280" }}>
+                      <div style={{ fontSize: "0.75rem", color: "var(--muted)" }}>
                         {new Date(t.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
                       </div>
                     </div>
@@ -336,4 +332,5 @@ function Dashboard() {
     </>
   );
 }
+
 export default Dashboard;

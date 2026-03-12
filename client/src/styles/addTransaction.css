@@ -1,40 +1,37 @@
 .transaction-page {
   padding: clamp(16px, 4vw, 24px);
-  background: #f8fafc;
+  background: var(--bg);
   display: flex;
   align-items: center;
   justify-content: center;
   flex: 1;
   min-height: calc(100vh - 70px);
-  min-height: calc(100dvh - 70px);
   width: 100%;
   box-sizing: border-box;
 }
 
 .transaction-card {
-  background: white;
+  background: var(--card);
   width: 100%;
   max-width: min(480px, calc(100vw - 32px));
   padding: clamp(20px, 5vw, 32px);
   border-radius: clamp(16px, 4vw, 20px);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-  border: 1px solid #e5e7eb;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
 }
 
 .transaction-card h2 {
   font-size: clamp(18px, 4vw, 22px);
   font-weight: 700;
-  color: #1e293b;
+  color: var(--text);
   margin-bottom: 6px;
   text-align: center;
-  word-break: break-word;
 }
 
 .subtitle {
-  color: #94a3b8;
+  color: var(--muted);
   margin-bottom: clamp(20px, 4vw, 28px);
   text-align: center;
-  font-size: clamp(13px, 2vw, 14px);
 }
 
 /* Toggle */
@@ -42,10 +39,10 @@
   display: flex;
   gap: clamp(8px, 2vw, 12px);
   margin-bottom: clamp(16px, 3vw, 24px);
-  background: #f8fafc;
+  background: var(--bg);
   padding: 4px;
   border-radius: 12px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--border);
 }
 
 .toggle-btn {
@@ -55,247 +52,73 @@
   border-radius: 8px;
   border: none;
   background: transparent;
-  color: #64748b;
+  color: var(--muted);
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
-  font-size: clamp(13px, 2vw, 14px);
 }
 
-.toggle-btn:hover {
-  background: rgba(0, 0, 0, 0.03);
-}
-
-.toggle-btn.active {
-  color: white;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-}
-
-.toggle-btn.expense.active {
-  background: #ef4444;
-}
-
-.toggle-btn.income.active {
-  background: #22c55e;
-}
+.toggle-btn.active { color: white; }
+.toggle-btn.expense.active { background: var(--danger); }
+.toggle-btn.income.active { background: var(--success); }
 
 /* Form */
-.transaction-card form {
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-}
+.transaction-card form { display: flex; flex-direction: column; gap: 18px; }
+.form-group label { font-size: 13px; font-weight: 600; color: var(--text); }
 
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.form-group label {
-  font-size: 13px;
-  font-weight: 600;
-  color: #475569;
-  margin-left: 2px;
-  text-transform: uppercase;
-  letter-spacing: 0.02em;
-}
-
-/* Common Input Styles */
 .form-group input,
 .form-group select,
 .input-wrapper {
   padding: clamp(10px, 2vw, 12px) clamp(12px, 2vw, 14px);
-  min-height: var(--touch-min, 44px);
   border-radius: 10px;
-  border: 1px solid #e2e8f0;
-  font-size: clamp(14px, 2vw, 15px);
-  color: #1e293b;
-  background: white;
+  border: 1px solid var(--border);
+  color: var(--text);
+  background: var(--bg);
   width: 100%;
-  transition: all 0.2s;
 }
 
-.form-group input:focus,
-.form-group select:focus,
-.input-wrapper:focus-within {
+.form-group input:focus, .form-group select:focus, .input-wrapper:focus-within {
   outline: none;
-  border-color: #6366f1;
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+  border-color: var(--primary);
 }
 
-/* Currency Wrapper */
 .input-wrapper {
   display: flex;
   align-items: center;
   padding: 0 14px;
-  /* Reset padding for wrapper */
-  background: white;
-  overflow: hidden;
 }
 
-.currency-symbol {
-  color: #64748b;
-  font-size: 16px;
-  font-weight: 500;
-  margin-right: 4px;
-}
+.currency-symbol { color: var(--muted); margin-right: 4px; }
+.input-wrapper input { border: none; padding: 12px 0; background: transparent; }
+.input-wrapper input:focus { outline: none; border: none; }
 
-.input-wrapper input {
-  border: none;
-  padding: 12px 0;
-  /* Vertical padding only */
-  margin: 0;
-  border-radius: 0;
-  box-shadow: none !important;
-  /* Remove focus shadow from inner input */
-}
-
-.input-wrapper input:focus {
-  outline: none;
-  border: none;
-}
-
-/* Remove Spinners */
-/* Chrome, Safari, Edge, Opera */
-input::-webkit-outer-spin-button,
-input::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-
-/* Firefox */
-input[type=number] {
-  -moz-appearance: textfield;
-}
-
-/* Category Row */
-.category-row {
-  display: flex;
-  gap: clamp(6px, 1.5vw, 8px);
-  flex-wrap: wrap;
-}
-
+.category-row { display: flex; gap: 8px; flex-wrap: wrap; }
 .add-category-btn {
-  padding: 0;
-  min-width: var(--touch-min, 44px);
   width: clamp(44px, 10vw, 46px);
-  min-height: var(--touch-min, 44px);
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--border);
   border-radius: 10px;
-  background: white;
-  color: #64748b;
-  font-size: clamp(18px, 4vw, 22px);
+  background: var(--card);
+  color: var(--text);
   cursor: pointer;
-  transition: all 0.2s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
+.add-category-btn:hover { border-color: var(--primary); }
 
-.add-category-btn:hover {
-  background: #f8fafc;
-  border-color: #cbd5e1;
-  color: #334155;
-}
-
-/* Submit Button */
 .submit-btn {
   margin-top: 10px;
   padding: 14px;
   border-radius: 12px;
   border: none;
-  background: #0f172a;
+  background: var(--primary);
   color: white;
-  font-size: 15px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-}
-
-.submit-btn:hover {
-  background: #1e293b;
-  transform: translateY(-1px);
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-}
-
-.submit-btn:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
-  transform: none;
 }
 
 .error-text {
-  background: #fef2f2;
-  color: #ef4444;
-  padding: clamp(10px, 2vw, 12px);
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--danger);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  padding: 12px;
   border-radius: 8px;
-  font-size: clamp(12px, 2vw, 14px);
-  margin-bottom: clamp(16px, 3vw, 24px);
-  border: 1px solid #fee2e2;
   text-align: center;
-  word-break: break-word;
-}
-
-/* ===== MOBILE ONLY (below md): compact form ===== */
-@media (max-width: 767px) {
-  .transaction-card form {
-    gap: 1rem;
-  }
-  .transaction-card .form-group label {
-    font-size: 0.75rem;
-    font-weight: 500;
-    color: #6b7280;
-  }
-  .transaction-card .form-group input,
-  .transaction-card .form-group select,
-  .transaction-card .input-wrapper {
-    min-height: 3rem;
-    font-size: 0.875rem;
-  }
-  .transaction-card {
-    padding: 1rem;
-    border-radius: 0.75rem;
-  }
-}
-
-/* ===== RESPONSIVE ===== */
-@media (max-width: 599px) {
-  .transaction-page {
-    padding: clamp(12px, 3vw, 16px);
-    align-items: flex-start;
-    padding-top: clamp(16px, 4vw, 24px);
-  }
-
-  .transaction-card {
-    padding: clamp(16px, 4vw, 20px);
-  }
-
-  .transaction-card form {
-    gap: clamp(14px, 2.5vw, 18px);
-  }
-
-  .submit-btn {
-    min-height: var(--touch-min, 44px);
-    padding: clamp(12px, 2vw, 14px);
-  }
-}
-
-@media (max-width: 359px) {
-  .transaction-page {
-    padding: 10px;
-  }
-
-  .transaction-card {
-    padding: 14px;
-  }
-
-  .type-toggle {
-    flex-direction: column;
-  }
-
-  .toggle-btn {
-    width: 100%;
-  }
 }

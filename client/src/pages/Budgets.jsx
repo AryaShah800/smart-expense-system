@@ -10,7 +10,6 @@ function Budgets() {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   
-  // Form State
   const [selectedCategory, setSelectedCategory] = useState("");
   const [amount, setAmount] = useState("");
 
@@ -20,7 +19,6 @@ function Budgets() {
         api.get("/categories"),
         api.get("/budgets")
       ]);
-      // Fix #6: Filter categories to show only expense categories for budgets
       const expenseCategories = catRes.data.filter(cat => cat.type === 'expense');
       setCategories(expenseCategories);
       setBudgets(budgetRes.data);
@@ -45,24 +43,27 @@ function Budgets() {
         amount: Number(amount)
       });
       
-      // Refresh list
       fetchData();
       setAmount("");
       setSelectedCategory("");
       alert("Budget set successfully!");
     } catch (error) {
-      // Fix #6: Better error handling to show server validation messages
       alert(error.response?.data?.message || "Failed to set budget");
     }
   };
 
   if (loading) return <p className="loading-text">Loading budgets...</p>;
 
-  // Helper to find budget for a specific category ID
   const getBudgetForCategory = (catId) => {
     const b = budgets.find(b => b.categoryId?._id === catId);
     return b ? b.amount : 0;
   };
+
+  // Extract the raw symbol ($, €, ₹) based on the user's currency choice
+  const currencySymbol = (0).toLocaleString(
+    { 'INR': 'en-IN', 'USD': 'en-US', 'EUR': 'de-DE', 'GBP': 'en-GB' }[user?.currency || 'INR'], 
+    { style: 'currency', currency: user?.currency || 'INR', minimumFractionDigits: 0, maximumFractionDigits: 0 }
+  ).replace(/\d/g, '').trim();
 
   return (
     <div className="budgets-page">
@@ -72,7 +73,6 @@ function Budgets() {
       </div>
 
       <div className="budgets-container">
-        {/* LEFT: SET BUDGET FORM */}
         <div className="budget-form-card">
           <h3>Set New Budget</h3>
           <form onSubmit={handleSetBudget}>
@@ -93,7 +93,7 @@ function Budgets() {
             </div>
 
             <div className="form-group">
-              <label>Monthly Limit ({user?.currency || 'INR'})</label>
+              <label>Monthly Limit ({currencySymbol})</label>
               <input 
                 type="number" 
                 value={amount} 
@@ -107,7 +107,6 @@ function Budgets() {
           </form>
         </div>
 
-        {/* RIGHT: EXISTING BUDGETS LIST */}
         <div className="budget-list-card">
           <h3>Current Limits</h3>
           <div className="budget-list">

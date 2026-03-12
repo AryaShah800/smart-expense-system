@@ -48,12 +48,12 @@
 }
 @media (max-width: 767px) {
   .mobile-content-wrap {
-    max-width: 100%;          /* was 28rem — remove the constraint */
+    max-width: 100%;          
     margin-left: auto;
     margin-right: auto;
     padding-left: 0;
     padding-right: 0;
-    overflow: visible;      /* ADD this */
+    overflow: visible;      
   }
 }
 
@@ -72,12 +72,13 @@
   bottom: 0;
   left: 0;
   right: 0;
-  background: white;
+  background: var(--card); /* Theme aware */
   border-radius: 1rem 1rem 0 0;
   padding: 1rem;
   max-height: 70vh;
   overflow-y: auto;
-  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.2);
+  border-top: 1px solid var(--border); /* Better depth in dark mode */
 }
 .notification-panel-header {
   display: flex;
@@ -88,7 +89,7 @@
 .notification-panel-title {
   font-size: 1.125rem;
   font-weight: 600;
-  color: #111827;
+  color: var(--text); /* Theme aware */
   margin: 0;
 }
 .notification-panel-close {
@@ -99,7 +100,7 @@
   justify-content: center;
   border: none;
   background: transparent;
-  color: #6b7280;
+  color: var(--muted); /* Theme aware */
   border-radius: 0.5rem;
   cursor: pointer;
 }
@@ -110,7 +111,7 @@
 }
 .notification-panel-empty {
   text-align: center;
-  color: #6b7280;
+  color: var(--muted); /* Theme aware */
   font-size: 0.875rem;
   padding: 1.5rem;
   margin: 0;
@@ -118,22 +119,22 @@
 .notification-panel-item {
   padding: 1rem;
   border-radius: 0.75rem;
-  border: 1px solid #f3f4f6;
-  background: white;
+  border: 1px solid var(--border); /* Theme aware */
+  background: var(--bg); /* Theme aware */
 }
 .notification-panel-item.unread {
-  background: #eef2ff;
-  border-color: #c7d2fe;
+  background: rgba(99, 102, 241, 0.05); /* Theme aware */
+  border-color: var(--primary); /* Theme aware */
 }
 .notification-panel-message {
   margin: 0;
   font-size: 0.875rem;
-  color: #374151;
+  color: var(--text); /* Theme aware */
 }
 .notification-panel-time {
   display: block;
   font-size: 0.75rem;
-  color: #9ca3af;
+  color: var(--muted); /* Theme aware */
   margin-top: 0.25rem;
 }
 
@@ -148,15 +149,15 @@
   justify-content: space-between;
   padding-left: 1rem;
   padding-right: 1rem;
-  border-bottom: 1px solid #f3f4f6;
-  background: white;
+  border-bottom: 1px solid var(--border); /* Theme aware */
+  background: var(--card); /* Theme aware */
 }
 .mobile-header-title {
   flex: 1;
   text-align: center;
   font-size: 1.125rem;
   font-weight: 600;
-  color: #111827;
+  color: var(--text); /* Theme aware */
   margin: 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -171,13 +172,13 @@
   justify-content: center;
   border: none;
   background: transparent;
-  color: #4b5563;
+  color: var(--muted); /* Theme aware */
   border-radius: 0.5rem;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
 }
 .mobile-header-bell:active {
-  background: #f9fafb;
+  background: var(--bg); /* Theme aware */
 }
 .mobile-header-bell-icon {
   font-size: 1.25rem;
@@ -190,7 +191,7 @@
   height: 1.25rem;
   padding: 0 4px;
   border-radius: 9999px;
-  background: #ef4444;
+  background: var(--danger); /* Theme aware */
   color: white;
   font-size: 0.75rem;
   font-weight: 700;
@@ -206,9 +207,9 @@
   left: 0;
   right: 0;
   height: 4rem;
-  background: white;
+  background: var(--card); /* Theme aware */
   box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.1);
-  border-top: 1px solid #f3f4f6;
+  border-top: 1px solid var(--border); /* Theme aware */
   z-index: 50;
   display: flex;
   justify-content: space-around;
@@ -227,12 +228,12 @@
   min-width: 48px;
   padding: 4px 8px;
   text-decoration: none;
-  color: #6b7280;
+  color: var(--muted); /* Theme aware */
   transition: color 0.2s;
   -webkit-tap-highlight-color: transparent;
 }
 .bottom-nav-item.active {
-  color: #4f46e5;
+  color: var(--primary); /* Theme aware */
 }
 .bottom-nav-icon {
   font-size: 1.125rem;
@@ -246,9 +247,9 @@
   height: 3.5rem;
   margin-top: -1.5rem;
   border-radius: 50%;
-  background: #4f46e5;
+  background: var(--primary); /* Theme aware */
   color: white;
-  box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.3);
+  box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.3); /* Adjusted to primary */
 }
 .bottom-nav-center .bottom-nav-center-icon {
   font-size: 1.5rem;
@@ -282,12 +283,13 @@
 .dashboard-mobile .summary-mobile-balance span {
   font-size: 0.7rem;
   font-weight: 600;
-  opacity: 0.8;
+  color: rgba(255, 255, 255, 0.8); /* Ensures visibility */
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 .dashboard-mobile .summary-mobile-balance strong {
   font-size: 1.75rem;
+  color: white; /* Ensures visibility */
   font-weight: 800;
   display: block;
   margin-top: 0.25rem;
@@ -298,24 +300,26 @@
   gap: 1rem;
 }
 .dashboard-mobile .summary-mobile-card {
-  background: white;
-  border: 1px solid #f3f4f6;
+  background: var(--card); /* Theme aware */
+  border: 1px solid var(--border); /* Theme aware */
   border-radius: 0.75rem;
   padding: 1rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow); /* Theme aware */
 }
 .dashboard-mobile .summary-mobile-card span {
   font-size: 0.75rem;
   font-weight: 500;
-  color: #6b7280;
+  color: var(--muted); /* Theme aware */
 }
 .dashboard-mobile .summary-mobile-card strong {
   font-size: 1.125rem;
   display: block;
+  color: var(--text); /* Theme aware */
   margin-top: 0.25rem;
 }
-.dashboard-mobile .summary-mobile-card.income strong { color: #22c55e; }
-.dashboard-mobile .summary-mobile-card.expense strong { color: #ef4444; }
+.dashboard-mobile .summary-mobile-card.income strong { color: var(--success); }
+.dashboard-mobile .summary-mobile-card.expense strong { color: var(--danger); }
+
 .dashboard-mobile .projection-mobile-card {
   background: linear-gradient(135deg, #8b5cf6, #6d28d9);
   border: none;
@@ -341,18 +345,18 @@
   display: block;
 } 
 .dashboard-mobile .chart-card-mobile {
-  background: white;
-  border: 1px solid #f3f4f6;
+  background: var(--card); /* Theme aware */
+  border: 1px solid var(--border); /* Theme aware */
   border-radius: 0.875rem;
   padding: 1rem;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-  min-height: 220px;        /* ADD THIS */
+  box-shadow: var(--shadow); /* Theme aware */
+  min-height: 220px;
   overflow: hidden;
 }
 .dashboard-mobile .chart-card-mobile h4 {
   font-size: 0.875rem;
   font-weight: 500;
-  color: #6b7280;
+  color: var(--muted); /* Theme aware */
   margin: 0 0 0.5rem 0;
 }
 .dashboard-mobile .recent-item-mobile {
@@ -360,8 +364,8 @@
   align-items: center;
   gap: 0.75rem;
   padding: 1rem;
-  background: white;
-  border: 1px solid #f3f4f6;
+  background: var(--card); /* Theme aware */
+  border: 1px solid var(--border); /* Theme aware */
   border-radius: 0.75rem;
   margin-bottom: 0.5rem;
 }
@@ -375,11 +379,12 @@
   font-weight: 700;
   font-size: 0.875rem;
 }
-.dashboard-mobile .recent-item-mobile .icon.income { background: #dcfce7; color: #16a34a; }
-.dashboard-mobile .recent-item-mobile .icon.expense { background: #fee2e2; color: #dc2626; }
+.dashboard-mobile .recent-item-mobile .icon.income { background: rgba(34, 197, 94, 0.1); color: var(--success); }
+.dashboard-mobile .recent-item-mobile .icon.expense { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
 .dashboard-mobile .recent-item-mobile .amount { font-weight: 700; font-size: 0.875rem; }
-.dashboard-mobile .recent-item-mobile .amount.income { color: #22c55e; }
-.dashboard-mobile .recent-item-mobile .amount.expense { color: #ef4444; }
+.dashboard-mobile .recent-item-mobile .amount.income { color: var(--success); }
+.dashboard-mobile .recent-item-mobile .amount.expense { color: var(--danger); }
+
 /* Sticky save bar (Add Transaction) - mobile only */
 .sticky-save-bar-mobile {
   position: fixed;
@@ -387,8 +392,8 @@
   left: 0;
   right: 0;
   padding: 1rem;
-  background: white;
-  border-top: 1px solid #f3f4f6;
+  background: var(--card); /* Theme aware */
+  border-top: 1px solid var(--border); /* Theme aware */
   z-index: 40;
 }
 
@@ -398,8 +403,9 @@
   top: 0.6rem;
   right: 0.75rem;
   z-index: 50;
-  background: #fee2e2;
-  border: none;
+  background: rgba(239, 68, 68, 0.1); /* Theme aware */
+  color: var(--danger);
+  border: 1px solid rgba(239, 68, 68, 0.2);
   border-radius: 50%;
   width: 2.25rem;
   height: 2.25rem;
@@ -413,6 +419,6 @@
 }
 
 .mobile-logout-btn:active {
-  background: #fecaca;
+  background: rgba(239, 68, 68, 0.2);
   transform: scale(0.95);
 }

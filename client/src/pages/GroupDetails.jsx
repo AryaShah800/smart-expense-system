@@ -1,20 +1,21 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import api from "../api/axios";
+import { useAuth } from "../context/AuthContext"; // 🔥 Added Context
 import AddExpenseModal from "../components/groups/AddExpenseModal";
 import SettleUpModal from "../components/groups/SettleUpModal";
 import InviteMemberModal from "../components/groups/InviteMemberModal";
 import "../styles/GroupDetails.css";
-import formatCurrency, { getCurrencySymbol } from "../utils/currencyFormatter";
+import formatCurrency from "../utils/currencyFormatter"; // 🔥 Removed getCurrencySymbol
 
 function GroupDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth(); // Instantly get the logged-in user & currency
 
   const [group, setGroup] = useState(null);
   const [expenses, setExpenses] = useState([]);
   const [splits, setSplits] = useState(null);
-  const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [copySuccess, setCopySuccess] = useState("");
 
@@ -22,21 +23,17 @@ function GroupDetails() {
   const [showSettleModal, setShowSettleModal] = useState(false);
   const [showInviteModal, setShowInviteModal] = useState(false);
 
-  // use shared formatter
-
   const fetchData = async () => {
     try {
-      const [groupRes, expenseRes, splitRes, userRes] = await Promise.all([
+      const [groupRes, expenseRes, splitRes] = await Promise.all([
         api.get(`/groups/${id}`),
         api.get(`/groups/${id}/expenses`),
-        api.get(`/groups/${id}/splits`),
-        api.get(`/users/me`)
+        api.get(`/groups/${id}/splits`)
       ]);
 
       setGroup(groupRes.data);
       setExpenses(expenseRes.data);
       setSplits(splitRes.data);
-      setCurrentUser(userRes.data);
     } catch (err) {
       console.error("Error loading group details", err);
     } finally {
@@ -70,37 +67,35 @@ function GroupDetails() {
     }
   };
 
-  // 🔥 UPDATED: Copy Join Code instead of ID
   const copyJoinCode = () => {
-    // If old group has no joinCode, fallback to ID (optional)
     const code = group.joinCode || group._id;
     navigator.clipboard.writeText(code);
     setCopySuccess("Code Copied!");
     setTimeout(() => setCopySuccess(""), 2000);
   };
 
-  if (loading) return <div style={{ padding: 30 }}>Loading...</div>;
-  if (!group) return <div style={{ padding: 30 }}>Group not found</div>;
+  if (loading) return <div style={{ padding: 30, color: 'var(--text)' }}>Loading...</div>;
+  if (!group) return <div style={{ padding: 30, color: 'var(--text)' }}>Group not found</div>;
 
-  const isAdmin = currentUser?.user?._id === group.adminId?._id;
-  const myId = currentUser?.user?._id;
+  // 🔥 Fixed the deeply nested user reference bug
+  const isAdmin = user?._id === group.adminId?._id;
+  const myId = user?._id;
 
   let summaryText = "Loading...";
-  if (splits && currentUser?.user) {
+  if (splits && user) {
     const myBalance = splits.balances?.find(b => b.userId === myId);
     const hasAnySettlements = splits.settlements && splits.settlements.length > 0;
 
     if (myBalance) {
       if (myBalance.balance < -0.01) {
-        summaryText = `You owe ${formatCurrency(Math.abs(myBalance.balance), currentUser?.currency)}`;
+        summaryText = `You owe ${formatCurrency(Math.abs(myBalance.balance), user?.currency)}`;
       } else if (myBalance.balance > 0.01) {
-        summaryText = `You are owed ${formatCurrency(myBalance.balance, currentUser?.currency)}`;
+        summaryText = `You are owed ${formatCurrency(myBalance.balance, user?.currency)}`;
       } else {
-        // I am settled, but check if the group is
         if (hasAnySettlements) {
           summaryText = "You are all settled up";
         } else {
-          summaryText = "All settled up 🎉";
+          summaryText = "All settled up ✨";
         }
       }
     }
@@ -129,13 +124,12 @@ function GroupDetails() {
 
             <span className="meta-divider">|</span>
 
-            {/* 🔥 UPDATED: Display Join Code */}
             <button
               className="btn-copy"
               onClick={copyJoinCode}
               title="Copy Invite Code to share"
             >
-              <span>🔑</span>
+              <span>📋</span>
               {copySuccess || (group.joinCode ? `Code: ${group.joinCode}` : "Copy ID")}
             </button>
           </div>
@@ -164,7 +158,8 @@ function GroupDetails() {
           className="action-btn btn-settle-up"
           onClick={() => setShowSettleModal(true)}
         >
-          <span>{getCurrencySymbol(currentUser?.currency)}</span> Settle Up
+          {/* 🔥 Removed hardcoded currency symbol requirement */}
+          <span>💸</span> Settle Up
         </button>
       </div>
 
@@ -188,8 +183,9 @@ function GroupDetails() {
                   <div className="expense-desc">{exp.description}</div>
                   <div className="expense-meta">
                     <span className="user-highlight">
-                      {exp.paidBy?.username === currentUser?.user?.username ? "You" : exp.paidBy?.username}
-                    </span> paid <span className="amount-highlight">{formatCurrency(exp.amount, currentUser?.currency)}</span>
+                      {/* 🔥 Fixed deeply nested user reference bug here too */}
+                      {exp.paidBy?.username === user?.username ? "You" : exp.paidBy?.username}
+                    </span> paid <span className="amount-highlight">{formatCurrency(exp.amount, user?.currency)}</span>
                   </div>
                 </div>
 
@@ -217,7 +213,7 @@ function GroupDetails() {
               <div key={index} className="balance-row">
                 <span className="balance-user">{b.userId === myId ? <strong>You</strong> : b.username}</span>
                 <span className={`balance-amount ${b.balance > 0.01 ? "pos" : b.balance < -0.01 ? "neg" : "settled"}`}>
-                  {b.balance > 0.01 ? `+${formatCurrency(b.balance, currentUser?.currency)}` : b.balance < -0.01 ? `-${formatCurrency(Math.abs(b.balance), currentUser?.currency)}` : "Settled"}
+                  {b.balance > 0.01 ? `+${formatCurrency(b.balance, user?.currency)}` : b.balance < -0.01 ? `-${formatCurrency(Math.abs(b.balance), user?.currency)}` : "Settled"}
                 </span>
               </div>
             ))}
@@ -228,11 +224,11 @@ function GroupDetails() {
             <p className="empty-text">No settlements needed.</p>
           ) : (
             splits.settlements.map((s, index) => {
-              const isMyDebt = s.from === currentUser?.user?.username;
+              const isMyDebt = s.from === user?.username;
               return (
                 <div key={index} className="settlement-card">
                   <div className="settlement-text">
-                    <strong>{s.from === currentUser?.user?.username ? "You" : s.from}</strong> pays <strong>{s.to === currentUser?.user?.username ? "you" : s.to}</strong> <span className="settlement-amount">{formatCurrency(s.amount, currentUser?.currency)}</span>
+                    <strong>{s.from === user?.username ? "You" : s.from}</strong> pays <strong>{s.to === user?.username ? "you" : s.to}</strong> <span className="settlement-amount">{formatCurrency(s.amount, user?.currency)}</span>
                   </div>
 
                   {isMyDebt && (
@@ -262,7 +258,7 @@ function GroupDetails() {
       {showSettleModal && (
         <SettleUpModal
           groupId={id}
-          groupMembers={group.members.filter(m => m._id !== currentUser?.user?._id)}
+          groupMembers={group.members.filter(m => m._id !== user?._id)} // 🔥 Fixed member filtering bug
           onClose={() => setShowSettleModal(false)}
           onSettled={fetchData}
         />
