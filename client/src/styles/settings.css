@@ -8,7 +8,7 @@
 .settings-header h2 {
   font-size: 24px;
   margin-bottom: 20px;
-  color: #333;
+  color: var(--text);
 }
 
 .settings-section {
@@ -17,7 +17,7 @@
 
 .settings-section h3 {
   font-size: 14px;
-  color: #666;
+  color: var(--muted);
   text-transform: uppercase;
   letter-spacing: 1px;
   margin-bottom: 10px;
@@ -25,10 +25,11 @@
 }
 
 .settings-card {
-  background: #fff;
+  background: var(--card);
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow);
   overflow: hidden;
+  border: 1px solid var(--border);
 }
 
 .settings-item {
@@ -36,7 +37,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 16px;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--border);
 }
 
 .settings-item:last-child {
@@ -52,86 +53,87 @@
 
 .settings-label {
   font-weight: 500;
-  color: #333;
+  color: var(--text);
   font-size: 14px;
 }
 
 .settings-value {
-  color: #888;
+  color: var(--muted);
   font-size: 14px;
 }
 
 .settings-input {
   padding: 10px 12px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border);
   border-radius: 8px;
   font-size: 14px;
   font-family: inherit;
-  color: #333;
+  color: var(--text);
+  background-color: var(--bg);
   transition: border-color 0.2s ease;
 }
 
 .settings-input:focus {
   outline: none;
-  border-color: #4CAF50;
-  box-shadow: 0 0 4px rgba(76, 175, 80, 0.2);
+  border-color: var(--primary);
+  box-shadow: 0 0 4px rgba(99, 102, 241, 0.2);
 }
 
 .settings-select {
   padding: 10px 12px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border);
   border-radius: 8px;
   font-size: 14px;
   font-family: inherit;
-  color: #333;
-  background-color: #fff;
+  color: var(--text);
+  background-color: var(--bg);
   cursor: pointer;
   transition: border-color 0.2s ease;
 }
 
 .settings-select:focus {
   outline: none;
-  border-color: #4CAF50;
-  box-shadow: 0 0 4px rgba(76, 175, 80, 0.2);
+  border-color: var(--primary);
+  box-shadow: 0 0 4px rgba(99, 102, 241, 0.2);
 }
 
-.settings-button-group {
+.settings-save-section {
   margin-top: 20px;
   display: flex;
   justify-content: center;
-  gap: 10px;
 }
 
-.save-button {
-  padding: 12px 28px;
-  background-color: #4CAF50;
+.save-button-large {
+  width: 100%;
+  padding: 16px;
+  background-color: var(--primary);
   color: white;
   border: none;
-  border-radius: 8px;
+  border-radius: 12px;
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
-.save-button:hover:not(:disabled) {
-  background-color: #45a049;
+.save-button-large:hover:not(:disabled) {
+  opacity: 0.9;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
 }
 
-.save-button:active:not(:disabled) {
+.save-button-large:active:not(:disabled) {
   transform: translateY(0);
 }
 
-.save-button:disabled {
-  background-color: #ccc;
+.save-button-large:disabled {
+  background-color: var(--muted);
   cursor: not-allowed;
   opacity: 0.6;
 }
 
 .settings-message {
-  margin-top: 16px;
+  margin-bottom: 20px;
   padding: 12px 16px;
   border-radius: 8px;
   font-size: 14px;
@@ -140,30 +142,24 @@
 }
 
 .settings-message.success {
-  background-color: #d4edda;
-  color: #155724;
-  border: 1px solid #c3e6cb;
+  background-color: rgba(34, 197, 94, 0.1);
+  color: var(--success);
+  border: 1px solid rgba(34, 197, 94, 0.2);
 }
 
 .settings-message.error {
-  background-color: #f8d7da;
-  color: #721c24;
-  border: 1px solid #f5c6cb;
+  background-color: rgba(239, 68, 68, 0.1);
+  color: var(--danger);
+  border: 1px solid rgba(239, 68, 68, 0.2);
 }
 
 @keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .settings-footer {
-  margin-top: 32px;
+  margin-top: 24px;
   display: flex;
   justify-content: center;
 }
@@ -171,9 +167,9 @@
 .logout-button-large {
   width: 100%;
   padding: 16px;
-  background-color: #ffebee;
-  color: #d32f2f;
-  border: 1px solid #ffcdd2;
+  background-color: transparent;
+  color: var(--danger);
+  border: 1px solid var(--danger);
   border-radius: 12px;
   font-size: 16px;
   font-weight: bold;
@@ -181,7 +177,10 @@
   transition: all 0.2s ease;
 }
 
+.logout-button-large:hover {
+  background-color: rgba(239, 68, 68, 0.05);
+}
+
 .logout-button-large:active {
-  background-color: #ffcdd2;
   transform: scale(0.98);
 }

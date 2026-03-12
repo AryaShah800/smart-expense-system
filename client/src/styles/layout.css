@@ -5,6 +5,8 @@
   min-height: 100vh;
   min-height: 100dvh;
   width: 100%;
+  background-color: var(--bg); /* Added theme background to the root wrapper */
+  color: var(--text); /* Added theme text color to the root wrapper */
 }
 
 .page-content {
