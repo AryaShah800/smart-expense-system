@@ -34,6 +34,7 @@ const corsOptions = {
     }
   },
   credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
 };
 
 const app = express();
@@ -58,9 +59,10 @@ io.on("connection", (socket) => {
   });
 });
 
+// Apply CORS before any body parsers so responses always include CORS headers
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(cookieParser());
-app.use(cors(corsOptions));
 
 // app.use("/api/auth", userRoutes); // Removed duplicate mounting
 app.use("/api/users", userRoutes);

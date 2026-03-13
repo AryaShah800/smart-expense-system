@@ -305,3 +305,18 @@ export const updateProfile = async (req, res) => {
     res.status(500).json({ message: "Failed to update profile" });
   }
 };
+
+// DEBUG: Return OTP for given email (only allowed in non-production)
+export const debugGetOtp = async (req, res) => {
+  try {
+    if (process.env.NODE_ENV === 'production') return res.status(403).json({ message: 'Not allowed' });
+    const email = req.query.email;
+    if (!email) return res.status(400).json({ message: 'Email required' });
+    const user = await User.findOne({ email });
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    return res.json({ otp: user.otp });
+  } catch (error) {
+    console.error('Debug OTP Error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
