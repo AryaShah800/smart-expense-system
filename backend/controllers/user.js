@@ -15,6 +15,44 @@ const createTransporter = () => {
   });
 };
 
+// RESEND OTP
+export const resendOtp = async (req, res) => {
+  const { email } = req.body;
+  try {
+    const user = await User.findOne({ email });
+    if (!user) return res.status(400).json({ message: "User not found" });
+    if (user.isVerified) return res.status(400).json({ message: "Email is already verified" });
+
+    // Generate new OTP and reset timer
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otpExpires = Date.now() + 10 * 60 * 1000;
+
+    user.otp = otp;
+    user.otpExpires = otpExpires;
+    await user.save();
+
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
+      }
+    });
+
+    await transporter.sendMail({
+      from: `"Smart Expense" <${process.env.EMAIL_USER}>`,
+      to: email,
+      subject: "Your New Verification Code",
+      html: `<b>Your new verification code is: ${otp}</b>`
+    });
+
+    res.status(200).json({ message: "A new OTP has been sent to your email!" });
+  } catch (error) {
+    console.error("Resend OTP Error:", error);
+    res.status(500).json({ message: "Failed to resend OTP" });
+  }
+};
+
 /* ===================== 1. AUTHENTICATION ===================== */
 
 /* backend/controllers/user.js */

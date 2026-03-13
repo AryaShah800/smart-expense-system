@@ -12,6 +12,7 @@ function Signup() {
   const [otp, setOtp] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [resendMessage, setResendMessage] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
   const savedUser = localStorage.getItem("user");
@@ -46,6 +47,20 @@ function Signup() {
     }
   };
 
+  const handleResendOtp = async () => {
+    setLoading(true);
+    setError("");
+    setResendMessage("");
+    try {
+      const res = await api.post("/users/resend-otp", { email: formData.email });
+      setResendMessage(res.data.message);
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to resend OTP");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="auth-page">
       <div className="auth-card">
@@ -66,6 +81,7 @@ function Signup() {
                 placeholder="Choose a username"
                 required
                 autoComplete="username"
+                value={formData.username}
                 onChange={(e) => setFormData({ ...formData, username: e.target.value })}
               />
             </div>
@@ -78,6 +94,7 @@ function Signup() {
                 placeholder="name@example.com"
                 required
                 autoComplete="email"
+                value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               />
             </div>
@@ -91,7 +108,8 @@ function Signup() {
                   placeholder="Min 6 characters"
                   required
                   autoComplete="new-password"
-                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                    value={formData.password}
+                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 />
                 <button
                   type="button"
@@ -114,6 +132,9 @@ function Signup() {
           </form>
         ) : (
           <form onSubmit={handleVerifyOtp}>
+            {/* Show success message if OTP was resent */}
+            {resendMessage && <p style={{ color: "green", fontSize: "14px", marginBottom: "10px" }}>{resendMessage}</p>}
+
             <div className="form-group">
               <label>Verification Code</label>
               <input
@@ -129,9 +150,16 @@ function Signup() {
             <button type="submit" disabled={loading} className="submit-btn">
               {loading ? "Verifying..." : "Verify OTP"}
             </button>
-            <button type="button" className="btn-link" onClick={() => setStep(1)}>
-              Wrong email? Edit
-            </button>
+            
+            {/* Buttons row underneath the Verify button */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '10px' }}>
+                <button type="button" className="btn-link" onClick={() => setStep(1)} disabled={loading}>
+                  Wrong email? Edit
+                </button>
+                <button type="button" className="btn-link" onClick={handleResendOtp} disabled={loading}>
+                  Resend Code
+                </button>
+            </div>
           </form>
         )}
         <div className="auth-footer">Already have an account? <Link to="/login">Sign in</Link></div>

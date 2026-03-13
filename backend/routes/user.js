@@ -3,7 +3,7 @@ import {
   login, signup, logout, verifyEmail, // ✅ Added verifyEmail
   getInvitations, respondToInvitation,
   getNotifications, markNotificationsRead,
-  updateProfile // ✅ Import the new controller
+  updateProfile, resendOtp // ✅ Import resendOtp
 } from "../controllers/user.js";
 import auth from "../middlewares/auth.js";
 
@@ -12,6 +12,7 @@ const router = express.Router();
 /* AUTH */
 router.post("/signup", signup);
 router.post("/verify-otp", verifyEmail); // 🔥 NEW ROUTE
+router.post("/resend-otp", resendOtp); // 🔥 NEW ROUTE
 router.post("/login", login);
 router.post("/logout", logout);
 router.get("/me", auth, (req, res) => {
