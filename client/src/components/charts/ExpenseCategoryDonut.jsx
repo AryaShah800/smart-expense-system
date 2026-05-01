@@ -90,3 +90,4 @@ function ExpenseCategoryDonut({ transactions }) {
 }
 
 export default ExpenseCategoryDonut;
+

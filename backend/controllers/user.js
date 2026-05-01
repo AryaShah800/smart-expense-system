@@ -1,18 +1,32 @@
 import User from "../models/user.js";
 import Group from "../models/Group.js";
 import bcrypt from "bcrypt";
-import generateToken from "../utils/createToken.js"; // Standardized name used in your project
-import nodemailer from "nodemailer"; 
+import generateToken from "../utils/createToken.js";
 
-// Create transporter using a function to ensure env variables are loaded
-const createTransporter = () => {
-  return nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-      user: process.env.EMAIL_USER, 
-      pass: process.env.EMAIL_PASS  
-    }
+// Helper function to send email via Brevo API
+const sendEmailViaBrevo = async (toEmail, subject, htmlContent) => {
+  const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+    method: 'POST',
+    headers: {
+      'accept': 'application/json',
+      'api-key': process.env.BREVO_API_KEY,
+      'content-type': 'application/json'
+    },
+    body: JSON.stringify({
+      // ⚠️ IMPORTANT: Change this to the Gmail you verified on Brevo
+      sender: { name: "Smart Expense", email: "aryashah873@gmail.com" }, 
+      to: [{ email: toEmail }],
+      subject: subject,
+      htmlContent: htmlContent
+    })
   });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    console.error("Brevo API Error:", errorData);
+    throw new Error("Failed to send email via Brevo");
+  }
+  return await response.json();
 };
 
 // RESEND OTP
@@ -31,20 +45,12 @@ export const resendOtp = async (req, res) => {
     user.otpExpires = otpExpires;
     await user.save();
 
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
-      }
-    });
-
-    await transporter.sendMail({
-      from: `"Smart Expense" <${process.env.EMAIL_USER}>`,
-      to: email,
-      subject: "Your New Verification Code",
-      html: `<b>Your new verification code is: ${otp}</b>`
-    });
+    // Send email using Brevo
+    await sendEmailViaBrevo(
+      email, 
+      "Your New Verification Code", 
+      `<b>Your new verification code is: ${otp}</b>`
+    );
 
     res.status(200).json({ message: "A new OTP has been sent to your email!" });
   } catch (error) {
@@ -55,40 +61,25 @@ export const resendOtp = async (req, res) => {
 
 /* ===================== 1. AUTHENTICATION ===================== */
 
-/* backend/controllers/user.js */
-
-// Move the transporter creation INSIDE the signup function
 export const signup = async (req, res) => {
   const { username, email, password } = req.body;
   try {
-    // 1. Check for duplicate user
     const existingUser = await User.findOne({ $or: [{ email }, { username }] });
     if (existingUser) return res.status(400).json({ message: "Username or Email already exists" });
 
-    // 2. Hash Password and Generate OTP
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const otpExpires = Date.now() + 10 * 60 * 1000;
 
-    // 3. Initialize Transporter ONLY when needed
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
-      }
-    });
+    // Send the Email using Brevo
+    await sendEmailViaBrevo(
+      email,
+      "Verify your email",
+      `<b>Your verification code is: ${otp}</b>`
+    );
 
-    // 4. Send the Email
-    await transporter.sendMail({
-      from: `"Smart Expense" <${process.env.EMAIL_USER}>`,
-      to: email,
-      subject: "Verify your email",
-      html: `<b>Your verification code is: ${otp}</b>`
-    });
-
-    // 5. Save the user ONLY if the email was successful
+    // Save the user ONLY if the email was successful
     const newUser = new User({
       username,
       email,
@@ -106,8 +97,6 @@ export const signup = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
-
-
 
 // VERIFY OTP
 export const verifyEmail = async (req, res) => {
@@ -127,14 +116,13 @@ export const verifyEmail = async (req, res) => {
     user.otpExpires = undefined;
     await user.save();
 
-    // Capture the token!
     const token = generateToken(res, user._id);
 
     res.json({
       _id: user._id,
       username: user.username,
       email: user.email,
-      token, // <-- Add the token to the response here too
+      token,
       message: "Email verified successfully!"
     });
 
@@ -157,14 +145,13 @@ export const login = async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ message: "Invalid credentials" });
 
-    // Capture the token!
     const token = generateToken(res, user._id);
 
     res.json({
       _id: user._id,
       username: user.username,
       email: user.email,
-      token, // <-- Add the token to the response here
+      token, 
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -177,7 +164,7 @@ export const logout = (req, res) => {
   res.status(200).json({ message: "Logged out successfully" });
 };
 
-// GET CURRENT USER - Accessed by the /me route
+// GET CURRENT USER
 export const getCurrentUser = async (req, res) => {
   try {
     const user = await User.findById(req.user._id).select("-password");
@@ -218,21 +205,17 @@ export const respondToInvitation = async (req, res) => {
       }
     }
 
-    // Remove invitation
     user.invitations = user.invitations.filter(id => id.toString() !== groupId);
     await user.save();
 
-    // Notify Admin of the response
     const adminId = group.adminId;
     if (adminId) {
        const message = `${user.username} has ${action}ed your invitation to join "${group.name}".`;
 
-       // 1. Save to database
        await User.findByIdAndUpdate(adminId, {
          $push: { notifications: { message, isRead: false } }
        });
 
-       // 2. 🔥 FIRE REAL-TIME SOCKET EVENT
        const io = req.app.get("io");
        if (io) {
          io.to(adminId.toString()).emit("new_notification", {
@@ -284,14 +267,12 @@ export const updateProfile = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Update fields if they are provided in the request
     if (username) user.username = username;
     if (currency) user.currency = currency;
     if (theme) user.theme = theme;
 
     const updatedUser = await user.save();
 
-    // Return the updated user data (excluding password)
     res.json({
       _id: updatedUser._id,
       username: updatedUser.username,
@@ -306,7 +287,6 @@ export const updateProfile = async (req, res) => {
   }
 };
 
-// DEBUG: Return OTP for given email (only allowed in non-production)
 export const debugGetOtp = async (req, res) => {
   try {
     if (process.env.NODE_ENV === 'production') return res.status(403).json({ message: 'Not allowed' });

@@ -43,10 +43,15 @@ async function login(email, password) {
 }
 
 async function createTransaction(token) {
+  // Fetch available categories and pick an expense category id
+  const catsRes = await fetch(`${BASE}/api/categories`, { headers: { Authorization: `Bearer ${token}` } });
+  const cats = await catsRes.json().catch(() => []);
+  const expenseCat = (cats || []).find(c => c.type === 'expense');
+  const categoryId = expenseCat?._id;
   const res = await fetch(`${BASE}/api/transactions`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-    body: JSON.stringify({ amount: Math.floor(Math.random() * 100) + 1, type: 'expense', category: 'Stress', date: new Date().toISOString(), description: 'stress-test' }),
+    body: JSON.stringify({ amount: Math.floor(Math.random() * 100) + 1, type: 'expense', categoryId, date: new Date().toISOString(), description: 'stress-test' }),
   });
   return { status: res.status, body: await res.text() };
 }
