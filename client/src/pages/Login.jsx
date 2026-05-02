@@ -1,43 +1,40 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Link, useNavigate, Navigate } from "react-router-dom";
-import api from "../api/axios";
-import { useAuth } from "../context/AuthContext"; // 1. Import useAuth
 import Branding from "../components/Branding";
+import useLogin from "../hooks/useLogin";
 import "../styles/auth.css";
+
+const SUBMIT_BUTTON_CLASSES = "submit-btn login-btn";
 
 function Login() {
   const navigate = useNavigate();
-  const { login } = useAuth(); // 2. Get the login function
+  const { submit: submitLogin, loading, error, setError } = useLogin();
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [credentials, setCredentials] = useState({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+
+
+  const updateField = useCallback((e) => {
+    const { name, value } = e.target;
+    setCredentials((prev) => ({ ...prev, [name]: value }));
+  }, []);
+
+  const onSubmit = useCallback(
+    async (e) => {
+      e.preventDefault();
+      setError(null);
+      try {
+        await submitLogin(credentials);
+        navigate("/dashboard");
+      } catch (err) {
+        // error state is handled by the hook; optionally integrate a toast here
+      }
+    },
+    [credentials, submitLogin, navigate, setError]
+  );
 
   const savedUser = localStorage.getItem("user");
   if (savedUser) return <Navigate to="/dashboard" replace />;
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
-
-    try {
-      // 3. Capture the response from the server
-      const res = await api.post("/users/login", { email, password });
-
-      // 4. Update the global state with user data (id, username, etc.)
-      login(res.data);
-
-      // 5. Now navigate
-      navigate("/dashboard");
-    } catch (err) {
-      setError(err.response?.data?.message || "Login failed");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   return (
     <div className="auth-page">
@@ -46,7 +43,8 @@ function Login() {
         <h2>Welcome back</h2>
         <p>Sign in to your account</p>
         {error && <p className="error-text">{error}</p>}
-        <form onSubmit={handleSubmit}>
+
+        <form onSubmit={onSubmit} noValidate>
           <div className="form-group">
             <label htmlFor="email">Email Address</label>
             <input
@@ -55,8 +53,8 @@ function Login() {
               type="email"
               placeholder="name@example.com"
               autoComplete="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              value={credentials.email}
+              onChange={updateField}
               required
             />
           </div>
@@ -70,15 +68,16 @@ function Login() {
                 type={showPassword ? "text" : "password"}
                 placeholder="Enter your password"
                 autoComplete="current-password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                value={credentials.password}
+                onChange={updateField}
                 required
+                aria-describedby={error ? "login-error" : undefined}
               />
               <button
                 type="button"
                 className="toggle-password"
-                onClick={() => setShowPassword(!showPassword)}
-                tabIndex="-1"
+                onClick={() => setShowPassword((s) => !s)}
+                tabIndex={-1}
                 title={showPassword ? "Hide password" : "Show password"}
               >
                 {showPassword ? (
@@ -90,10 +89,11 @@ function Login() {
             </div>
           </div>
 
-          <button type="submit" disabled={loading} className="submit-btn login-btn">
+          <button type="submit" disabled={loading} className={SUBMIT_BUTTON_CLASSES}>
             {loading ? "Signing in..." : "Sign in"}
           </button>
         </form>
+
         <div className="auth-footer">
           Don’t have an account? <Link to="/signup">Create one</Link>
         </div>

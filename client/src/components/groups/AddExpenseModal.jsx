@@ -83,10 +83,11 @@ function AddExpenseModal({ groupId, groupMembers, onClose, onAdded }) {
 
   return (
     <div className="modal-overlay">
-      <div className="modal modal-lg"> {/* Added modal-lg class for wider layout if needed */}
+      <div className="modal modal-lg modal-content"> {/* modal-content provides relative positioning */}
+        <button className="modal-close-btn" onClick={onClose} aria-label="Close">×</button>
+
         <div className="modal-header centered">
           <h3>Add Expense</h3>
-          <button className="btn-close-absolute" onClick={onClose}>✕</button>
         </div>
 
         <form onSubmit={handleSubmit} className="expense-form">
@@ -188,47 +189,50 @@ function AddExpenseModal({ groupId, groupMembers, onClose, onAdded }) {
           <div className="members-section">
             <label>Split With</label>
             <div className="members-list-scroll">
-              {groupMembers?.map((member) => (
-                <div
-                  key={member._id}
-                  className={`member-row ${involvedUsers.includes(member._id) && splitType === 'equal' ? 'selected' : ''}`}
-                  onClick={() => splitType === 'equal' && toggleInvolvedUser(member._id)}
-                >
-                  <div className="member-avatar">
-                    {member.username.charAt(0).toUpperCase()}
-                  </div>
-                  <div className="member-info">
-                    <span className="member-name">{member.username}</span>
-                  </div>
+              <div className="split-member-list">
+                {groupMembers?.map((member) => {
+                  const isSelected = involvedUsers.includes(member._id) && splitType === 'equal';
+                  return (
+                    <div
+                      key={member._id}
+                      className={`split-member-item ${isSelected ? 'selected' : ''}`}
+                      onClick={() => splitType === 'equal' && toggleInvolvedUser(member._id)}
+                    >
+                      <div className="split-member-info">
+                        <div className="split-member-avatar">{(member.username || member.name || '?').charAt(0)}</div>
+                        <span className="split-member-name">{member.username || member.name}</span>
+                      </div>
 
-                  {/* Contextual Action Area */}
-                  <div className="member-action" onClick={(e) => e.stopPropagation()}>
-                    {splitType === "equal" ? (
-                      <div className={`checkbox-circle ${involvedUsers.includes(member._id) ? 'checked' : ''}`}>
-                        {involvedUsers.includes(member._id) && '✓'}
+                      {/* Contextual Action Area */}
+                      <div onClick={(e) => e.stopPropagation()}>
+                        {splitType === "equal" ? (
+                          isSelected && <span className="check-icon">✓</span>
+                        ) : (
+                          <div className="split-input-container">
+                            <input
+                              type="number"
+                              className="split-value-input"
+                              placeholder="0"
+                              value={customSplits.find(s => s.userId === member._id)?.value || ""}
+                              onChange={(e) => handleCustomSplitChange(member._id, e.target.value)}
+                              onWheel={(e) => e.target.blur()}
+                            />
+                            <span className="unit-label">{splitType === 'percentage' ? '%' : getCurrencySymbol(currentUser?.currency)}</span>
+                          </div>
+                        )}
                       </div>
-                    ) : (
-                      <div className="split-input-container">
-                        <input
-                          type="number"
-                          className="split-value-input"
-                          placeholder="0"
-                          value={customSplits.find(s => s.userId === member._id)?.value || ""}
-                          onChange={(e) => handleCustomSplitChange(member._id, e.target.value)}
-                          onWheel={(e) => e.target.blur()}
-                        />
-                        <span className="unit-label">{splitType === 'percentage' ? '%' : getCurrencySymbol(currentUser?.currency)}</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))}
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </div>
 
-          <button type="submit" className="btn-submit-main" disabled={loading}>
-            {loading ? "Adding Expense..." : "Add Expense"}
-          </button>
+          <div className="modal-footer">
+            <button type="submit" className="primary-submit-btn" disabled={loading}>
+              {loading ? "Adding Expense..." : "Add Expense"}
+            </button>
+          </div>
 
         </form>
       </div>

@@ -2,6 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
 import { AuthProvider } from "./context/AuthContext"; // Import AuthProvider
+import { Toaster } from 'react-hot-toast';
 import "./index.css";
 // Add the PWA register import
 import { registerSW } from 'virtual:pwa-register';
@@ -20,6 +21,9 @@ const updateSW = registerSW({
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <AuthProvider>
-    <App />
+    <>
+      <App />
+      <Toaster position="top-right" />
+    </>
   </AuthProvider>
 );
