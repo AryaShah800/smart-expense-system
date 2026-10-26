@@ -17,6 +17,7 @@ import budgetRoutes from "./routes/budget.js";
 import groupRoutes from "./routes/group.js";
 import dashboardRoutes from "./routes/dashboard.js";
 import reportRoutes from "./routes/report.js";
+import { seedDefaultCategories } from "./utils/seedDefaultCategories.js";
 
 const PORT = process.env.PORT || 7000;
 
@@ -79,8 +80,9 @@ app.get("/", (req, res) => {
 
 mongoose
   .connect(process.env.MONGO_URI)
-  .then(() => {
+  .then(async () => {
     console.log("MongoDB connected");
+    await seedDefaultCategories();
     httpServer.listen(PORT, () =>
       console.log(`Server at http://localhost:${PORT}`)
     );
