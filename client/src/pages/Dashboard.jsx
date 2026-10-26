@@ -20,32 +20,42 @@ function Dashboard() {
   const [budgetStatus, setBudgetStatus] = useState([]); 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [loadAttempt, setLoadAttempt] = useState(0);
   const [range, setRange] = useState("90d");
   const { user } = useAuth();
 
   /* ===== FETCH DATA ===== */
   useEffect(() => {
+    const controller = new AbortController();
     const fetchData = async () => {
       try {
         setLoading(true);
+        setError("");
         const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
         const [txRes, budgetRes] = await Promise.all([
-          api.get("/transactions"),
-          api.get("/budgets/status", { params: { timezone: userTimezone } })
+          api.get("/transactions", { signal: controller.signal }),
+          api.get("/budgets/status", {
+            params: { timezone: userTimezone },
+            signal: controller.signal,
+          })
         ]);
         
         setTransactions(txRes.data);
         setBudgetStatus(budgetRes.data);
       } catch (err) {
+        if (controller.signal.aborted) return;
         console.error(err);
-        setError("Failed to load dashboard data");
+        setError(
+          "We couldn't load your financial data. The service may be waking up or temporarily unavailable. Check your connection and try again."
+        );
       } finally {
-        setLoading(false);
+        if (!controller.signal.aborted) setLoading(false);
       }
     };
 
     fetchData();
-  }, []);
+    return () => controller.abort();
+  }, [loadAttempt]);
 
   /* ===== RANGE LOGIC ===== */
   const daysBack = useMemo(() => {
@@ -109,8 +119,21 @@ function Dashboard() {
     });
   };
 
-  if (loading) return <p className="dashboard-loading">Loading financial data...</p>;
-  if (error) return <p className="dashboard-error">{error}</p>;
+  if (loading) return (
+    <div className="dashboard-loading" role="status">
+      <p>Loading financial data...</p>
+      <p>The service may take up to a minute to wake up.</p>
+    </div>
+  );
+  if (error) return (
+    <div className="dashboard-error" role="alert">
+      <h1>Dashboard temporarily unavailable</h1>
+      <p>{error}</p>
+      <button type="button" className="btn-export" onClick={() => setLoadAttempt((attempt) => attempt + 1)}>
+        Try again
+      </button>
+    </div>
+  );
 
   return (
     <>
