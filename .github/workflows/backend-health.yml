@@ -1,0 +1,22 @@
+name: SmartExpense backend health
+
+on:
+  schedule:
+    - cron: "23 2 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check-api:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Wake backend and verify database connection
+        run: |
+          curl --fail --show-error --silent --location \
+            --retry 3 --retry-all-errors --retry-delay 20 \
+            --connect-timeout 15 --max-time 180 \
+            --output /dev/null \
+            https://smart-expense-system-api.onrender.com/
