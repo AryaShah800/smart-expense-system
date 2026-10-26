@@ -78,8 +78,12 @@ app.get("/", (req, res) => {
   res.send({ activeStatus: true, error: false });
 });
 
+const mongoCredentials = process.env.MONGO_USER && process.env.MONGO_PASSWORD
+  ? { user: process.env.MONGO_USER, pass: process.env.MONGO_PASSWORD, authSource: "admin" }
+  : {};
+
 mongoose
-  .connect(process.env.MONGO_URI)
+  .connect(process.env.MONGO_URI, mongoCredentials)
   .then(async () => {
     console.log("MongoDB connected");
     await seedDefaultCategories();
