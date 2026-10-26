@@ -6,6 +6,8 @@ const baseURL =
 
 const api = axios.create({
   baseURL,
+  // Allow time for a free Render instance to wake, but never wait forever.
+  timeout: 60000,
   withCredentials: true,
   headers: {
     "Content-Type": "application/json",
