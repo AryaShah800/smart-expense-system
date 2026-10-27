@@ -20,6 +20,7 @@ const COLORS = [
 ];
 
 function ExpenseCategoryDonut({ transactions }) {
+  const { user } = useAuth();
   const map = {};
   let totalExpense = 0;
 
@@ -39,8 +40,6 @@ function ExpenseCategoryDonut({ transactions }) {
   if (!data.length) {
     return <p style={{ textAlign: "center", color: "#666" }}>No expense data</p>;
   }
-
-  const { user } = useAuth();
 
   const renderTooltip = ({ active, payload }) => {
     if (active && payload && payload.length) {

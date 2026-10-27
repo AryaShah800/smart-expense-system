@@ -132,9 +132,23 @@
 /* GRID */
 .groups-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(clamp(150px, 40vw, 280px), 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(clamp(260px, 40vw, 320px), 1fr));
   gap: clamp(16px, 3vw, 24px);
   padding-bottom: clamp(40px, 8vw, 60px);
+}
+
+@media (max-width: 640px) {
+  .groups-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  .groups-page {
+    padding: 16px;
+    padding-bottom: calc(90px + env(safe-area-inset-bottom));
+  }
+  .group-card {
+    min-height: auto;
+  }
 }
 
 /* CARD */

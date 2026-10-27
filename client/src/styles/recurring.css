@@ -1,0 +1,431 @@
+/* =========================================================
+   RECURRING TRANSACTIONS STYLES
+   ========================================================= */
+
+.recurring-page {
+  padding: clamp(14px, 3vw, 24px);
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.recurring-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: clamp(16px, 3vw, 24px);
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.recurring-header h2 {
+  margin: 0;
+  font-size: clamp(1.4rem, 2.5vw, 1.8rem);
+  font-weight: 800;
+  color: var(--text, #0f172a);
+}
+
+.recurring-subtitle {
+  margin: 4px 0 0 0;
+  font-size: 0.85rem;
+  color: var(--muted, #64748b);
+}
+
+.recurring-header-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.btn-recurring-sync {
+  background: var(--card, #ffffff);
+  border: 1px solid var(--border, #cbd5e1);
+  color: var(--text, #0f172a);
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-recurring-sync:hover {
+  background: var(--bg, #f1f5f9);
+}
+
+.btn-new-recurring {
+  background: var(--primary, #6366f1);
+  color: #ffffff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 10px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
+  transition: all 0.2s;
+}
+
+.btn-new-recurring:hover {
+  opacity: 0.95;
+  transform: translateY(-1px);
+}
+
+/* Summary Grid */
+.recurring-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: clamp(12px, 2.5vw, 16px);
+  margin-bottom: clamp(16px, 3vw, 24px);
+}
+
+.recurring-summary-card {
+  background: var(--card, #ffffff);
+  border: 1px solid var(--border, #e2e8f0);
+  border-radius: 16px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+}
+
+.recurring-summary-card .summary-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--muted, #64748b);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 6px;
+}
+
+.recurring-summary-card .summary-value {
+  font-size: clamp(1.3rem, 2.5vw, 1.6rem);
+  font-weight: 800;
+  margin-bottom: 4px;
+}
+
+.recurring-summary-card .summary-value.expense {
+  color: #ef4444;
+}
+
+.recurring-summary-card .summary-value.income {
+  color: #10b981;
+}
+
+.recurring-summary-card .summary-value.count {
+  color: var(--primary, #6366f1);
+}
+
+.recurring-summary-card .summary-subtext {
+  font-size: 0.75rem;
+  color: var(--muted, #94a3b8);
+}
+
+/* Tabs */
+.recurring-filter-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  background: var(--card, #ffffff);
+  padding: 4px;
+  border-radius: 12px;
+  border: 1px solid var(--border, #e2e8f0);
+  width: fit-content;
+}
+
+.rec-tab {
+  background: transparent;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--muted, #64748b);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.rec-tab.active {
+  background: var(--bg, #f1f5f9);
+  color: var(--text, #0f172a);
+}
+
+.rec-tab.active.expense {
+  background: rgba(239, 68, 68, 0.1);
+  color: #dc2626;
+}
+
+.rec-tab.active.income {
+  background: rgba(16, 185, 129, 0.1);
+  color: #059669;
+}
+
+/* Recurring Cards Grid */
+.recurring-list-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  gap: 16px;
+}
+
+.recurring-card {
+  background: var(--card, #ffffff);
+  border: 1px solid var(--border, #e2e8f0);
+  border-radius: 16px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.recurring-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.07);
+}
+
+.recurring-card.paused {
+  opacity: 0.65;
+  filter: grayscale(20%);
+}
+
+.rec-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.rec-card-icon-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.rec-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+}
+
+.rec-icon.expense {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
+.rec-icon.income {
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+}
+
+.rec-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text, #0f172a);
+}
+
+.rec-category {
+  font-size: 0.76rem;
+  color: var(--muted, #64748b);
+  display: block;
+}
+
+.btn-status-toggle {
+  border: none;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.btn-status-toggle.active {
+  background: rgba(16, 185, 129, 0.15);
+  color: #047857;
+}
+
+.btn-status-toggle.paused {
+  background: rgba(148, 163, 184, 0.2);
+  color: #475569;
+}
+
+.rec-card-middle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+
+.rec-frequency-badge {
+  font-size: 0.74rem;
+  font-weight: 600;
+  background: var(--bg, #f1f5f9);
+  color: var(--text, #0f172a);
+  padding: 3px 8px;
+  border-radius: 6px;
+  text-transform: capitalize;
+}
+
+.rec-due-badge {
+  font-size: 0.74rem;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+.rec-due-badge.due-urgent {
+  background: rgba(239, 68, 68, 0.15);
+  color: #dc2626;
+  font-weight: 700;
+}
+
+.rec-due-badge.due-soon {
+  background: rgba(245, 158, 11, 0.15);
+  color: #b45309;
+}
+
+.rec-due-badge.due-normal {
+  background: rgba(99, 102, 241, 0.1);
+  color: #4f46e5;
+}
+
+.rec-card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid var(--border, #e2e8f0);
+  padding-top: 10px;
+}
+
+.rec-amount-wrapper {
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+}
+
+.rec-amount {
+  font-size: 1.15rem;
+  font-weight: 800;
+}
+
+.rec-amount.expense {
+  color: #ef4444;
+}
+
+.rec-amount.income {
+  color: #10b981;
+}
+
+.rec-period-label {
+  font-size: 0.75rem;
+  color: var(--muted, #64748b);
+}
+
+.btn-delete-rec {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.95rem;
+  padding: 4px;
+  border-radius: 6px;
+  opacity: 0.7;
+  transition: opacity 0.2s, background 0.2s;
+}
+
+.btn-delete-rec:hover {
+  opacity: 1;
+  background: rgba(239, 68, 68, 0.1);
+}
+
+/* Empty State */
+.recurring-empty {
+  text-align: center;
+  padding: 40px 20px;
+  background: var(--card, #ffffff);
+  border: 1px dashed var(--border, #cbd5e1);
+  border-radius: 16px;
+  max-width: 520px;
+  margin: 20px auto;
+}
+
+.recurring-empty .empty-icon {
+  font-size: 2.2rem;
+  margin-bottom: 8px;
+}
+
+.recurring-empty h3 {
+  margin: 0 0 6px 0;
+  color: var(--text, #0f172a);
+}
+
+.recurring-empty p {
+  color: var(--muted, #64748b);
+  font-size: 0.88rem;
+  margin-bottom: 16px;
+  line-height: 1.45;
+}
+
+/* Modal specific */
+.recurring-modal {
+  max-width: 480px;
+}
+
+.rec-type-selector {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.rec-type-selector .type-btn {
+  flex: 1;
+  padding: 8px;
+  border: 1px solid var(--border, #cbd5e1);
+  background: var(--card, #ffffff);
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: var(--text, #0f172a);
+}
+
+.rec-type-selector .type-btn.active.expense {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: #ef4444;
+  color: #dc2626;
+}
+
+.rec-type-selector .type-btn.active.income {
+  background: rgba(16, 185, 129, 0.15);
+  border-color: #10b981;
+  color: #059669;
+}
+
+.form-row-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: var(--text, #0f172a);
+  cursor: pointer;
+  margin-top: 8px;
+  margin-bottom: 16px;
+}
+
+.recurring-loading {
+  text-align: center;
+  padding: 40px;
+  color: var(--muted, #64748b);
+}

@@ -8,10 +8,10 @@ import "../styles/navbar.css";
 function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
-  
+
   // Get user and logout function from Context
   const { user, logout } = useAuth();
-  
+
   const [notifications, setNotifications] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -77,12 +77,12 @@ function Navbar() {
     try {
       // 1. Notify backend
       await api.post("/users/logout");
-      
+
       // 2. Clear global state via context (removes from localStorage automatically)
-      logout(); 
-      
+      logout();
+
       // 3. Cleanup socket and navigate
-      socket.disconnect(); 
+      socket.disconnect();
       navigate("/login");
     } catch (err) {
       console.error("Logout failed", err);
@@ -123,8 +123,9 @@ function Navbar() {
           <>
             <div className={`nav-links ${mobileMenuOpen ? 'active' : ''}`}>
               <Link to="/dashboard" className={location.pathname === "/dashboard" ? "active" : ""} onClick={closeMobileMenu}>Dashboard</Link>
-              <Link to="/add-transaction" className={location.pathname === "/add-transaction" ? "active" : ""} onClick={closeMobileMenu}>Add Transaction</Link>
+              <Link to="/add-transaction" className={location.pathname === "/add-transaction" ? "active" : ""} onClick={closeMobileMenu}>Add</Link>
               <Link to="/expenses" className={location.pathname === "/expenses" ? "active" : ""} onClick={closeMobileMenu}>Expenses</Link>
+              <Link to="/recurring" className={location.pathname === "/recurring" ? "active" : ""} onClick={closeMobileMenu}>Recurring</Link>
               <Link to="/budgets" className={location.pathname === "/budgets" ? "active" : ""} onClick={closeMobileMenu}>Budgets</Link>
               <Link to="/groups" className={location.pathname.startsWith("/groups") ? "active" : ""} onClick={closeMobileMenu}>Groups</Link>
             </div>

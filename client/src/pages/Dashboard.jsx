@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import formatCurrency from "../utils/currencyFormatter"; // Removed getCurrencySymbol as it wasn't used
+import formatCurrency from "../utils/currencyFormatter";
+import { getCategoryIcon } from "../utils/categoryIcons";
 import api from "../api/axios";
-import { exportTransactionsPdf } from "../utils/exportPdf"; 
+import { exportTransactionsPdf } from "../utils/exportPdf";
 
 import SummaryCards from "../components/dashboard/SummaryCards";
 import Notifications from "../components/dashboard/Notifications";
@@ -11,57 +12,72 @@ import IncomeExpenseBar from "../components/charts/IncomeExpenseBar";
 import ExpenseCategoryDonut from "../components/charts/ExpenseCategoryDonut";
 import CashFlowLine from "../components/charts/CashFlowLine";
 import BudgetOverview from "../components/dashboard/BudgetOverview";
+import DataErrorState from "../components/DataErrorState";
+import ActionableInsights from "../components/dashboard/ActionableInsights";
 
 import "../styles/dashboard.css";
 import "../styles/responsive.css";
 
 function Dashboard() {
   const [transactions, setTransactions] = useState([]);
-  const [budgetStatus, setBudgetStatus] = useState([]); 
+  const [budgetStatus, setBudgetStatus] = useState([]);
+  const [insights, setInsights] = useState([]);
+  const [insightsLoading, setInsightsLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [loadAttempt, setLoadAttempt] = useState(0);
   const [range, setRange] = useState("90d");
   const { user } = useAuth();
 
   /* ===== FETCH DATA ===== */
-  useEffect(() => {
-    const controller = new AbortController();
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        setError("");
-        const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-        const [txRes, budgetRes] = await Promise.all([
-          api.get("/transactions", { signal: controller.signal }),
-          api.get("/budgets/status", {
-            params: { timezone: userTimezone },
-            signal: controller.signal,
-          })
-        ]);
-        
-        setTransactions(txRes.data);
-        setBudgetStatus(budgetRes.data);
-      } catch (err) {
-        if (controller.signal.aborted) return;
-        console.error(err);
-        setError(
-          "We couldn't load your financial data. The service may be waking up or temporarily unavailable. Check your connection and try again."
-        );
-      } finally {
-        if (!controller.signal.aborted) setLoading(false);
-      }
-    };
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      setError("");
+      const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      const [txRes, budgetRes, insightRes] = await Promise.all([
+        api.get("/transactions"),
+        api.get("/budgets/status", { params: { timezone: userTimezone } }),
+        api.get("/dashboard/insights"),
+      ]);
 
+      setTransactions(txRes.data);
+      setBudgetStatus(budgetRes.data);
+      setInsights(insightRes.data || []);
+    } catch (err) {
+      console.error(err);
+      setError(
+        err.isServerDown
+          ? "The server appears to be offline or unreachable. Please check if the backend service is running."
+          : (err.response?.data?.message || "Failed to load dashboard financial data.")
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchInsights = async () => {
+    try {
+      setInsightsLoading(true);
+      const res = await api.get("/dashboard/insights");
+      setInsights(res.data || []);
+    } catch (err) {
+      console.error("Failed to refresh insights", err);
+    } finally {
+      setInsightsLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchData();
-    return () => controller.abort();
-  }, [loadAttempt]);
+  }, []);
 
   /* ===== RANGE LOGIC ===== */
   const daysBack = useMemo(() => {
     if (range === "7d") return 7;
     if (range === "30d") return 30;
     if (range === "90d") return 90;
+    if (range === "180d") return 180;
+    if (range === "365d") return 365;
     return 0;
   }, [range]);
 
@@ -96,11 +112,11 @@ function Dashboard() {
     const now = new Date();
     const currentDay = now.getDate();
     const totalDays = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-    
+
     const thisMonthExpenses = transactions.filter(t => {
       const d = new Date(t.date);
-      return d.getMonth() === now.getMonth() && 
-             d.getFullYear() === now.getFullYear() && 
+      return d.getMonth() === now.getMonth() &&
+             d.getFullYear() === now.getFullYear() &&
              t.type === 'expense';
     }).reduce((sum, t) => sum + t.amount, 0);
 
@@ -119,21 +135,16 @@ function Dashboard() {
     });
   };
 
-  if (loading) return (
-    <div className="dashboard-loading" role="status">
-      <p>Loading financial data...</p>
-      <p>The service may take up to a minute to wake up.</p>
-    </div>
-  );
-  if (error) return (
-    <div className="dashboard-error" role="alert">
-      <h1>Dashboard temporarily unavailable</h1>
-      <p>{error}</p>
-      <button type="button" className="btn-export" onClick={() => setLoadAttempt((attempt) => attempt + 1)}>
-        Try again
-      </button>
-    </div>
-  );
+  if (loading) return <p className="dashboard-loading">Loading financial data...</p>;
+  if (error) {
+    return (
+      <DataErrorState
+        title="Dashboard Unavailable"
+        message={error}
+        onRetry={fetchData}
+      />
+    );
+  }
 
   return (
     <>
@@ -160,6 +171,9 @@ function Dashboard() {
                 <option value="7d">Last 7 days</option>
                 <option value="30d">Last 30 days</option>
                 <option value="90d">Last 90 days</option>
+                <option value="180d">Last 6 months</option>
+                <option value="365d">Last 1 year</option>
+                <option value="all">All time</option>
               </select>
             </div>
           </div>
@@ -182,6 +196,13 @@ function Dashboard() {
             </strong>
           </div>
         </div>
+
+        {/* ACTIONABLE FINANCIAL INSIGHTS */}
+        <ActionableInsights
+          insights={insights}
+          onRefresh={fetchInsights}
+          loading={insightsLoading}
+        />
 
         {transactions.length === 0 ? (
           <div className="empty-dashboard">
@@ -229,7 +250,7 @@ function Dashboard() {
                     .map((t) => (
                       <div key={t._id} className="expenses-card mini">
                         <div className={`card-icon ${t.type}`}>
-                          {t.categoryId?.name?.[0] || "?"}
+                          {getCategoryIcon(t.categoryId, t.type)}
                         </div>
 
                         <div className="card-content">
@@ -271,19 +292,22 @@ function Dashboard() {
             <option value="7d">Last 7 days</option>
             <option value="30d">Last 30 days</option>
             <option value="90d">Last 90 days</option>
+            <option value="180d">Last 6 months</option>
+            <option value="365d">Last 1 year</option>
+            <option value="all">All time</option>
           </select>
           <button type="button" onClick={handleExport} className="btn-export" style={{ padding: "0.5rem 1rem", fontSize: "0.875rem" }}>
             📥 Export
           </button>
         </div>
-        
+
         <Notifications />
-        
+
         <div className="summary-mobile-balance">
           <span>Total Balance</span>
           <strong>{formatCurrency(summary.balance, user?.currency)}</strong>
         </div>
-        
+
         <div className="summary-mobile-grid">
           <div className="summary-mobile-card income">
             <span>Income</span>
@@ -294,13 +318,32 @@ function Dashboard() {
             <strong>{formatCurrency(summary.expense, user?.currency)}</strong>
           </div>
         </div>
-        
+
         {/* FIX: Ensure formatCurrency receives user.currency explicitly to prevent default mismatches */}
         <div className="projection-mobile-card">
           <span>Projected (Month End)</span>
           <strong>{formatCurrency(projection, user?.currency)}</strong>
         </div>
-        
+
+        <div className="mobile-quick-actions">
+          <Link to="/add-transaction" className="quick-action-pill expense">
+            <span>+</span> Add Expense
+          </Link>
+          <Link to="/add-transaction" className="quick-action-pill income">
+            <span>+</span> Add Income
+          </Link>
+          <Link to="/recurring" className="quick-action-pill recurring">
+            <span>🔁</span> Recurring
+          </Link>
+        </div>
+
+        {/* ACTIONABLE FINANCIAL INSIGHTS (MOBILE) */}
+        <ActionableInsights
+          insights={insights}
+          onRefresh={fetchInsights}
+          loading={insightsLoading}
+        />
+
         {transactions.length === 0 ? (
           <div className="summary-mobile-card" style={{ textAlign: "center", padding: "1.5rem" }}>
             <div style={{ fontSize: "1.5rem", marginBottom: "0.5rem" }}>📊</div>
@@ -326,23 +369,23 @@ function Dashboard() {
             </div>
             <BudgetOverview budgetStatus={budgetStatus} />
             <div>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.5rem" }}>
-                <h3 style={{ margin: 0, fontSize: "0.875rem", fontWeight: 600, color: "var(--text)" }}>Recent Activity</h3>
-                <Link to="/expenses" style={{ fontSize: "0.75rem", fontWeight: 500, color: "var(--primary)" }}>View All</Link>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.75rem" }}>
+                <h3 style={{ margin: 0, fontSize: "0.95rem", fontWeight: 700, color: "var(--text)" }}>Recent Activity</h3>
+                <Link to="/expenses" style={{ fontSize: "0.8rem", fontWeight: 600, color: "var(--primary)", textDecoration: "none" }}>View All →</Link>
               </div>
               {transactions
                 .sort((a, b) => new Date(b.date) - new Date(a.date))
                 .slice(0, 5)
                 .map((t) => (
-                  <div key={t._id} className="recent-item-mobile" style={{ background: "var(--card)", border: "1px solid var(--border)" }}>
-                    <div className={`icon ${t.type}`}>{t.categoryId?.name?.[0] || "?"}</div>
+                  <div key={t._id} className="recent-item-mobile">
+                    <div className={`icon ${t.type}`}>{getCategoryIcon(t.categoryId, t.type)}</div>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontWeight: 600, fontSize: "0.875rem", color: "var(--text)" }}>{t.categoryId?.name || "Other"}</div>
-                      <div style={{ fontSize: "0.75rem", color: "var(--muted)" }}>{t.description || "No description"}</div>
+                      <div style={{ fontWeight: 700, fontSize: "0.9rem", color: "var(--text)" }}>{t.categoryId?.name || "Other"}</div>
+                      <div style={{ fontSize: "0.75rem", color: "var(--muted)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t.description || "No description"}</div>
                     </div>
                     <div style={{ textAlign: "right" }}>
-                        <span className={`amount ${t.type}`}>{t.type === "expense" ? "-" : "+"}{formatCurrency(t.amount, user?.currency)}</span>
-                      <div style={{ fontSize: "0.75rem", color: "var(--muted)" }}>
+                      <span className={`amount ${t.type}`}>{t.type === "expense" ? "-" : "+"}{formatCurrency(t.amount, user?.currency)}</span>
+                      <div style={{ fontSize: "0.7rem", color: "var(--muted)" }}>
                         {new Date(t.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
                       </div>
                     </div>

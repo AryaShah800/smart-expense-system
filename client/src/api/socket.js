@@ -1,7 +1,9 @@
 import { io } from "socket.io-client";
 
-// Dynamically connect to the same hostname (and protocol) where the frontend is served
-const SOCKET_URL = `${window.location.protocol}//${window.location.hostname}:7000`;
+const SOCKET_URL =
+  import.meta.env.VITE_SOCKET_URL ||
+  (import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace(/\/api\/?$/, "") : null) ||
+  `${window.location.protocol}//${window.location.hostname}:3000`;
 
 // Create socket instance
 export const socket = io(SOCKET_URL, {

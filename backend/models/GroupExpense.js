@@ -12,12 +12,14 @@ const groupExpenseSchema = new mongoose.Schema({
   },
   amount: {
     type: Number,
-    required: true
+    required: [true, "Amount is required"],
+    min: [0.01, "Amount must be greater than 0"],
+    max: [1000000000, "Amount exceeds limit"]
   },
   // 🔥 NEW: Link to GroupCategory
   category: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "GroupCategory" 
+    ref: "GroupCategory"
   },
   paidBy: {
     type: mongoose.Schema.Types.ObjectId,

@@ -5,7 +5,16 @@ import Category from "../models/Category.js";
 export const setBudget = async (req, res) => {
   try {
     const { categoryId, amount } = req.body;
-    
+
+    // Validate amount
+    const numAmount = Number(amount);
+    if (isNaN(numAmount) || !isFinite(numAmount) || numAmount <= 0) {
+      return res.status(400).json({ message: "Budget limit must be a positive number greater than 0" });
+    }
+    if (numAmount > 1000000000) {
+      return res.status(400).json({ message: "Budget limit exceeds maximum allowable limit" });
+    }
+
     // Fix #6: Query Category model and validate category.type !== 'expense'
     const category = await Category.findById(categoryId);
     if (!category) {
@@ -14,12 +23,12 @@ export const setBudget = async (req, res) => {
     if (category.type !== 'expense') {
       return res.status(400).json({ message: "Budget can only be set for expense categories" });
     }
-    
+
     // Upsert budget
     const budget = await Budget.findOneAndUpdate(
       { userId: req.user._id, categoryId },
-      { amount },
-      { new: true, upsert: true }
+      { amount: numAmount },
+      { new: true, upsert: true, runValidators: true }
     );
     res.json(budget);
   } catch (error) {
@@ -42,7 +51,7 @@ export const getBudgetStatus = async (req, res) => {
 
     // Fix #5: Accept optional timezone from request query for correct month calculation
     const timezone = req.query.timezone || 'UTC';
-    
+
     // Calculate expense for this month for each category
     let startOfMonth = new Date();
     startOfMonth.setDate(1);
@@ -52,7 +61,7 @@ export const getBudgetStatus = async (req, res) => {
     endOfMonth.setMonth(endOfMonth.getMonth() + 1);
     endOfMonth.setDate(0);
     endOfMonth.setHours(23, 59, 59, 999);
-    
+
     // Adjust dates based on timezone (important for IST and other non-UTC timezones)
     if (timezone && timezone !== 'UTC') {
       try {
@@ -63,12 +72,12 @@ export const getBudgetStatus = async (req, res) => {
           month: '2-digit',
           day: '2-digit',
         });
-        
+
         const today = new Date();
         const parts = formatter.formatToParts(today);
         const year = parseInt(parts.find(p => p.type === 'year').value);
         const month = parseInt(parts.find(p => p.type === 'month').value) - 1;
-        
+
         // Create month boundaries in UTC that represent the start and end of month in the timezone
         startOfMonth = new Date(Date.UTC(year, month, 1, 0, 0, 0, 0));
         endOfMonth = new Date(Date.UTC(year, month + 1, 0, 23, 59, 59, 999));

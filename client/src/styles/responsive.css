@@ -48,12 +48,12 @@
 }
 @media (max-width: 767px) {
   .mobile-content-wrap {
-    max-width: 100%;          
+    max-width: 100%;
     margin-left: auto;
     margin-right: auto;
     padding-left: 0;
     padding-right: 0;
-    overflow: visible;      
+    overflow: visible;
   }
 }
 
@@ -143,61 +143,124 @@
   position: sticky;
   top: 0;
   z-index: 40;
-  height: 3.5rem;
+  height: 3.75rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-left: 1rem;
-  padding-right: 1rem;
-  border-bottom: 1px solid var(--border); /* Theme aware */
-  background: var(--card); /* Theme aware */
+  padding-left: 0.875rem;
+  padding-right: 0.875rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--card);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
+
+.mobile-header-left {
+  display: flex;
+  align-items: center;
+  width: 48px;
+}
+
+.mobile-header-back {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  font-size: 1.25rem;
+  font-weight: 700;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.mobile-header-logo {
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+}
+
+.mobile-header-logo .logo-badge {
+  background: var(--primary);
+  color: white;
+  font-weight: 800;
+  font-size: 0.875rem;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(99, 102, 241, 0.35);
+}
+
 .mobile-header-title {
   flex: 1;
   text-align: center;
   font-size: 1.125rem;
-  font-weight: 600;
-  color: var(--text); /* Theme aware */
+  font-weight: 800;
+  color: var(--text);
   margin: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  letter-spacing: -0.3px;
 }
-.mobile-header-bell {
+
+.mobile-header-right {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  width: 68px;
+}
+
+.mobile-header-icon-btn {
   position: relative;
-  min-width: 48px;
-  min-height: 48px;
+  width: 38px;
+  height: 38px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: none;
-  background: transparent;
-  color: var(--muted); /* Theme aware */
-  border-radius: 0.5rem;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  border-radius: 10px;
   cursor: pointer;
+  text-decoration: none;
+  font-size: 1.1rem;
   -webkit-tap-highlight-color: transparent;
+  transition: all 0.2s;
 }
-.mobile-header-bell:active {
-  background: var(--bg); /* Theme aware */
+
+.mobile-header-icon-btn:active {
+  transform: scale(0.94);
+  background: var(--card);
 }
+
 .mobile-header-bell-icon {
-  font-size: 1.25rem;
+  font-size: 1.15rem;
 }
+
 .mobile-header-badge {
   position: absolute;
-  top: 4px;
-  right: 4px;
-  min-width: 1.25rem;
-  height: 1.25rem;
+  top: -4px;
+  right: -4px;
+  min-width: 1.125rem;
+  height: 1.125rem;
   padding: 0 4px;
   border-radius: 9999px;
-  background: var(--danger); /* Theme aware */
+  background: var(--danger);
   color: white;
-  font-size: 0.75rem;
-  font-weight: 700;
+  font-size: 0.7rem;
+  font-weight: 800;
   display: flex;
   align-items: center;
   justify-content: center;
+  border: 2px solid var(--card);
 }
 
 /* ===== BOTTOM NAVIGATION (only visible below md) ===== */
@@ -206,58 +269,86 @@
   bottom: 0;
   left: 0;
   right: 0;
-  height: 4rem;
-  background: var(--card); /* Theme aware */
-  box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.1);
-  border-top: 1px solid var(--border); /* Theme aware */
+  height: calc(4.25rem + env(safe-area-inset-bottom));
+  background: var(--card);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.06);
+  border-top: 1px solid var(--border);
   z-index: 50;
   display: flex;
   justify-content: space-around;
-  align-items: center;
+  align-items: flex-start;
+  padding-top: 6px;
   padding-left: env(safe-area-inset-left);
   padding-right: env(safe-area-inset-right);
   padding-bottom: env(safe-area-inset-bottom);
 }
+
 .bottom-nav-item {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2px;
+  gap: 3px;
   min-height: 48px;
-  min-width: 48px;
-  padding: 4px 8px;
+  min-width: 52px;
+  padding: 4px 6px;
   text-decoration: none;
-  color: var(--muted); /* Theme aware */
-  transition: color 0.2s;
+  color: var(--muted);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   -webkit-tap-highlight-color: transparent;
+  border-radius: 12px;
 }
+
 .bottom-nav-item.active {
-  color: var(--primary); /* Theme aware */
+  color: var(--primary);
+  background: rgba(99, 102, 241, 0.08);
 }
+
 .bottom-nav-icon {
-  font-size: 1.125rem;
+  font-size: 1.25rem;
+  transition: transform 0.2s;
 }
+
+.bottom-nav-item.active .bottom-nav-icon {
+  transform: scale(1.1);
+}
+
 .bottom-nav-label {
-  font-size: 0.75rem;
-  font-weight: 500;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: -0.2px;
 }
+
 .bottom-nav-center {
   width: 3.5rem;
   height: 3.5rem;
-  margin-top: -1.5rem;
+  margin-top: -1.25rem;
   border-radius: 50%;
-  background: var(--primary); /* Theme aware */
+  background: linear-gradient(135deg, #6366f1, #4f46e5);
   color: white;
-  box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.3); /* Adjusted to primary */
+  box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 4px solid var(--card);
 }
+
+.bottom-nav-center.active-center {
+  background: linear-gradient(135deg, #4f46e5, #4338ca);
+  transform: scale(1.05);
+}
+
 .bottom-nav-center .bottom-nav-center-icon {
-  font-size: 1.5rem;
-  font-weight: bold;
+  font-size: 1.6rem;
+  font-weight: 800;
   line-height: 1;
+  color: white;
 }
+
 .bottom-nav-center:active {
-  opacity: 0.9;
+  transform: scale(0.92);
 }
 
 /* ===== MOBILE DASHBOARD (compact layout, only below md) ===== */
@@ -293,7 +384,7 @@
   font-weight: 800;
   display: block;
   margin-top: 0.25rem;
-} 
+}
 .dashboard-mobile .summary-mobile-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -343,7 +434,50 @@
   font-weight: 700;
   margin-top: 0;
   display: block;
-} 
+}
+
+.mobile-quick-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.quick-action-pill {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 44px;
+  border-radius: 14px;
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: all 0.2s;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+.quick-action-pill.expense {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--danger);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+}
+
+.quick-action-pill.income {
+  background: rgba(34, 197, 94, 0.1);
+  color: var(--success);
+  border: 1px solid rgba(34, 197, 94, 0.25);
+}
+
+.quick-action-pill.recurring {
+  background: rgba(99, 102, 241, 0.1);
+  color: var(--primary);
+  border: 1px solid rgba(99, 102, 241, 0.25);
+}
+
+.quick-action-pill:active {
+  transform: scale(0.97);
+}
+
 .dashboard-mobile .chart-card-mobile {
   background: var(--card); /* Theme aware */
   border: 1px solid var(--border); /* Theme aware */

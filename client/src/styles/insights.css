@@ -1,0 +1,318 @@
+/* =========================================================
+   ACTIONABLE FINANCIAL INSIGHTS STYLES
+   ========================================================= */
+
+.insights-container {
+  background: var(--card, #ffffff);
+  border: 1px solid var(--border, #e2e8f0);
+  border-radius: 16px;
+  padding: clamp(14px, 2.5vw, 20px);
+  margin-bottom: clamp(16px, 3vw, 24px);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
+  transition: all 0.3s ease;
+}
+
+.insights-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.insights-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.insights-glow-icon {
+  font-size: 1.4rem;
+  background: rgba(245, 158, 11, 0.15);
+  border-radius: 10px;
+  padding: 4px 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.insights-header h3 {
+  margin: 0;
+  font-size: clamp(1.05rem, 2vw, 1.25rem);
+  font-weight: 700;
+  color: var(--text, #0f172a);
+  letter-spacing: -0.02em;
+}
+
+.insights-subtitle {
+  font-size: 0.8rem;
+  color: var(--muted, #64748b);
+  display: block;
+  margin-top: 2px;
+}
+
+.insights-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.insights-pill-count {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--primary, #6366f1);
+  background: rgba(99, 102, 241, 0.1);
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+.insights-refresh-btn {
+  background: transparent;
+  border: 1px solid var(--border, #e2e8f0);
+  border-radius: 8px;
+  padding: 5px 8px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.insights-refresh-btn:hover {
+  background: var(--bg-hover, #f1f5f9);
+}
+
+.insights-refresh-btn.spinning {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Insight Cards Grid */
+.insights-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: clamp(12px, 2vw, 16px);
+}
+
+.insight-card {
+  border-radius: 14px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border: 1px solid var(--border, #e2e8f0);
+  background: var(--bg, #f8fafc);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.insight-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+}
+
+/* Card Themes */
+.insight-card.warning {
+  border-left: 4px solid #f59e0b;
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.05) 0%, var(--card, #ffffff) 100%);
+}
+
+.insight-card.danger {
+  border-left: 4px solid #ef4444;
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.06) 0%, var(--card, #ffffff) 100%);
+}
+
+.insight-card.success {
+  border-left: 4px solid #10b981;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, var(--card, #ffffff) 100%);
+}
+
+.insight-card.info {
+  border-left: 4px solid #3b82f6;
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, var(--card, #ffffff) 100%);
+}
+
+/* Card Header */
+.insight-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.insight-badge-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.insight-type-icon {
+  font-size: 1.1rem;
+}
+
+.insight-category-tag {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted, #64748b);
+}
+
+.insight-delta-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 6px;
+}
+
+.insight-delta-badge.warning {
+  background: rgba(245, 158, 11, 0.15);
+  color: #b45309;
+}
+
+.insight-delta-badge.danger {
+  background: rgba(239, 68, 68, 0.15);
+  color: #dc2626;
+}
+
+.insight-delta-badge.success {
+  background: rgba(16, 185, 129, 0.15);
+  color: #047857;
+}
+
+.insight-delta-badge.info {
+  background: rgba(59, 130, 246, 0.15);
+  color: #1d4ed8;
+}
+
+.insight-dismiss-btn {
+  background: none;
+  border: none;
+  color: var(--muted, #94a3b8);
+  font-size: 0.75rem;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  line-height: 1;
+  transition: color 0.2s;
+}
+
+.insight-dismiss-btn:hover {
+  color: var(--text, #0f172a);
+}
+
+/* Card Body */
+.insight-body {
+  margin-bottom: 12px;
+}
+
+.insight-headline {
+  margin: 0 0 4px 0;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--text, #0f172a);
+}
+
+.insight-message {
+  margin: 0;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: var(--muted, #475569);
+}
+
+/* Card Footer */
+.insight-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px dashed var(--border, #e2e8f0);
+  padding-top: 8px;
+  margin-top: auto;
+  gap: 8px;
+}
+
+.insight-metric-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--muted, #64748b);
+}
+
+.insight-action-btn {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--primary, #6366f1);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: opacity 0.2s;
+}
+
+.insight-action-btn:hover {
+  opacity: 0.8;
+  text-decoration: underline;
+}
+
+/* Empty State */
+.insights-empty-card {
+  padding: 16px;
+  text-align: center;
+  background: var(--bg, #f8fafc);
+  border-radius: 12px;
+  border: 1px dashed var(--border, #cbd5e1);
+}
+
+.empty-sparkle {
+  font-size: 1.4rem;
+  margin-bottom: 4px;
+}
+
+.insights-empty-card p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--muted, #64748b);
+  max-width: 480px;
+  margin: 0 auto;
+  line-height: 1.4;
+}
+
+/* Dark mode adjustments */
+[data-theme="dark"] .insight-card {
+  background: #1e293b;
+}
+
+[data-theme="dark"] .insight-card.warning {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, #1e293b 100%);
+}
+
+[data-theme="dark"] .insight-card.danger {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, #1e293b 100%);
+}
+
+[data-theme="dark"] .insight-card.success {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, #1e293b 100%);
+}
+
+[data-theme="dark"] .insight-card.info {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, #1e293b 100%);
+}
+
+[data-theme="dark"] .insight-delta-badge.warning {
+  color: #fbbf24;
+}
+
+[data-theme="dark"] .insight-delta-badge.danger {
+  color: #f87171;
+}
+
+[data-theme="dark"] .insight-delta-badge.success {
+  color: #34d399;
+}
+
+[data-theme="dark"] .insight-delta-badge.info {
+  color: #60a5fa;
+}
