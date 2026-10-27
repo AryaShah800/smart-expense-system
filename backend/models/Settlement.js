@@ -19,7 +19,8 @@ const settlementSchema = new mongoose.Schema(
     },
     amount: {
       type: Number,
-      required: true
+      required: [true, "Settlement amount is required"],
+      min: [0.01, "Settlement amount must be greater than 0"]
     }
   },
   { timestamps: true }

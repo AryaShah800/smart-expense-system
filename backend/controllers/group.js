@@ -3,7 +3,7 @@ import Group from "../models/Group.js";
 import GroupExpense from "../models/GroupExpense.js";
 import Settlement from "../models/Settlement.js";
 import User from "../models/user.js";
-import GroupCategory from "../models/GroupCategory.js"; 
+import GroupCategory from "../models/GroupCategory.js";
 
 /* ===================== CREATE GROUP ===================== */
 export const createGroup = async (req, res) => {
@@ -161,8 +161,8 @@ export const getGroupCategories = async (req, res) => {
 
     const categories = await GroupCategory.find({
       $or: [
-        { isDefault: true },      
-        { groupId: groupId }      
+        { isDefault: true },
+        { groupId: groupId }
       ]
     }).sort({ isDefault: -1, name: 1 });
 
@@ -180,7 +180,10 @@ export const addGroupExpense = async (req, res) => {
     const { id: groupId } = req.params;
     const { description, amount, splitType, splits, involvedUsers, categoryId, paidBy } = req.body;
 
-    if (!description || !amount || amount <= 0) return res.status(400).json({ message: "Invalid data" });
+    const numericAmount = Number(amount);
+    if (!description || !isFinite(numericAmount) || numericAmount <= 0 || numericAmount > 1000000000) {
+      return res.status(400).json({ message: "Amount must be a valid number between 0.01 and 1,000,000,000" });
+    }
 
     const group = await Group.findById(groupId);
     if (!group) return res.status(404).json({ message: "Group not found" });
@@ -188,7 +191,7 @@ export const addGroupExpense = async (req, res) => {
 
     // Fix #1: Allow paidBy to be passed in request body with fallback to req.user._id
     const paidByUserId = paidBy || req.user._id;
-    if (!group.members.some(m => m.equals(paidByUserId))) {
+    if (!group.members.some(m => m.toString() === paidByUserId.toString())) {
       return res.status(400).json({ message: "Payer must be a member of the group" });
     }
 
@@ -199,28 +202,50 @@ export const addGroupExpense = async (req, res) => {
         ? involvedUsers
         : group.members.map(m => m.toString());
 
+      if (usersToSplit.length === 0) {
+        return res.status(400).json({ message: "At least one member must be selected to split" });
+      }
+
       // Fix #4: Fix penny drop bug with proper rounding
-      const baseShare = Math.round((amount / usersToSplit.length) * 100) / 100;
-      const remainder = Math.round((amount - baseShare * usersToSplit.length) * 100) / 100;
-      
+      const baseShare = Math.round((numericAmount / usersToSplit.length) * 100) / 100;
+      const remainder = Math.round((numericAmount - baseShare * usersToSplit.length) * 100) / 100;
+
       finalSplits = usersToSplit.map((userId, index) => ({
         userId,
         shareAmount: index === 0 ? baseShare + remainder : baseShare
       }));
     }
     else if (splitType === "percentage") {
+      if (!Array.isArray(splits) || splits.length === 0) {
+        return res.status(400).json({ message: "Splits are required for percentage split" });
+      }
+      for (const s of splits) {
+        const val = Number(s.shareAmount);
+        if (!isFinite(val) || val < 0) {
+          return res.status(400).json({ message: "Percentage split values cannot be negative" });
+        }
+      }
       const totalPercent = splits.reduce((sum, s) => sum + Number(s.shareAmount), 0);
-      if (Math.abs(totalPercent - 100) > 0.01) return res.status(400).json({ message: "Total percentage must be 100%" });
+      if (Math.abs(totalPercent - 100) > 0.05) return res.status(400).json({ message: "Total percentage must be 100%" });
 
       finalSplits = splits.map(s => ({
         userId: s.userId,
-        shareAmount: (amount * Number(s.shareAmount)) / 100
+        shareAmount: Math.round(((numericAmount * Number(s.shareAmount)) / 100) * 100) / 100
       }));
     }
     else if (splitType === "exact") {
+      if (!Array.isArray(splits) || splits.length === 0) {
+        return res.status(400).json({ message: "Splits are required for exact split" });
+      }
+      for (const s of splits) {
+        const val = Number(s.shareAmount);
+        if (!isFinite(val) || val < 0) {
+          return res.status(400).json({ message: "Split amounts cannot be negative" });
+        }
+      }
       const totalExact = splits.reduce((sum, s) => sum + Number(s.shareAmount), 0);
-      if (Math.abs(totalExact - amount) > 0.01) return res.status(400).json({ message: "Exact amounts must match total" });
-      finalSplits = splits;
+      if (Math.abs(totalExact - numericAmount) > 0.05) return res.status(400).json({ message: "Exact amounts must match total amount" });
+      finalSplits = splits.map(s => ({ userId: s.userId, shareAmount: Number(s.shareAmount) }));
     }
     else {
       return res.status(400).json({ message: "Invalid split type" });
@@ -228,8 +253,8 @@ export const addGroupExpense = async (req, res) => {
 
     const expense = new GroupExpense({
       groupId,
-      description,
-      amount,
+      description: description.trim().slice(0, 100),
+      amount: numericAmount,
       category: categoryId || null,
       paidBy: paidByUserId,
       splitType,
@@ -317,7 +342,7 @@ export const getGroupSplits = async (req, res) => {
     settlementsDB.forEach(s => {
       const fromId = s.fromUser.toString();
       const toId = s.toUser.toString();
-      
+
       if (balancesMap[fromId] !== undefined) balancesMap[fromId] += s.amount;
       if (balancesMap[toId] !== undefined) balancesMap[toId] -= s.amount;
     });
@@ -335,7 +360,7 @@ export const getGroupSplits = async (req, res) => {
     let i = 0, j = 0;
     while (i < debtors.length && j < creditors.length) {
         const amount = Math.min(debtors[i].balance, creditors[j].balance);
-        
+
         if (amount > 0) {
             settlements.push({
                 from: debtors[i].username,
@@ -375,24 +400,37 @@ export const getGroupExpenses = async (req, res) => {
 export const addSettlement = async (req, res) => {
   try {
     const { id: groupId } = req.params;
-    const { fromUserId, toUserId, amount } = req.body; 
+    const { fromUserId, toUserId, amount } = req.body;
 
-    if (!amount || amount <= 0) return res.status(400).json({ message: "Invalid amount" });
+    const numericAmount = Number(amount);
+    if (!isFinite(numericAmount) || numericAmount <= 0 || numericAmount > 1000000000) {
+      return res.status(400).json({ message: "Settlement amount must be between 0.01 and 1,000,000,000" });
+    }
 
-    // Fix #2: Allow fromUser and toUser to be specified in request body
-    const fromUser = fromUserId || req.user._id;
-    const toUser = toUserId;
-    
+    const fromId = (fromUserId || req.user._id).toString();
+    const toId = (toUserId || "").toString();
+
+    if (!toId) return res.status(400).json({ message: "Recipient is required" });
+    if (fromId === toId) {
+      return res.status(400).json({ message: "Payer and recipient cannot be the same person" });
+    }
+
     // Validate that req.user._id is one of fromUser or toUser
-    if (!fromUser.equals(req.user._id) && !toUser.equals(req.user._id)) {
+    if (fromId !== req.user._id.toString() && toId !== req.user._id.toString()) {
       return res.status(403).json({ message: "You must be one of the settlement participants" });
+    }
+
+    const group = await Group.findById(groupId);
+    if (!group) return res.status(404).json({ message: "Group not found" });
+    if (!group.members.some(m => m.toString() === fromId) || !group.members.some(m => m.toString() === toId)) {
+      return res.status(400).json({ message: "Both participants must be members of the group" });
     }
 
     const settlement = new Settlement({
       groupId,
-      fromUser, 
-      toUser,
-      amount
+      fromUser: fromId,
+      toUser: toId,
+      amount: numericAmount
     });
 
     await settlement.save();
@@ -453,9 +491,9 @@ export const joinGroup = async (req, res) => {
       await user.save();
     }
 
-    res.json({ 
-      message: "Joined successfully!", 
-      group: { id: group._id, name: group.name } 
+    res.json({
+      message: "Joined successfully!",
+      group: { id: group._id, name: group.name }
     });
 
   } catch (error) {

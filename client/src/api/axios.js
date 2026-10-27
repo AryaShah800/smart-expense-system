@@ -1,4 +1,5 @@
 import axios from "axios";
+import toast from "react-hot-toast";
 
 const baseURL =
   import.meta.env.VITE_API_URL ||
@@ -6,9 +7,8 @@ const baseURL =
 
 const api = axios.create({
   baseURL,
-  // Allow time for a free Render instance to wake, but never wait forever.
-  timeout: 60000,
   withCredentials: true,
+  timeout: 60000, // Allow the Render service to wake, but bound requests.
   headers: {
     "Content-Type": "application/json",
   },
@@ -19,11 +19,14 @@ api.interceptors.request.use(
   (config) => {
     const savedUser = localStorage.getItem("user");
     if (savedUser) {
-      const userData = JSON.parse(savedUser);
-      // Try common token field names — check what your login response returns
-      const token = userData.token || userData.accessToken || userData.data?.token;
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
+      try {
+        const userData = JSON.parse(savedUser);
+        const token = userData.token || userData.accessToken || userData.data?.token;
+        if (token) {
+          config.headers.Authorization = `Bearer ${token}`;
+        }
+      } catch (err) {
+        console.error("Failed to parse user from localStorage", err);
       }
     }
     return config;
@@ -31,15 +34,48 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Only logout on 401 — but NOT on cold start failures
+// Robust response error handling
 api.interceptors.response.use(
   (res) => res,
   (error) => {
-    if (error.response?.status === 401) {
-      // Token truly expired/invalid — clear and redirect
-      localStorage.removeItem("user");
-      window.location.href = "/login";
+    // 1. Server is down or completely unreachable
+    if (!error.response) {
+      const isTimeout = error.code === "ECONNABORTED" || error.message?.includes("timeout");
+      const message = isTimeout
+        ? "Server request timed out. Please check if the server is responding."
+        : "Cannot reach server. Please check your internet connection or server status.";
+
+      toast.error(message, {
+        id: "server-connection-error",
+        duration: 5000,
+        position: "top-center",
+      });
+
+      error.isServerDown = true;
+      return Promise.reject(error);
     }
+
+    const { status, data } = error.response;
+
+    // 2. Token expired or unauthorized — only redirect if not already on auth pages
+    if (status === 401) {
+      const isAuthPage =
+        window.location.pathname === "/login" || window.location.pathname === "/signup";
+      if (!isAuthPage) {
+        localStorage.removeItem("user");
+        toast.error("Session expired. Please log in again.", { id: "session-expired" });
+        setTimeout(() => {
+          window.location.href = "/login";
+        }, 1000);
+      }
+    } else if (status >= 500) {
+      // 3. Server crashed / internal server error
+      toast.error(data?.message || "Internal server error. Please try again shortly.", {
+        id: "server-500-error",
+        duration: 4000,
+      });
+    }
+
     return Promise.reject(error);
   }
 );

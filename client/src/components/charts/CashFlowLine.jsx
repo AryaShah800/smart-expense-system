@@ -17,16 +17,21 @@ function CashFlowLine({ transactions }) {
   );
 
   let balance = 0;
-  const data = sorted.map((t) => {
+  const dateMap = new Map();
+  sorted.forEach((t) => {
     balance += t.type === "income" ? t.amount : -t.amount;
-    return {
-      date: new Date(t.date).toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-      }),
-      balance,
-    };
+    const dateLabel = new Date(t.date).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: sorted.length > 200 ? "2-digit" : undefined,
+    });
+    dateMap.set(dateLabel, balance);
   });
+
+  const data = Array.from(dateMap.entries()).map(([date, bal]) => ({
+    date,
+    balance: bal,
+  }));
 
   // use shared formatter
 

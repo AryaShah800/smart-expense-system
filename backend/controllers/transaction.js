@@ -1,13 +1,29 @@
 import Transaction from "../models/Transaction.js";
 import Category from "../models/Category.js";
+import RecurringTransaction from "../models/RecurringTransaction.js";
+import { calculateNextDueDate } from "./recurring.js";
 
 /* ===================== ADD TRANSACTION ===================== */
 
 export const addTransaction = async (req, res) => {
   try {
-    const { amount, type, date, description, categoryId } = req.body;
+    const { amount, type, date, description, categoryId, isRecurring, frequency } = req.body;
 
-    // ✅ Validate DEFAULT category
+    // Validate type
+    if (!["income", "expense"].includes(type)) {
+      return res.status(400).json({ message: "Transaction type must be 'income' or 'expense'" });
+    }
+
+    // Validate amount
+    const numAmount = Number(amount);
+    if (isNaN(numAmount) || !isFinite(numAmount) || numAmount <= 0) {
+      return res.status(400).json({ message: "Amount must be a positive number greater than 0" });
+    }
+    if (numAmount > 1000000000) {
+      return res.status(400).json({ message: "Amount exceeds maximum allowed limit" });
+    }
+
+    // ✅ Validate category exists
     const category = await Category.findById(categoryId);
     if (!category) {
       return res.status(400).json({ message: "Invalid category" });
@@ -20,16 +36,42 @@ export const addTransaction = async (req, res) => {
       });
     }
 
+    const txDate = date ? new Date(date) : new Date();
+    const cleanDesc = description ? String(description).slice(0, 200).trim() : "";
+
     const transaction = new Transaction({
       userId: req.user._id,
-      amount,
+      amount: numAmount,
       type,
-      date,
-      description,
+      date: txDate,
+      description: cleanDesc,
       categoryId,
+      isRecurring: Boolean(isRecurring),
     });
 
     await transaction.save();
+
+    // If user marked this as a recurring transaction, create the recurring rule
+    if (isRecurring && frequency && ["daily", "weekly", "monthly", "yearly"].includes(frequency)) {
+      const nextDue = calculateNextDueDate(txDate, frequency);
+      const recurring = new RecurringTransaction({
+        userId: req.user._id,
+        categoryId,
+        type,
+        amount: numAmount,
+        description: cleanDesc || "Recurring Transaction",
+        frequency,
+        startDate: txDate,
+        nextDueDate: nextDue,
+        lastProcessedDate: txDate,
+        status: "active",
+        autoProcess: true,
+      });
+      await recurring.save();
+
+      transaction.recurringId = recurring._id;
+      await transaction.save();
+    }
 
     const populatedTransaction = await Transaction.findById(transaction._id)
       .populate("categoryId", "name icon color");

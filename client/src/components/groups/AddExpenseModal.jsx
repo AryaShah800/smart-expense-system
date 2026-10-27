@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import api from "../../api/axios";
+import toast from "react-hot-toast";
 import "../../styles/Modal.css";
 import { getCurrencySymbol } from "../../utils/currencyFormatter";
 
@@ -47,18 +48,28 @@ function AddExpenseModal({ groupId, groupMembers, onClose, onAdded }) {
   };
 
   const handleCustomSplitChange = (userId, value) => {
+    // Prevent negative numbers
+    if (value && Number(value) < 0) return;
     setCustomSplits((prev) => prev.map((s) => (s.userId === userId ? { ...s, value } : s)));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!amount || Number(amount) <= 0) { alert("Enter valid amount"); return; }
+    const numAmount = Number(amount);
+    if (!amount || isNaN(numAmount) || numAmount <= 0) {
+      toast.error("Please enter a valid amount greater than 0");
+      return;
+    }
+    if (numAmount > 1000000000) {
+      toast.error("Amount cannot exceed ₹1,000,000,000");
+      return;
+    }
 
     try {
       setLoading(true);
       let payload = {
-        description: description || "Expense",
-        amount: Number(amount),
+        description: (description || "Expense").trim().slice(0, 100),
+        amount: numAmount,
         categoryId,
         splitType,
         paidBy: paidBy || undefined // Fix #1: Include paidBy in payload
@@ -66,16 +77,52 @@ function AddExpenseModal({ groupId, groupMembers, onClose, onAdded }) {
 
       if (splitType === "equal") {
         payload.involvedUsers = involvedUsers;
-        if (involvedUsers.length === 0) { alert("Select at least one person"); setLoading(false); return; }
+        if (involvedUsers.length === 0) {
+          toast.error("Select at least one person to split with");
+          setLoading(false);
+          return;
+        }
+      } else if (splitType === "percentage") {
+        for (const split of customSplits) {
+          const val = Number(split.value) || 0;
+          if (val < 0) {
+            toast.error("Percentage cannot be negative");
+            setLoading(false);
+            return;
+          }
+        }
+        const totalPercent = customSplits.reduce((sum, s) => sum + (Number(s.value) || 0), 0);
+        if (Math.abs(totalPercent - 100) > 0.05) {
+          toast.error(`Total percentage must equal 100% (currently ${totalPercent}%)`);
+          setLoading(false);
+          return;
+        }
+        payload.splits = customSplits.map(split => ({ userId: split.userId, shareAmount: Number(split.value) || 0 }));
       } else {
+        // exact
+        for (const split of customSplits) {
+          const val = Number(split.value) || 0;
+          if (val < 0) {
+            toast.error("Split amount cannot be negative");
+            setLoading(false);
+            return;
+          }
+        }
+        const totalExact = customSplits.reduce((sum, s) => sum + (Number(s.value) || 0), 0);
+        if (Math.abs(totalExact - numAmount) > 0.05) {
+          toast.error(`Exact amounts must sum up to ${numAmount} (currently ${totalExact.toFixed(2)})`);
+          setLoading(false);
+          return;
+        }
         payload.splits = customSplits.map(split => ({ userId: split.userId, shareAmount: Number(split.value) || 0 }));
       }
 
       await api.post(`/groups/${groupId}/expenses`, payload);
+      toast.success("Expense added successfully!");
       onAdded();
       onClose();
     } catch (err) {
-      alert(err.response?.data?.message || "Failed");
+      toast.error(err.response?.data?.message || "Failed to add expense");
     } finally {
       setLoading(false);
     }
@@ -102,6 +149,9 @@ function AddExpenseModal({ groupId, groupMembers, onClose, onAdded }) {
                 className="amount-input-big"
                 placeholder="0"
                 value={amount}
+                min="0.01"
+                step="0.01"
+                onKeyDown={(e) => ["-", "+", "e", "E"].includes(e.key) && e.preventDefault()}
                 onChange={(e) => setAmount(e.target.value)}
                 onWheel={(e) => e.target.blur()}
                 required
@@ -213,6 +263,9 @@ function AddExpenseModal({ groupId, groupMembers, onClose, onAdded }) {
                               type="number"
                               className="split-value-input"
                               placeholder="0"
+                              min="0"
+                              step="0.01"
+                              onKeyDown={(e) => ["-", "+", "e", "E"].includes(e.key) && e.preventDefault()}
                               value={customSplits.find(s => s.userId === member._id)?.value || ""}
                               onChange={(e) => handleCustomSplitChange(member._id, e.target.value)}
                               onWheel={(e) => e.target.blur()}

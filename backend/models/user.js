@@ -4,7 +4,7 @@ const userSchema = new mongoose.Schema({
   username: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
-  
+
   // 🔥 PREFERENCES (NEW)
   currency: { type: String, default: "INR" },
   theme: { type: String, default: "light" },
@@ -24,4 +24,4 @@ const userSchema = new mongoose.Schema({
   ]
 }, { timestamps: true });
 
-export default mongoose.model("User", userSchema);
+export default mongoose.models.User || mongoose.model("User", userSchema);

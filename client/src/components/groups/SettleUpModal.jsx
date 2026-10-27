@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import api from "../../api/axios";
+import toast from "react-hot-toast";
 import "../../styles/Modal.css";
 import { getCurrencySymbol } from "../../utils/currencyFormatter";
 
@@ -14,8 +15,25 @@ function SettleUpModal({ groupId, groupMembers, onClose, onSettled }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!toUserId || !amount || Number(amount) <= 0) {
-      alert("Please select a recipient and enter a valid amount.");
+    const effectiveFrom = fromUserId || user?._id;
+    if (!toUserId) {
+      toast.error("Please select a recipient");
+      return;
+    }
+
+    if (effectiveFrom && effectiveFrom.toString() === toUserId.toString()) {
+      toast.error("Payer and recipient cannot be the same person");
+      return;
+    }
+
+    const numAmount = Number(amount);
+    if (!amount || isNaN(numAmount) || numAmount <= 0) {
+      toast.error("Please enter a valid amount greater than 0");
+      return;
+    }
+
+    if (numAmount > 1000000000) {
+      toast.error("Amount cannot exceed ₹1,000,000,000");
       return;
     }
 
@@ -25,14 +43,15 @@ function SettleUpModal({ groupId, groupMembers, onClose, onSettled }) {
       await api.post(`/groups/${groupId}/settle`, {
         fromUserId: fromUserId || undefined,
         toUserId,
-        amount: Number(amount)
+        amount: numAmount
       });
 
+      toast.success("Payment recorded successfully!");
       onSettled();
       onClose();
     } catch (err) {
       console.error("SETTLE ERROR:", err.response?.data || err.message);
-      alert(err.response?.data?.message || "Failed to record settlement");
+      toast.error(err.response?.data?.message || "Failed to record settlement");
     } finally {
       setLoading(false);
     }
@@ -88,6 +107,9 @@ function SettleUpModal({ groupId, groupMembers, onClose, onSettled }) {
               type="number"
               className="modal-input"
               placeholder="0.00"
+              min="0.01"
+              step="0.01"
+              onKeyDown={(e) => ["-", "+", "e", "E"].includes(e.key) && e.preventDefault()}
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               required

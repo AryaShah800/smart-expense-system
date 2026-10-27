@@ -425,9 +425,17 @@
   transition: width 0.5s ease-out;
 }
 
-.progress-fill.success { background: #22c55e; }
-.progress-fill.warning { background: #eab308; }
-.progress-fill.danger { background: #ef4444; }
+.progress-fill.success {
+  background: #22c55e;
+}
+
+.progress-fill.warning {
+  background: #eab308;
+}
+
+.progress-fill.danger {
+  background: #ef4444;
+}
 
 .budget-subtext {
   font-size: clamp(10px, 1.5vw, 11px);
@@ -597,17 +605,13 @@
   }
 
   .expenses-card {
-    flex-direction: column;
-    align-items: flex-start;
-    text-align: left;
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
   }
 
   .card-row {
     width: 100%;
-  }
-
-  .card-amount {
-    align-self: flex-start;
   }
 
   .dashboard-grid {

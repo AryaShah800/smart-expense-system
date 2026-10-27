@@ -2,23 +2,32 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api/axios";
 import CreateGroupModal from "../components/groups/CreateGroupModal";
-import JoinGroupModal from "../components/groups/JoinGroupModal"; // <--- Import
+import JoinGroupModal from "../components/groups/JoinGroupModal";
+import DataErrorState from "../components/DataErrorState";
 import "../styles/groups.css";
 
 function Groups() {
   const [groups, setGroups] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [showJoinModal, setShowJoinModal] = useState(false); // <--- New State
+  const [showJoinModal, setShowJoinModal] = useState(false);
 
   const navigate = useNavigate();
 
   const fetchGroups = async () => {
     try {
+      setLoading(true);
+      setError("");
       const res = await api.get("/groups");
       setGroups(res.data);
     } catch (err) {
-      console.error("Failed to fetch groups");
+      console.error("Failed to fetch groups", err);
+      setError(
+        err.isServerDown
+          ? "Server is currently offline or unreachable. Please verify your connection."
+          : (err.response?.data?.message || "Failed to load groups.")
+      );
     } finally {
       setLoading(false);
     }
@@ -58,6 +67,12 @@ function Groups() {
             <div className="spinner"></div>
             <p>Loading your groups...</p>
           </div>
+        ) : error ? (
+          <DataErrorState
+            title="Groups Unavailable"
+            message={error}
+            onRetry={fetchGroups}
+          />
         ) : groups.length === 0 ? (
           <div className="groups-empty">
             <div className="empty-icon">👥</div>

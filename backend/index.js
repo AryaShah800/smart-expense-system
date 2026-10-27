@@ -17,6 +17,8 @@ import budgetRoutes from "./routes/budget.js";
 import groupRoutes from "./routes/group.js";
 import dashboardRoutes from "./routes/dashboard.js";
 import reportRoutes from "./routes/report.js";
+import recurringRoutes from "./routes/recurring.js";
+import { processDueRecurring } from "./controllers/recurring.js";
 import { seedDefaultCategories } from "./utils/seedDefaultCategories.js";
 
 const PORT = process.env.PORT || 7000;
@@ -73,6 +75,7 @@ app.use("/api/budgets", budgetRoutes);
 app.use("/api/groups", groupRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/reports", reportRoutes);
+app.use("/api/recurring", recurringRoutes);
 
 app.get("/", (req, res) => {
   res.send({ activeStatus: true, error: false });
@@ -87,6 +90,14 @@ mongoose
   .then(async () => {
     console.log("MongoDB connected");
     await seedDefaultCategories();
+    processDueRecurring().catch((err) =>
+      console.error("Recurring transaction processing failed:", err)
+    );
+    setInterval(() => {
+      processDueRecurring().catch((err) =>
+        console.error("Recurring transaction processing failed:", err)
+      );
+    }, 30 * 60 * 1000);
     httpServer.listen(PORT, () =>
       console.log(`Server at http://localhost:${PORT}`)
     );

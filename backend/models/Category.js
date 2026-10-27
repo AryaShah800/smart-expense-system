@@ -9,4 +9,4 @@ const categorySchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now },
 });
 
-export default mongoose.model("Category", categorySchema);
+export default mongoose.models.Category || mongoose.model("Category", categorySchema);
