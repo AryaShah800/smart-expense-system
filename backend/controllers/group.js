@@ -5,6 +5,8 @@ import Settlement from "../models/Settlement.js";
 import User from "../models/user.js";
 import GroupCategory from "../models/GroupCategory.js";
 
+const isMember = (group, userId) => group.members.some(member => member.toString() === userId.toString());
+
 /* ===================== CREATE GROUP ===================== */
 export const createGroup = async (req, res) => {
   try {
@@ -46,7 +48,7 @@ export const getGroupDetails = async (req, res) => {
       .populate("adminId", "username email");
 
     if (!group) return res.status(404).json({ message: "Group not found" });
-    if (!group.members.some(m => m._id.equals(req.user._id))) return res.status(403).json({ message: "Access denied" });
+    if (!group.members.some(m => m._id.toString() === req.user._id.toString())) return res.status(403).json({ message: "Access denied" });
 
     res.json(group);
   } catch (error) {
@@ -93,11 +95,11 @@ export const inviteMember = async (req, res) => {
     const user = await User.findOne({ email });
     if (!user) return res.status(404).json({ message: "User not registered" });
 
-    if (group.members.includes(user._id)) {
+    if (isMember(group, user._id)) {
       return res.status(400).json({ message: "User already in group" });
     }
 
-    if (user.invitations && user.invitations.includes(groupId)) {
+    if (user.invitations?.some(id => id.toString() === groupId.toString())) {
       return res.status(400).json({ message: "User already invited" });
     }
 
@@ -124,6 +126,10 @@ export const addGroupCategory = async (req, res) => {
     const { id: groupId } = req.params;
     const { name, icon } = req.body;
 
+    const group = await Group.findById(groupId);
+    if (!group) return res.status(404).json({ message: "Group not found" });
+    if (!isMember(group, req.user._id)) return res.status(403).json({ message: "Access denied" });
+
     const existing = await GroupCategory.findOne({ groupId, name });
     if (existing) return res.status(400).json({ message: "Category already exists" });
 
@@ -145,6 +151,10 @@ export const addGroupCategory = async (req, res) => {
 export const getGroupCategories = async (req, res) => {
   try {
     const { id: groupId } = req.params;
+
+    const group = await Group.findById(groupId);
+    if (!group) return res.status(404).json({ message: "Group not found" });
+    if (!isMember(group, req.user._id)) return res.status(403).json({ message: "Access denied" });
 
     const defaultCount = await GroupCategory.countDocuments({ isDefault: true });
     if (defaultCount === 0) {
@@ -322,6 +332,7 @@ export const getGroupSplits = async (req, res) => {
 
     const group = await Group.findById(groupId).populate("members", "username email");
     if (!group) return res.status(404).json({ message: "Group not found" });
+    if (!isMember(group, req.user._id)) return res.status(403).json({ message: "Access denied" });
 
     const expenses = await GroupExpense.find({ groupId });
     const settlementsDB = await Settlement.find({ groupId });
@@ -387,6 +398,10 @@ export const getGroupSplits = async (req, res) => {
 export const getGroupExpenses = async (req, res) => {
   try {
     const { id: groupId } = req.params;
+    const group = await Group.findById(groupId);
+    if (!group) return res.status(404).json({ message: "Group not found" });
+    if (!isMember(group, req.user._id)) return res.status(403).json({ message: "Access denied" });
+
     const expenses = await GroupExpense.find({ groupId })
       .populate("paidBy", "username email")
       .sort({ createdAt: -1 });
@@ -422,7 +437,8 @@ export const addSettlement = async (req, res) => {
 
     const group = await Group.findById(groupId);
     if (!group) return res.status(404).json({ message: "Group not found" });
-    if (!group.members.some(m => m.toString() === fromId) || !group.members.some(m => m.toString() === toId)) {
+    if (!isMember(group, req.user._id)) return res.status(403).json({ message: "Access denied" });
+    if (!isMember(group, fromId) || !isMember(group, toId)) {
       return res.status(400).json({ message: "Both participants must be members of the group" });
     }
 
@@ -444,6 +460,10 @@ export const addSettlement = async (req, res) => {
 export const getGroupLedger = async (req, res) => {
   try {
     const { id: groupId } = req.params;
+    const group = await Group.findById(groupId);
+    if (!group) return res.status(404).json({ message: "Group not found" });
+    if (!isMember(group, req.user._id)) return res.status(403).json({ message: "Access denied" });
+
     const expenses = await GroupExpense.find({ groupId }).populate("paidBy", "username").sort({ createdAt: -1 });
     const settlements = await Settlement.find({ groupId }).populate("fromUser toUser", "username").sort({ createdAt: -1 });
     res.json({ expenses, settlements });
@@ -475,7 +495,14 @@ export const joinGroup = async (req, res) => {
       return res.status(404).json({ message: "Group not found or Invalid Invite Code" });
     }
 
-    if (group.members.includes(req.user._id)) {
+    if (!joinCode) {
+      const user = await User.findById(req.user._id);
+      if (!user?.invitations?.some(invId => invId.toString() === group._id.toString())) {
+        return res.status(403).json({ message: "Valid invitation required" });
+      }
+    }
+
+    if (isMember(group, req.user._id)) {
       return res.status(400).json({ message: "You are already in this group" });
     }
 
@@ -487,7 +514,7 @@ export const joinGroup = async (req, res) => {
     const user = await User.findById(req.user._id);
     if (user && user.invitations.includes(group._id)) {
       // Filter out the accepted group ID
-      user.invitations = user.invitations.filter(invId => !invId.equals(group._id));
+      user.invitations = user.invitations.filter(invId => invId.toString() !== group._id.toString());
       await user.save();
     }
 

@@ -191,15 +191,17 @@ export const respondToInvitation = async (req, res) => {
     const userId = req.user._id;
 
     const user = await User.findById(userId);
-    if (!user.invitations.includes(groupId)) {
+    if (!user?.invitations?.some(id => id.toString() === groupId?.toString())) {
         return res.status(400).json({ message: "Invitation not found" });
     }
 
     const group = await Group.findById(groupId);
     if (!group) return res.status(404).json({ message: "Group not found" });
 
+    if (action !== "accept" && action !== "reject") return res.status(400).json({ message: "Invalid invitation action" });
+
     if (action === "accept") {
-      if (!group.members.includes(userId)) {
+      if (!group.members.some(id => id.toString() === userId.toString())) {
         group.members.push(userId);
         await group.save();
       }
