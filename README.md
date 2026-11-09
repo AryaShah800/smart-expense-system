@@ -111,6 +111,18 @@ The mobile dashboard is the one page under 90: with 4x CPU throttling the Rechar
 
 CI runs Lighthouse CI on the public pages (`client/lighthouserc.cjs`, minimum 0.9 in every category). The pages behind login need a backend, so they are audited manually against a local stack.
 
+## Run everything with Docker
+
+```bash
+docker compose up --build            # app on http://localhost:8080, API on :7000, MongoDB included
+docker compose run --rm seed         # optional demo data: demo@smartexpense.app / Demo@1234
+```
+
+The web container serves the built client and proxies `/api` to the API, so the auth cookie is first-party, the same
+arrangement as the Vercel rewrite in production. Compose is for local use: it enables the debug OTP route, uses a
+placeholder `JWT_SECRET` unless you set one in a `.env` file, and runs the API in development mode so the cookie works
+over plain HTTP. Do not deploy it as is.
+
 ## Load testing
 
 `perf/` has a k6 script and instructions. On a user with 50,000 transactions, moving the dashboard from three reads

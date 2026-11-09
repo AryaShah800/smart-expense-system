@@ -1,0 +1,52 @@
+# Whole stack on one machine:  docker compose up --build
+#   app  http://localhost:8080      api  http://localhost:7000
+# Optional demo data:             docker compose run --rm seed
+services:
+  mongo:
+    image: mongo:7
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  api:
+    build: ./backend
+    environment:
+      PORT: 7000
+      MONGO_URI: mongodb://mongo:27017/smart-expense
+      # Local-only default. Set a real secret in a .env file next to this one for anything shared.
+      JWT_SECRET: ${JWT_SECRET:-local-development-secret-change-me}
+      ALLOWED_ORIGINS: http://localhost:8080
+      # No email provider locally: OTP codes are readable at /api/users/debug/otp?email=...
+      # Use the demo account (see seed below) to skip signup entirely.
+      ENABLE_DEBUG_OTP: "true"
+    ports:
+      - "7000:7000"
+    depends_on:
+      mongo:
+        condition: service_healthy
+
+  web:
+    build: ./client
+    ports:
+      - "8080:80"
+    depends_on:
+      - api
+
+  # One-shot: docker compose run --rm seed   ->  demo@smartexpense.app / Demo@1234
+  seed:
+    build: ./backend
+    profiles: ["seed"]
+    command: ["npm", "run", "seed:demo"]
+    environment:
+      MONGO_URI: mongodb://mongo:27017/smart-expense
+      JWT_SECRET: ${JWT_SECRET:-local-development-secret-change-me}
+    depends_on:
+      mongo:
+        condition: service_healthy
+
+volumes:
+  mongo-data:
