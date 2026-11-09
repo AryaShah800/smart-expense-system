@@ -16,6 +16,8 @@ services:
     build: ./backend
     environment:
       PORT: 7000
+      # Not "production": that makes the auth cookie Secure-only, which plain http://localhost cannot use.
+      NODE_ENV: development
       MONGO_URI: mongodb://mongo:27017/smart-expense
       # Local-only default. Set a real secret in a .env file next to this one for anything shared.
       JWT_SECRET: ${JWT_SECRET:-local-development-secret-change-me}

@@ -123,6 +123,18 @@ arrangement as the Vercel rewrite in production. Compose is for local use: it en
 placeholder `JWT_SECRET` unless you set one in a `.env` file, and runs the API in development mode so the cookie works
 over plain HTTP. Do not deploy it as is.
 
+## Run everything with Docker
+
+```bash
+docker compose up --build            # app on http://localhost:8080, API on :7000, MongoDB included
+docker compose run --rm seed         # optional demo data: demo@smartexpense.app / Demo@1234
+```
+
+The web container serves the built client and proxies `/api` to the API, so the auth cookie is first-party, the same
+arrangement as the Vercel rewrite in production. Compose is for local use: it enables the debug OTP route, uses a
+placeholder `JWT_SECRET` unless you set one in a `.env` file, and runs the API in development mode so the cookie works
+over plain HTTP. Do not deploy it as is.
+
 ## Load testing
 
 `perf/` has a k6 script and instructions. On a user with 50,000 transactions, moving the dashboard from three reads
