@@ -2,6 +2,11 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 
+// Same-origin /api (through the Vercel rewrite) or the Render API host directly.
+// The short-lived socket token must never be cached.
+const isApiRequest = ({ url }) =>
+  url.pathname.startsWith('/api/') && !url.pathname.startsWith('/api/users/socket-token')
+
 export default defineConfig({
   plugins: [
     react(),
@@ -32,8 +37,8 @@ export default defineConfig({
       workbox: {
   runtimeCaching: [
     {
-      // Match the full Render domain
-      urlPattern: /^https:\/\/smart-expense-system-api\.onrender\.com\/api\/.*/i,
+      // Matches the API on the Render domain and same-origin /api (Vercel rewrite)
+      urlPattern: isApiRequest,
       handler: 'NetworkFirst',
       method: 'GET',
       options: {
@@ -49,7 +54,7 @@ export default defineConfig({
       }
     },
     {
-      urlPattern: /^https:\/\/smart-expense-system-api\.onrender\.com\/api\/.*/i,
+      urlPattern: isApiRequest,
       handler: 'NetworkOnly',
       method: 'POST',
       options: {
@@ -60,7 +65,7 @@ export default defineConfig({
       }
     },
     {
-      urlPattern: /^https:\/\/smart-expense-system-api\.onrender\.com\/api\/.*/i,
+      urlPattern: isApiRequest,
       handler: 'NetworkOnly',
       method: 'PUT',
       options: {
@@ -71,7 +76,7 @@ export default defineConfig({
       }
     },
     {
-      urlPattern: /^https:\/\/smart-expense-system-api\.onrender\.com\/api\/.*/i,
+      urlPattern: isApiRequest,
       handler: 'NetworkOnly',
       method: 'DELETE',
       options: {

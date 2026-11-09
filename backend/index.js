@@ -21,25 +21,9 @@ import recurringRoutes from "./routes/recurring.js";
 import { processDueRecurring } from "./controllers/recurring.js";
 import { seedDefaultCategories } from "./utils/seedDefaultCategories.js";
 import { registerSocketHandlers } from "./middlewares/socketAuth.js";
+import { corsOptions } from "./config/cors.js";
 
 const PORT = process.env.PORT || 7000;
-
-const corsOptions = {
-  origin: function (origin, callback) {
-    if (
-      !origin ||
-      origin.endsWith(".vercel.app") ||
-      origin.startsWith("http://localhost") ||
-      origin.startsWith("http://192.168.")
-    ) {
-      callback(null, true);
-    } else {
-      callback(new Error("Not allowed by CORS"));
-    }
-  },
-  credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-};
 
 const app = express();
 const httpServer = createServer(app);
