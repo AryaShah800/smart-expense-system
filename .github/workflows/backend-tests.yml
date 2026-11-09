@@ -41,7 +41,7 @@ jobs:
       - run: npm audit --audit-level=high
 
   client:
-    name: Client (lint, build)
+    name: Client (lint, typecheck, build)
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -55,4 +55,5 @@ jobs:
           cache-dependency-path: client/package-lock.json
       - run: npm ci
       - run: npm run lint -- --quiet
+      - run: npm run typecheck
       - run: npm run build

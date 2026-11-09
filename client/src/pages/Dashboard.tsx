@@ -1,0 +1,403 @@
+import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import formatCurrency from "../utils/currencyFormatter";
+import { getCategoryIcon } from "../utils/categoryIcons";
+import type { BudgetProgress, Insight, TransactionWithCategory } from "../types";
+import api, { isServerDown, getErrorMessage } from "../api/axios";
+import { exportTransactionsPdf } from "../utils/exportPdf";
+
+import SummaryCards from "../components/dashboard/SummaryCards";
+import Notifications from "../components/dashboard/Notifications";
+import IncomeExpenseBar from "../components/charts/IncomeExpenseBar";
+import ExpenseCategoryDonut from "../components/charts/ExpenseCategoryDonut";
+import CashFlowLine from "../components/charts/CashFlowLine";
+import BudgetOverview from "../components/dashboard/BudgetOverview";
+import DataErrorState from "../components/DataErrorState";
+import ActionableInsights from "../components/dashboard/ActionableInsights";
+
+import "../styles/dashboard.css";
+import "../styles/responsive.css";
+
+function Dashboard() {
+  const [transactions, setTransactions] = useState<TransactionWithCategory[]>([]);
+  const [budgetStatus, setBudgetStatus] = useState<BudgetProgress[]>([]);
+  const [insights, setInsights] = useState<Insight[]>([]);
+  const [insightsLoading, setInsightsLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [range, setRange] = useState("90d");
+  const { user } = useAuth();
+
+  /* ===== FETCH DATA ===== */
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      setError("");
+      const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      const [txRes, budgetRes, insightRes] = await Promise.all([
+        api.get<TransactionWithCategory[]>("/transactions"),
+        api.get<BudgetProgress[]>("/budgets/status", { params: { timezone: userTimezone } }),
+        api.get<Insight[]>("/dashboard/insights"),
+      ]);
+
+      setTransactions(txRes.data);
+      setBudgetStatus(budgetRes.data);
+      setInsights(insightRes.data || []);
+    } catch (err) {
+      console.error(err);
+      setError(
+        isServerDown(err)
+          ? "The server appears to be offline or unreachable. Please check if the backend service is running."
+          : (getErrorMessage(err, "Failed to load dashboard financial data."))
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchInsights = async () => {
+    try {
+      setInsightsLoading(true);
+      const res = await api.get<Insight[]>("/dashboard/insights");
+      setInsights(res.data || []);
+    } catch (err) {
+      console.error("Failed to refresh insights", err);
+    } finally {
+      setInsightsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  /* ===== RANGE LOGIC ===== */
+  const daysBack = useMemo(() => {
+    if (range === "7d") return 7;
+    if (range === "30d") return 30;
+    if (range === "90d") return 90;
+    if (range === "180d") return 180;
+    if (range === "365d") return 365;
+    return 0;
+  }, [range]);
+
+  const filteredTransactions = useMemo(() => {
+    if (!daysBack) return transactions;
+    const now = new Date();
+    now.setHours(23, 59, 59, 999);
+    const fromDate = new Date();
+    fromDate.setDate(now.getDate() - daysBack);
+
+    return transactions.filter((t) => {
+      const d = new Date(t.date);
+      return d >= fromDate && d <= now;
+    });
+  }, [transactions, daysBack]);
+
+  /* ===== FINANCIAL CALCULATIONS ===== */
+  const summary = useMemo(() => {
+    let income = 0;
+    let expense = 0;
+
+    filteredTransactions.forEach((t) => {
+      if (t.type === "income") income += t.amount;
+      else expense += t.amount;
+    });
+
+    return { income, expense, balance: income - expense };
+  }, [filteredTransactions]);
+
+  // Forecast: Projected expense for current month
+  const projection = useMemo(() => {
+    const now = new Date();
+    const currentDay = now.getDate();
+    const totalDays = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+
+    const thisMonthExpenses = transactions.filter(t => {
+      const d = new Date(t.date);
+      return d.getMonth() === now.getMonth() &&
+             d.getFullYear() === now.getFullYear() &&
+             t.type === 'expense';
+    }).reduce((sum, t) => sum + t.amount, 0);
+
+    if (currentDay === 0) return 0;
+    const dailyAverage = thisMonthExpenses / currentDay;
+    return Math.round(dailyAverage * totalDays);
+  }, [transactions]);
+
+  /* ===== HANDLERS ===== */
+  const handleExport = () => {
+    exportTransactionsPdf({
+      userName: user?.username || "User",
+      transactions: filteredTransactions,
+      fromDate: new Date(Date.now() - daysBack * 86400000).toLocaleDateString(),
+      toDate: new Date().toLocaleDateString()
+    });
+  };
+
+  if (loading) return <p className="dashboard-loading">Loading financial data...</p>;
+  if (error) {
+    return (
+      <DataErrorState
+        title="Dashboard Unavailable"
+        message={error}
+        onRetry={fetchData}
+      />
+    );
+  }
+
+  return (
+    <>
+      {/* ========== DESKTOP LAYOUT ========== */}
+      <div className="dashboard-page show-from-md-block">
+        {/* HEADER */}
+        <div className="dashboard-header-row">
+          <div className="welcome-section">
+            <h1>Hello, {user?.username?.split(" ")[0] || "User"}! 👋</h1>
+            <p className="dashboard-subtitle">Financial Overview & Projections</p>
+          </div>
+
+          <div className="header-actions">
+            <button onClick={handleExport} className="btn-export">
+              <span>📥</span> Export Report
+            </button>
+
+            <div className="filter-wrapper">
+              <select
+                className="range-dropdown"
+                value={range}
+                onChange={(e) => setRange(e.target.value)}
+              >
+                <option value="7d">Last 7 days</option>
+                <option value="30d">Last 30 days</option>
+                <option value="90d">Last 90 days</option>
+                <option value="180d">Last 6 months</option>
+                <option value="365d">Last 1 year</option>
+                <option value="all">All time</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <Notifications />
+
+        {/* SUMMARY CARDS + PROJECTION */}
+        <div className="summary-grid">
+          <SummaryCards
+            income={summary.income}
+            expense={summary.expense}
+            balance={summary.balance}
+          />
+          {/* FIX: Replaced hardcoded INR format with formatCurrency utility */}
+          <div className="summary-card projected">
+            <span>Projected (Month End)</span>
+            <strong>
+              {formatCurrency(projection, user?.currency)}
+            </strong>
+          </div>
+        </div>
+
+        {/* ACTIONABLE FINANCIAL INSIGHTS */}
+        <ActionableInsights
+          insights={insights}
+          onRefresh={fetchInsights}
+          loading={insightsLoading}
+        />
+
+        {transactions.length === 0 ? (
+          <div className="empty-dashboard">
+            <div className="empty-icon">📊</div>
+            <h3>No transactions yet</h3>
+            <p>Start tracking your expenses to see insights here.</p>
+            <Link to="/add-transaction" className="cta-button">
+              Add First Transaction
+            </Link>
+          </div>
+        ) : (
+          <div className="dashboard-grid">
+            {/* LEFT COLUMN: CHARTS */}
+            <div className="charts-column">
+              <div className="chart-card">
+                <h4>Income vs Expense</h4>
+                <IncomeExpenseBar transactions={filteredTransactions} />
+              </div>
+
+              <div className="chart-card">
+                <h4>Spending Categories</h4>
+                <ExpenseCategoryDonut transactions={filteredTransactions} />
+              </div>
+
+              <div className="chart-card">
+                <h4>Cash Flow Trend</h4>
+                <CashFlowLine transactions={filteredTransactions} />
+              </div>
+            </div>
+
+            {/* RIGHT COLUMN: RECENT + BUDGETS */}
+            <div className="recent-column" style={{ gap: '24px' }}>
+              <BudgetOverview budgetStatus={budgetStatus} />
+
+              <div className="recent-section-wrapper">
+                <div className="section-header">
+                  <h3 className="section-title">Recent Activity</h3>
+                  <Link to="/expenses" className="view-all-link">View All</Link>
+                </div>
+
+                <div className="recent-list">
+                  {transactions
+                    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+                    .slice(0, 5)
+                    .map((t) => (
+                      <div key={t._id} className="expenses-card mini">
+                        <div className={`card-icon ${t.type}`}>
+                          {getCategoryIcon(t.categoryId, t.type)}
+                        </div>
+
+                        <div className="card-content">
+                          <div className="card-row top">
+                            <span className="card-category">{t.categoryId?.name || "Other"}</span>
+                            <span className={`card-amount ${t.type}`}>
+                               {t.type === "expense" ? "-" : "+"}{formatCurrency(t.amount, user?.currency)}
+                            </span>
+                          </div>
+
+                          <div className="card-row bottom">
+                            <span className="card-desc">{t.description || "No description"}</span>
+                            <span className="card-date">
+                              {new Date(t.date).toLocaleDateString("en-US", {
+                                month: "short",
+                                day: "numeric",
+                              })}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* ========== MOBILE LAYOUT ========== */}
+      <div className="dashboard-mobile hide-from-md">
+        <div className="dashboard-mobile-actions">
+          <select
+            className="range-dropdown"
+            value={range}
+            onChange={(e) => setRange(e.target.value)}
+            style={{ padding: "0.5rem 0.75rem", borderRadius: "0.5rem", border: "1px solid var(--border)", fontSize: "0.875rem", background: "var(--bg)", color: "var(--text)" }}
+          >
+            <option value="7d">Last 7 days</option>
+            <option value="30d">Last 30 days</option>
+            <option value="90d">Last 90 days</option>
+            <option value="180d">Last 6 months</option>
+            <option value="365d">Last 1 year</option>
+            <option value="all">All time</option>
+          </select>
+          <button type="button" onClick={handleExport} className="btn-export" style={{ padding: "0.5rem 1rem", fontSize: "0.875rem" }}>
+            📥 Export
+          </button>
+        </div>
+
+        <Notifications />
+
+        <div className="summary-mobile-balance">
+          <span>Total Balance</span>
+          <strong>{formatCurrency(summary.balance, user?.currency)}</strong>
+        </div>
+
+        <div className="summary-mobile-grid">
+          <div className="summary-mobile-card income">
+            <span>Income</span>
+            <strong>{formatCurrency(summary.income, user?.currency)}</strong>
+          </div>
+          <div className="summary-mobile-card expense">
+            <span>Expense</span>
+            <strong>{formatCurrency(summary.expense, user?.currency)}</strong>
+          </div>
+        </div>
+
+        {/* FIX: Ensure formatCurrency receives user.currency explicitly to prevent default mismatches */}
+        <div className="projection-mobile-card">
+          <span>Projected (Month End)</span>
+          <strong>{formatCurrency(projection, user?.currency)}</strong>
+        </div>
+
+        <div className="mobile-quick-actions">
+          <Link to="/add-transaction" className="quick-action-pill expense">
+            <span>+</span> Add Expense
+          </Link>
+          <Link to="/add-transaction" className="quick-action-pill income">
+            <span>+</span> Add Income
+          </Link>
+          <Link to="/recurring" className="quick-action-pill recurring">
+            <span>🔁</span> Recurring
+          </Link>
+        </div>
+
+        {/* ACTIONABLE FINANCIAL INSIGHTS (MOBILE) */}
+        <ActionableInsights
+          insights={insights}
+          onRefresh={fetchInsights}
+          loading={insightsLoading}
+        />
+
+        {transactions.length === 0 ? (
+          <div className="summary-mobile-card" style={{ textAlign: "center", padding: "1.5rem" }}>
+            <div style={{ fontSize: "1.5rem", marginBottom: "0.5rem" }}>📊</div>
+            <h3 style={{ margin: "0 0 0.25rem 0", fontSize: "1rem", color: "var(--text)" }}>No transactions yet</h3>
+            <p style={{ fontSize: "0.875rem", color: "var(--muted)", marginBottom: "1rem" }}>Start tracking to see insights.</p>
+            <Link to="/add-transaction" className="cta-button" style={{ display: "inline-block", padding: "0.5rem 1rem", borderRadius: "0.75rem", background: "var(--primary)", color: "white", textDecoration: "none", fontSize: "0.875rem" }}>
+              Add First Transaction
+            </Link>
+          </div>
+        ) : (
+          <>
+            <div className="chart-card-mobile">
+              <h4>Income vs Expense</h4>
+              <IncomeExpenseBar transactions={filteredTransactions} />
+            </div>
+            <div className="chart-card-mobile">
+              <h4>Spending Categories</h4>
+              <ExpenseCategoryDonut transactions={filteredTransactions} />
+            </div>
+            <div className="chart-card-mobile">
+              <h4>Cash Flow Trend</h4>
+              <CashFlowLine transactions={filteredTransactions} />
+            </div>
+            <BudgetOverview budgetStatus={budgetStatus} />
+            <div>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.75rem" }}>
+                <h3 style={{ margin: 0, fontSize: "0.95rem", fontWeight: 700, color: "var(--text)" }}>Recent Activity</h3>
+                <Link to="/expenses" style={{ fontSize: "0.8rem", fontWeight: 600, color: "var(--primary)", textDecoration: "none" }}>View All →</Link>
+              </div>
+              {transactions
+                .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+                .slice(0, 5)
+                .map((t) => (
+                  <div key={t._id} className="recent-item-mobile">
+                    <div className={`icon ${t.type}`}>{getCategoryIcon(t.categoryId, t.type)}</div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontWeight: 700, fontSize: "0.9rem", color: "var(--text)" }}>{t.categoryId?.name || "Other"}</div>
+                      <div style={{ fontSize: "0.75rem", color: "var(--muted)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t.description || "No description"}</div>
+                    </div>
+                    <div style={{ textAlign: "right" }}>
+                      <span className={`amount ${t.type}`}>{t.type === "expense" ? "-" : "+"}{formatCurrency(t.amount, user?.currency)}</span>
+                      <div style={{ fontSize: "0.7rem", color: "var(--muted)" }}>
+                        {new Date(t.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+            </div>
+          </>
+        )}
+      </div>
+    </>
+  );
+}
+
+export default Dashboard;

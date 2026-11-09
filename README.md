@@ -34,7 +34,7 @@ flowchart LR
 
 | Layer | Tools |
 | --- | --- |
-| Client | React 19, Vite 7, React Router 7, Recharts, jsPDF, Socket.io client, vite-plugin-pwa (Workbox) |
+| Client | React 19, TypeScript (strict), Vite 7, React Router 7, Recharts, jsPDF, Socket.io client, vite-plugin-pwa (Workbox) |
 | API | Node 22, Express 5, Mongoose 8, Socket.io |
 | Data | MongoDB Atlas |
 | Security | JWT in an `httpOnly` cookie, bcrypt, helmet, express-rate-limit, per-user socket rooms |
@@ -76,7 +76,7 @@ npm test                # 100+ integration tests: Supertest against an in-memory
 npm run test:coverage   # same, with a coverage report; fails under 70% line coverage
 ```
 
-The first run downloads a MongoDB binary for `mongodb-memory-server` (cached afterwards). CI runs the backend tests with coverage, `npm audit`, and a client lint and build.
+The first run downloads a MongoDB binary for `mongodb-memory-server` (cached afterwards). CI runs the backend tests with coverage, `npm audit`, and a client lint, type check and build.
 
 ## Project structure
 
