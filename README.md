@@ -71,8 +71,12 @@ Sample data: `npm run seed:demo` in `backend/` creates the demo account (safe on
 ## Tests
 
 ```bash
-cd backend && npm test
+cd backend
+npm test                # 100+ integration tests: Supertest against an in-memory MongoDB
+npm run test:coverage   # same, with a coverage report; fails under 70% line coverage
 ```
+
+The first run downloads a MongoDB binary for `mongodb-memory-server` (cached afterwards). CI runs the backend tests with coverage, `npm audit`, and a client lint and build.
 
 ## Project structure
 

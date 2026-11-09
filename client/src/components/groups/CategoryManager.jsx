@@ -11,12 +11,13 @@ function CategoryManager({ groupId }) {
     try {
       const res = await api.get(`/groups/${groupId}/categories`);
       setCategories(res.data);
-    } catch (err) {
+    } catch {
       console.error("Failed to load categories");
     }
   };
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- manual fetch; replaced by React Query in Phase 5
     fetchCategories();
   }, [groupId]);
 
@@ -28,7 +29,7 @@ function CategoryManager({ groupId }) {
       setNewCatName("");
       setShowInput(false);
       fetchCategories(); 
-    } catch (err) {
+    } catch {
       alert("Failed to add category");
     }
   };

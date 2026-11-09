@@ -30,7 +30,7 @@ function Signup() {
       try {
         await createAccount(credentials);
         setStep(2);
-      } catch (err) {
+      } catch {
         // error state provided by hook
       }
     },
@@ -44,7 +44,7 @@ function Signup() {
       try {
         await verifyOtp({ email: credentials.email, otp });
         navigate("/dashboard");
-      } catch (err) {
+      } catch {
         // handled in hook
       }
     },
@@ -55,7 +55,7 @@ function Signup() {
     setError(null);
     try {
       await resendOtp(credentials.email);
-    } catch (err) {
+    } catch {
       // handled in hook
     }
   }, [credentials.email, resendOtp, setError]);

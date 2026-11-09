@@ -39,6 +39,7 @@ export default function Header() {
 
   useEffect(() => {
     if (!user) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- manual fetch; replaced by React Query in Phase 5
     fetchNotifications();
     socket.connect(); // the server joins this user's room after verifying the token
     socket.on("new_notification", (newNotif) => {
@@ -57,7 +58,7 @@ export default function Header() {
       try {
         await api.put("/users/notifications/read");
         setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
-      } catch (err) {
+      } catch {
         console.error("Failed to mark as read");
       }
     }

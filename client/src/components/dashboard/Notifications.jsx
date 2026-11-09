@@ -10,7 +10,9 @@ function Notifications() {
     try {
       const res = await api.get("/users/invitations");
       setInvites(res.data);
-    } catch (err) { } finally { setLoading(false); }
+    } catch {
+      // invitations are optional; the panel just stays empty
+    } finally { setLoading(false); }
   };
 
   useEffect(() => {
@@ -35,7 +37,7 @@ function Notifications() {
         alert("Joined group successfully!");
         window.location.reload(); 
       }
-    } catch (err) {
+    } catch {
       alert("Action failed");
     }
   };

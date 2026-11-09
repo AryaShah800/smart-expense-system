@@ -105,7 +105,7 @@ function Expenses() {
     try {
       await api.delete(`/transactions/${id}`);
       setTransactions((prev) => prev.filter((t) => t._id !== id));
-    } catch (err) {
+    } catch {
       alert("Failed to delete transaction");
     }
   };

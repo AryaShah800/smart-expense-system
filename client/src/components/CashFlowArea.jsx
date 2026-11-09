@@ -15,15 +15,15 @@ function CashFlowArea({ transactions }) {
     (a, b) => new Date(a.date) - new Date(b.date)
   );
 
-  let balance = 0;
-
-  const data = sorted.map((t) => {
-    balance += t.type === "income" ? t.amount : -t.amount;
-    return {
+  // Running balance after each transaction (no variable reassigned during render)
+  const data = sorted.reduce((points, t) => {
+    const previous = points.length ? points[points.length - 1].balance : 0;
+    points.push({
       date: new Date(t.date).toLocaleDateString(),
-      balance,
-    };
-  });
+      balance: previous + (t.type === "income" ? t.amount : -t.amount),
+    });
+    return points;
+  }, []);
 
   if (data.length === 0) {
     return <p>No transaction data</p>;

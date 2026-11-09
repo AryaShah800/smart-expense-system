@@ -1,6 +1,6 @@
 import Budget from "../models/Budget.js";
 import Transaction from "../models/Transaction.js";
-import Category from "../models/Category.js";
+import { findUsableCategory } from "../utils/findUsableCategory.js";
 
 export const setBudget = async (req, res) => {
   try {
@@ -16,7 +16,7 @@ export const setBudget = async (req, res) => {
     }
 
     // Fix #6: Query Category model and validate category.type !== 'expense'
-    const category = await Category.findById(categoryId);
+    const category = await findUsableCategory(categoryId, req.user._id);
     if (!category) {
       return res.status(404).json({ message: "Category not found" });
     }

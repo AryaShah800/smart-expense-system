@@ -5,7 +5,34 @@ import Settlement from "../models/Settlement.js";
 import User from "../models/user.js";
 import GroupCategory from "../models/GroupCategory.js";
 
-const isMember = (group, userId) => group.members.some(member => member.toString() === userId.toString());
+// Works whether `members` holds ObjectIds or populated users (a populated document's
+// toString() is not its id, which previously made members look like outsiders).
+const idOf = (member) => (member?._id ?? member).toString();
+const isMember = (group, userId) => group.members.some(member => idOf(member) === userId.toString());
+
+const toCents = (amount) => Math.round(Number(amount) * 100);
+
+// Splits `totalCents` in proportion to `weights` so the parts add up exactly
+// (largest remainder method: leftover paise go to the biggest fractional parts).
+const allocateCents = (totalCents, weights) => {
+  const weightSum = weights.reduce((sum, w) => sum + w, 0);
+  const exact = weights.map(w => (totalCents * w) / weightSum);
+  const parts = exact.map(Math.floor);
+  let left = totalCents - parts.reduce((sum, p) => sum + p, 0);
+  const order = exact
+    .map((value, index) => [value - Math.floor(value), index])
+    .sort((a, b) => b[0] - a[0] || a[1] - b[1]);
+  for (let k = 0; left > 0; k = (k + 1) % order.length, left--) parts[order[k][1]] += 1;
+  return parts;
+};
+
+// Everyone charged in a split must be a distinct member of this group.
+const splitParticipantError = (group, splits) => {
+  const ids = splits.map(s => String(s.userId));
+  if (new Set(ids).size !== ids.length) return "A person can only appear once in a split";
+  if (!ids.every(id => isMember(group, id))) return "Everyone in a split must be a member of the group";
+  return null;
+};
 
 /* ===================== CREATE GROUP ===================== */
 export const createGroup = async (req, res) => {
@@ -216,14 +243,9 @@ export const addGroupExpense = async (req, res) => {
         return res.status(400).json({ message: "At least one member must be selected to split" });
       }
 
-      // Fix #4: Fix penny drop bug with proper rounding
-      const baseShare = Math.round((numericAmount / usersToSplit.length) * 100) / 100;
-      const remainder = Math.round((numericAmount - baseShare * usersToSplit.length) * 100) / 100;
-
-      finalSplits = usersToSplit.map((userId, index) => ({
-        userId,
-        shareAmount: index === 0 ? baseShare + remainder : baseShare
-      }));
+      // Whole paise only: leftover paise go one each to the first people, so shares always add up
+      const shares = allocateCents(toCents(numericAmount), usersToSplit.map(() => 1));
+      finalSplits = usersToSplit.map((userId, index) => ({ userId, shareAmount: shares[index] / 100 }));
     }
     else if (splitType === "percentage") {
       if (!Array.isArray(splits) || splits.length === 0) {
@@ -238,10 +260,8 @@ export const addGroupExpense = async (req, res) => {
       const totalPercent = splits.reduce((sum, s) => sum + Number(s.shareAmount), 0);
       if (Math.abs(totalPercent - 100) > 0.05) return res.status(400).json({ message: "Total percentage must be 100%" });
 
-      finalSplits = splits.map(s => ({
-        userId: s.userId,
-        shareAmount: Math.round(((numericAmount * Number(s.shareAmount)) / 100) * 100) / 100
-      }));
+      const shares = allocateCents(toCents(numericAmount), splits.map(s => Number(s.shareAmount)));
+      finalSplits = splits.map((s, index) => ({ userId: s.userId, shareAmount: shares[index] / 100 }));
     }
     else if (splitType === "exact") {
       if (!Array.isArray(splits) || splits.length === 0) {
@@ -260,6 +280,9 @@ export const addGroupExpense = async (req, res) => {
     else {
       return res.status(400).json({ message: "Invalid split type" });
     }
+
+    const participantError = splitParticipantError(group, finalSplits);
+    if (participantError) return res.status(400).json({ message: participantError });
 
     const expense = new GroupExpense({
       groupId,
@@ -365,7 +388,7 @@ export const getGroupSplits = async (req, res) => {
     }));
 
     const debtors = balances.filter(b => b.balance < -0.01).map(b => ({ ...b, balance: Math.abs(b.balance) }));
-    const creditors = balances.filter(b => b.balance > 0.01);
+    const creditors = balances.filter(b => b.balance > 0.01).map(b => ({ ...b })); // copies: the loop below mutates them
     const settlements = [];
 
     let i = 0, j = 0;

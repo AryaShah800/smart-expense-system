@@ -1,4 +1,4 @@
-name: Backend tests
+name: CI
 on:
   push:
     branches: [main]
@@ -6,10 +6,12 @@ on:
 permissions:
   contents: read
 jobs:
-  test:
+  backend:
+    name: Backend (test, coverage, audit)
     runs-on: ubuntu-latest
     defaults:
       run:
+        shell: bash
         working-directory: backend
     steps:
       - uses: actions/checkout@v4
@@ -19,5 +21,38 @@ jobs:
           cache: npm
           cache-dependency-path: backend/package-lock.json
       - run: npm ci
-      - run: npm test
+      # Integration tests run against an in-memory MongoDB; cache its binary between runs.
+      - uses: actions/cache@v4
+        with:
+          path: backend/node_modules/.cache/mongodb-memory-server
+          key: mongodb-memory-server-${{ runner.os }}-${{ hashFiles('backend/package-lock.json') }}
+      - name: Test with coverage (fails under 70% line coverage)
+        run: npm run test:coverage 2>&1 | tee coverage.txt
+      - name: Coverage summary
+        if: always()
+        run: |
+          {
+            echo '### Backend test coverage'
+            echo '```'
+            sed -n '/start of coverage report/,/end of coverage report/p' coverage.txt | sed 's/^# //'
+            grep -E '^# (tests|pass|fail) ' coverage.txt | sed 's/^# //'
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
       - run: npm audit --audit-level=high
+
+  client:
+    name: Client (lint, build)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: client
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: client/package-lock.json
+      - run: npm ci
+      - run: npm run lint -- --quiet
+      - run: npm run build

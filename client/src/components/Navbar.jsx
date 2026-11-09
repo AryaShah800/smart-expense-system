@@ -1,4 +1,4 @@
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import api from "../api/axios";
 import { socket } from "../api/socket";
@@ -6,11 +6,9 @@ import { useAuth } from "../context/AuthContext";
 import "../styles/navbar.css";
 
 function Navbar() {
-  const navigate = useNavigate();
   const location = useLocation();
 
-  // Get user and logout function from Context
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
 
   const [notifications, setNotifications] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
@@ -30,6 +28,7 @@ function Navbar() {
   useEffect(() => {
     if (user) {
       // 1. Initial Load of notifications
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- manual fetch; replaced by React Query in Phase 5
       fetchNotifications();
 
       // 2. Connect Socket (the server joins this user's room after verifying the token)
@@ -59,29 +58,13 @@ function Navbar() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleLogout = async () => {
-    try {
-      // 1. Notify backend
-      await api.post("/users/logout");
-
-      // 2. Clear global state via context (removes from localStorage automatically)
-      logout();
-
-      // 3. Cleanup socket and navigate
-      socket.disconnect();
-      navigate("/login");
-    } catch (err) {
-      console.error("Logout failed", err);
-    }
-  };
-
   const handleBellClick = async () => {
     setShowDropdown(!showDropdown);
     if (!showDropdown && unreadCount > 0) {
       try {
         await api.put("/users/notifications/read");
         setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
-      } catch (err) {
+      } catch {
         console.error("Failed to mark notifications as read");
       }
     }

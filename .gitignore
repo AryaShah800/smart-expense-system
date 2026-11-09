@@ -18,3 +18,4 @@ build/
 # Local run output and OS shortcuts
 *-results.json
 *.lnk
+coverage.txt
