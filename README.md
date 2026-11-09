@@ -111,6 +111,12 @@ The mobile dashboard is the one page under 90: with 4x CPU throttling the Rechar
 
 CI runs Lighthouse CI on the public pages (`client/lighthouserc.cjs`, minimum 0.9 in every category). The pages behind login need a backend, so they are audited manually against a local stack.
 
+## Load testing
+
+`perf/` has a k6 script and instructions. On a user with 50,000 transactions, moving the dashboard from three reads
+plus in-memory summing to one `$facet` aggregation took `GET /api/dashboard` from p50 8.1 s / p95 9.1 s to p50 1.1 s / p95 1.5 s
+at 50 concurrent users, with 0% errors in both runs. Details and caveats are in [perf/README.md](perf/README.md).
+
 ## Project structure
 
 ```

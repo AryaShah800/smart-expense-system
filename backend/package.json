@@ -8,6 +8,7 @@
     "dev": "nodemon index.js",
     "test": "node --test tests/*.test.js",
     "seed:demo": "node scripts/seedDemo.js",
+    "seed:perf": "node scripts/seedPerf.js",
     "seed:heavy": "node scripts/seedHeavy.js --wipe",
     "test:coverage": "node --test --experimental-test-coverage --test-coverage-include='controllers/**' --test-coverage-include='middlewares/**' --test-coverage-include='utils/**' --test-coverage-include='config/**' --test-coverage-lines=70 tests/*.test.js"
   },
