@@ -85,6 +85,32 @@ npm run typecheck       # tsc --noEmit (strict)
 
 The first backend run downloads a MongoDB binary for `mongodb-memory-server` (cached afterwards). CI runs the backend tests with coverage, `npm audit`, and a client lint, type check, tests and build.
 
+## Performance and accessibility
+
+Lighthouse 12 against the production build (`vite preview`) with the seeded demo account, mobile emulation (4x CPU slowdown, slow 4G) unless noted. Desktop numbers use Lighthouse's desktop preset.
+
+| Page | Performance (mobile / desktop) | Accessibility | Best practices | SEO |
+| --- | --- | --- | --- | --- |
+| Login, Signup | 98 / 100 | 100 | 100 | 100 |
+| Dashboard | 85 / 100 | 100 | 100 | 100 |
+| Expenses | 96 / 100 | 100 | 100 | 100 |
+| Budgets | 96 / 100 | 100 | 100 | 100 |
+| Groups | 100 / 100 | 100 | 100 | 100 |
+| Recurring | 100 / 100 | 100 | 100 | 100 |
+| Add transaction, Settings | 99-100 / 100 | 100 | 100 | 100 |
+
+What changed:
+
+- Routes are lazy-loaded and jsPDF is imported only when someone exports, so the first-load script went from one 1.29 MB bundle (401 kB gzip) to a 401 kB entry chunk (131 kB gzip) plus per-page chunks. The PDF libraries (about 800 kB) are kept out of the service worker precache (1.6 MB down to 925 KiB).
+- Only the active dashboard layout is mounted; it used to render both the desktop and mobile layouts and draw every chart twice.
+- Brand, success, danger and muted colours were darkened to meet WCAG AA contrast (the dark theme has its own lighter status colours); text is never smaller than 12px.
+- Every form control has an associated label, headings no longer skip levels, and the shared modal is a real dialog (role, `aria-modal`, focus moved in and restored, Tab trapped, Escape closes).
+- `robots.txt`, a meta description and a proper page title.
+
+The mobile dashboard is the one page under 90: with 4x CPU throttling the Recharts code costs about 570 ms of blocking time. On a desktop-class CPU it scores 100.
+
+CI runs Lighthouse CI on the public pages (`client/lighthouserc.cjs`, minimum 0.9 in every category). The pages behind login need a backend, so they are audited manually against a local stack.
+
 ## Project structure
 
 ```

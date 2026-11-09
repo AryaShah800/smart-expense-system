@@ -310,7 +310,7 @@ export default function Recurring() {
                   <div className="rec-card-icon-title">
                     <div className={`rec-icon ${item.type}`}>{icon}</div>
                     <div>
-                      <h4 className="rec-title">{item.description}</h4>
+                      <h3 className="rec-title">{item.description}</h3>
                       <span className="rec-category">
                         {item.categoryId?.name || "General"}
                       </span>
@@ -401,8 +401,9 @@ export default function Recurring() {
 
               {/* TITLE */}
               <div className="form-group">
-                <label>Description / Name</label>
+                <label htmlFor="recurring-description-name">Description / Name</label>
                 <input
+                  id="recurring-description-name"
                   type="text"
                   className="modal-input"
                   placeholder="e.g. Netflix, Apartment Rent, Gym"
@@ -415,8 +416,9 @@ export default function Recurring() {
               {/* AMOUNT & FREQUENCY */}
               <div className="form-row-2">
                 <div className="form-group">
-                  <label>Amount</label>
+                  <label htmlFor="recurring-amount">Amount</label>
                   <input
+                    id="recurring-amount"
                     type="number"
                     className="modal-input"
                     placeholder="0.00"
@@ -430,8 +432,9 @@ export default function Recurring() {
                 </div>
 
                 <div className="form-group">
-                  <label>Frequency</label>
+                  <label htmlFor="recurring-frequency">Frequency</label>
                   <select
+                    id="recurring-frequency"
                     className="modal-select"
                     value={form.frequency}
                     onChange={(e) => setForm({ ...form, frequency: e.target.value as Frequency })}
@@ -447,8 +450,9 @@ export default function Recurring() {
               {/* CATEGORY & START DATE */}
               <div className="form-row-2">
                 <div className="form-group">
-                  <label>Category</label>
+                  <label htmlFor="recurring-category">Category</label>
                   <select
+                    id="recurring-category"
                     className="modal-select"
                     value={form.categoryId}
                     onChange={(e) => setForm({ ...form, categoryId: e.target.value })}
@@ -464,8 +468,9 @@ export default function Recurring() {
                 </div>
 
                 <div className="form-group">
-                  <label>Start Date</label>
+                  <label htmlFor="recurring-start-date">Start Date</label>
                   <input
+                    id="recurring-start-date"
                     type="date"
                     className="modal-input"
                     value={form.startDate}

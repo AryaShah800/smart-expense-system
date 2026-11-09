@@ -1,21 +1,28 @@
+import { lazy, Suspense } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import { Toaster } from "react-hot-toast";
 import ErrorBoundary from "./components/ErrorBoundary";
 
-import Login from "./pages/Login";
-import Signup from "./pages/Signup";
-import Dashboard from "./pages/Dashboard";
-import AddTransaction from "./pages/AddTransaction";
-import Expenses from "./pages/Expenses";
-import Groups from "./pages/Groups";
-import GroupDetails from "./pages/GroupDetails";
-import Budgets from "./pages/Budgets";
-import Settings from "./pages/Settings";
-import Recurring from "./pages/Recurring";
+const Login = lazy(() => import("./pages/Login"));
+const Signup = lazy(() => import("./pages/Signup"));
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const AddTransaction = lazy(() => import("./pages/AddTransaction"));
+const Expenses = lazy(() => import("./pages/Expenses"));
+const Groups = lazy(() => import("./pages/Groups"));
+const GroupDetails = lazy(() => import("./pages/GroupDetails"));
+const Budgets = lazy(() => import("./pages/Budgets"));
+const Settings = lazy(() => import("./pages/Settings"));
+const Recurring = lazy(() => import("./pages/Recurring"));
 
 import ProtectedRoute from "./components/ProtectedRoute";
 import Layout from "./components/Layout";
+
+const PageFallback = () => (
+  <p role="status" aria-live="polite" style={{ padding: 24, color: "var(--muted, #475569)" }}>
+    Loading…
+  </p>
+);
 
 // Smart redirect for root path: sends logged-in users to dashboard
 const RootRedirect = () => {
@@ -40,6 +47,7 @@ function App() {
           }}
         />
         <BrowserRouter>
+          <Suspense fallback={<PageFallback />}>
           <Routes>
             {/* Public routes */}
             <Route path="/" element={<RootRedirect />} />
@@ -64,6 +72,7 @@ function App() {
               <Route path="/settings" element={<Settings />} />
             </Route>
           </Routes>
+          </Suspense>
         </BrowserRouter>
       </AuthProvider>
     </ErrorBoundary>

@@ -13,7 +13,7 @@ function MonthlyComparison({ transactions }: { transactions: TransactionWithCate
 
   return (
     <div className="chart-card">
-      <h4>Monthly Comparison</h4>
+      <h3>Monthly Comparison</h3>
       <ResponsiveContainer width="100%" height={250}>
         <BarChart data={data}>
           <XAxis dataKey="month" />

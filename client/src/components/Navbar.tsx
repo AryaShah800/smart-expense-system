@@ -63,13 +63,23 @@ function Navbar() {
               <Link to="/groups" className={location.pathname.startsWith("/groups") ? "active" : ""} onClick={closeMobileMenu}>Groups</Link>
             </div>
 
-            <button className="menu-toggle" onClick={toggleMobileMenu}>
+            <button
+              className="menu-toggle"
+              onClick={toggleMobileMenu}
+              aria-label="Toggle navigation menu"
+              aria-expanded={mobileMenuOpen}
+            >
               ☰
             </button>
 
             <div className="nav-right">
               <div className="notification-wrapper" ref={dropdownRef}>
-                <button className="notification-bell" onClick={handleBellClick}>
+                <button
+                  className="notification-bell"
+                  onClick={handleBellClick}
+                  aria-label={unreadCount > 0 ? `Notifications, ${unreadCount} unread` : "Notifications"}
+                  aria-expanded={showDropdown}
+                >
                   🔔
                   {unreadCount > 0 && <span className="notification-badge">{unreadCount}</span>}
                 </button>

@@ -69,7 +69,7 @@
 
 .range-dropdown:focus {
   outline: none;
-  border-color: #6366f1;
+  border-color: #4f46e5;
   box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
 }
 
@@ -128,7 +128,7 @@
 }
 
 .summary-card.income strong {
-  color: #16a34a;
+  color: var(--success);
 }
 
 .summary-card.expense strong {
@@ -167,7 +167,7 @@
   overflow: hidden;
 }
 
-.chart-card h4 {
+.chart-card h3 {
   font-size: clamp(13px, 2vw, 15px);
   font-weight: 600;
   color: #64748b;
@@ -194,7 +194,7 @@
 }
 
 .insight-card span.pos {
-  color: #16a34a;
+  color: var(--success);
   font-weight: 700;
 }
 
@@ -221,9 +221,9 @@
 }
 
 .view-all-link {
-  font-size: clamp(11px, 2vw, 13px);
+  font-size: clamp(12px, 2vw, 13px);
   font-weight: 600;
-  color: #6366f1;
+  color: var(--primary);
   text-decoration: none;
   white-space: nowrap;
 }
@@ -272,7 +272,7 @@
 
 .card-icon.income {
   background: #dcfce7;
-  color: #16a34a;
+  color: var(--success);
 }
 
 .card-icon.expense {
@@ -311,16 +311,16 @@
 }
 
 .card-amount.income {
-  color: #16a34a;
+  color: var(--success);
 }
 
 .card-amount.expense {
-  color: #ef4444;
+  color: var(--danger);
 }
 
 .card-desc {
-  font-size: clamp(11px, 1.8vw, 12px);
-  color: #94a3b8;
+  font-size: clamp(12px, 1.8vw, 12px);
+  color: var(--muted);
   max-width: 140px;
   white-space: nowrap;
   overflow: hidden;
@@ -328,8 +328,8 @@
 }
 
 .card-date {
-  font-size: clamp(10px, 1.5vw, 11px);
-  color: #64748b;
+  font-size: 12px;
+  color: var(--muted);
   background: #f1f5f9;
   padding: 2px 6px;
   border-radius: 4px;
@@ -407,7 +407,7 @@
 
 .budget-values {
   color: #64748b;
-  font-size: clamp(11px, 1.8vw, 13px);
+  font-size: clamp(12px, 1.8vw, 13px);
 }
 
 .progress-track {
@@ -438,8 +438,8 @@
 }
 
 .budget-subtext {
-  font-size: clamp(10px, 1.5vw, 11px);
-  color: #94a3b8;
+  font-size: 12px;
+  color: var(--muted);
   text-align: right;
 }
 
@@ -457,7 +457,7 @@
 
 .summary-card.projected span {
   color: rgba(255, 255, 255, 0.8);
-  font-size: clamp(11px, 1.8vw, 14px);
+  font-size: clamp(12px, 1.8vw, 14px);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -635,7 +635,7 @@
   }
 
   .summary-card span {
-    font-size: 10px;
+    font-size: 12px;
     letter-spacing: 0px;
   }
 

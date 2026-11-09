@@ -37,7 +37,7 @@
   justify-content: center;
 }
 
-.insights-header h3 {
+.insights-header h2 {
   margin: 0;
   font-size: clamp(1.05rem, 2vw, 1.25rem);
   font-weight: 700;
@@ -46,7 +46,7 @@
 }
 
 .insights-subtitle {
-  font-size: 0.8rem;
+  font-size: max(12px, 0.8rem);
   color: var(--muted, #64748b);
   display: block;
   margin-top: 2px;
@@ -59,9 +59,9 @@
 }
 
 .insights-pill-count {
-  font-size: 0.75rem;
+  font-size: max(12px, 0.75rem);
   font-weight: 600;
-  color: var(--primary, #6366f1);
+  color: var(--primary, #4f46e5);
   background: rgba(99, 102, 241, 0.1);
   padding: 4px 10px;
   border-radius: 20px;
@@ -73,7 +73,7 @@
   border-radius: 8px;
   padding: 5px 8px;
   cursor: pointer;
-  font-size: 0.85rem;
+  font-size: max(12px, 0.85rem);
   transition: transform 0.2s ease, background 0.2s ease;
 }
 
@@ -157,7 +157,7 @@
 }
 
 .insight-category-tag {
-  font-size: 0.72rem;
+  font-size: max(12px, 0.75rem);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -165,7 +165,7 @@
 }
 
 .insight-delta-badge {
-  font-size: 0.72rem;
+  font-size: max(12px, 0.75rem);
   font-weight: 700;
   padding: 2px 7px;
   border-radius: 6px;
@@ -195,7 +195,7 @@
   background: none;
   border: none;
   color: var(--muted, #94a3b8);
-  font-size: 0.75rem;
+  font-size: max(12px, 0.75rem);
   cursor: pointer;
   padding: 4px;
   border-radius: 4px;
@@ -221,7 +221,7 @@
 
 .insight-message {
   margin: 0;
-  font-size: 0.82rem;
+  font-size: max(12px, 0.82rem);
   line-height: 1.45;
   color: var(--muted, #475569);
 }
@@ -238,15 +238,15 @@
 }
 
 .insight-metric-label {
-  font-size: 0.75rem;
+  font-size: max(12px, 0.75rem);
   font-weight: 600;
   color: var(--muted, #64748b);
 }
 
 .insight-action-btn {
-  font-size: 0.78rem;
+  font-size: max(12px, 0.78rem);
   font-weight: 700;
-  color: var(--primary, #6366f1);
+  color: var(--primary, #4f46e5);
   text-decoration: none;
   white-space: nowrap;
   transition: opacity 0.2s;
@@ -273,7 +273,7 @@
 
 .insights-empty-card p {
   margin: 0;
-  font-size: 0.85rem;
+  font-size: max(12px, 0.85rem);
   color: var(--muted, #64748b);
   max-width: 480px;
   margin: 0 auto;

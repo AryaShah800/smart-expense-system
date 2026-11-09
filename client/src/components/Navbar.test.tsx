@@ -43,15 +43,15 @@ describe("Navbar", () => {
     renderWithProviders(<Navbar />);
     await screen.findByText("2");
 
-    await user.click(screen.getByRole("button", { name: /🔔/ }));
+    await user.click(screen.getByRole("button", { name: /^notifications/i }));
 
     expect(await screen.findByText("Rahul added WiFi bill")).toBeInTheDocument();
     await waitFor(() => expect(put).toHaveBeenCalledWith("/users/notifications/read"));
     await waitFor(() => expect(screen.queryByText("2")).not.toBeInTheDocument());
 
     // Re-opening with nothing unread does not hit the API again.
-    await user.click(screen.getByRole("button", { name: /🔔/ }));
-    await user.click(screen.getByRole("button", { name: /🔔/ }));
+    await user.click(screen.getByRole("button", { name: /^notifications/i }));
+    await user.click(screen.getByRole("button", { name: /^notifications/i }));
     expect(put).toHaveBeenCalledTimes(1);
   });
 });

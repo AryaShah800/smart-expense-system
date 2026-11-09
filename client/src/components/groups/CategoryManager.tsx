@@ -33,7 +33,7 @@ function CategoryManager({ groupId }: { groupId: string }) {
           <button 
             onClick={() => setShowInput(true)}
             style={{
-              background: "none", border: "none", color: "#6366f1", 
+              background: "none", border: "none", color: "var(--primary)", 
               fontSize: "0.85rem", cursor: "pointer", fontWeight: "600"
             }}
           >

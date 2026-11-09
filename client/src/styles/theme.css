@@ -3,10 +3,11 @@
   --bg: #f8fafc;
   --card: #ffffff;
   --text: #0f172a;
-  --muted: #64748b;
-  --primary: #6366f1;
-  --success: #22c55e;
-  --danger: #ef4444;
+  --muted: #586579;
+  --primary: #4f46e5;
+  --success: #15803d;
+  --success-text: #166534; /* for text on tinted green backgrounds */
+  --danger: #b91c1c;
   --border: #e5e7eb;
 
   /* UI */
@@ -50,6 +51,9 @@
   --text: #f8fafc;      /* White/light gray text */
   --muted: #94a3b8;     /* Muted text color */
   --border: #334155;    /* Dark border color */
+  --success: #4ade80;   /* lighter status colours keep AA contrast on dark cards */
+  --danger: #f87171;
+  --success-text: #4ade80;
   --shadow: 0 10px 25px rgba(0, 0, 0, 0.4); /* Stronger shadow */
 }
 

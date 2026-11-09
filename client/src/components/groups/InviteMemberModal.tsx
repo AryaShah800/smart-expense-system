@@ -51,8 +51,9 @@ function InviteMemberModal({ groupId, onClose, onInvited }: { groupId: string; o
         {successMsg && <div className="modal-success" style={{ color: '#10b981', background: '#ecfdf5', padding: '10px', borderRadius: '8px', marginBottom: '20px' }}>✅ {successMsg}</div>}
 
         <form onSubmit={handleSubmit}>
-          <label className="modal-section-label">User Email</label>
+          <label className="modal-section-label" htmlFor="invitemembermodal-user-email">User Email</label>
           <input
+            id="invitemembermodal-user-email"
             type="email"
             className="modal-input"
             placeholder="friend@example.com"

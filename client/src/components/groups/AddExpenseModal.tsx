@@ -149,10 +149,11 @@ function AddExpenseModal({ groupId, groupMembers, onClose, onAdded }: AddExpense
 
           {/* 1. CENTERED AMOUNT INPUT */}
           <div className="amount-section">
-            <label className="input-label-center">Total Amount</label>
+            <label className="input-label-center" htmlFor="addexpensemodal-total-amount">Total Amount</label>
               <div className="amount-display-wrapper">
               <span className="currency-symbol-big">{getCurrencySymbol(currentUser?.currency)}</span>
               <input
+                id="addexpensemodal-total-amount"
                 type="number"
                 className="amount-input-big"
                 placeholder="0"
@@ -171,8 +172,9 @@ function AddExpenseModal({ groupId, groupMembers, onClose, onAdded }: AddExpense
           {/* 2. DESCRIPTION & CATEGORY & PAIDBY */}
           <div className="form-row">
             <div className="form-group flex-grow">
-              <label>Description</label>
+              <label htmlFor="addexpensemodal-description">Description</label>
               <input
+                id="addexpensemodal-description"
                 type="text"
                 className="modal-input"
                 placeholder="What is this for?"
@@ -182,8 +184,9 @@ function AddExpenseModal({ groupId, groupMembers, onClose, onAdded }: AddExpense
             </div>
 
             <div className="form-group">
-              <label>Category</label>
+              <label htmlFor="addexpensemodal-category">Category</label>
               <select
+                id="addexpensemodal-category"
                 className="modal-select"
                 value={categoryId}
                 onChange={(e) => setCategoryId(e.target.value)}
@@ -199,8 +202,9 @@ function AddExpenseModal({ groupId, groupMembers, onClose, onAdded }: AddExpense
           {/* Fix #1: Add Paid By selector */}
           <div className="form-row">
             <div className="form-group">
-              <label>Paid By</label>
+              <label htmlFor="addexpensemodal-paid-by">Paid By</label>
               <select
+                id="addexpensemodal-paid-by"
                 className="modal-select"
                 value={paidBy}
                 onChange={(e) => setPaidBy(e.target.value)}

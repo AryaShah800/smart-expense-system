@@ -61,7 +61,7 @@ export default function DataErrorState({
               padding: "12px 24px",
               borderRadius: "12px",
               border: "none",
-              background: "var(--primary, #6366f1)",
+              background: "var(--primary, #4f46e5)",
               color: "white",
               fontWeight: "700",
               fontSize: "14px",

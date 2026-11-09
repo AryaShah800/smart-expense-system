@@ -9,7 +9,7 @@ function CashFlowChart({ transactions }: { transactions: TransactionWithCategory
 
   return (
     <div className="chart-card">
-      <h4>Cash Flow</h4>
+      <h3>Cash Flow</h3>
       <ResponsiveContainer width="100%" height={250}>
         <LineChart data={data}>
           <XAxis dataKey="date" />

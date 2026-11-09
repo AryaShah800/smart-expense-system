@@ -15,7 +15,7 @@ function CategoryBar({ transactions }: { transactions: TransactionWithCategory[]
 
   return (
     <div className="chart-card">
-      <h4>Category Spend</h4>
+      <h3>Category Spend</h3>
       <ResponsiveContainer width="100%" height={250}>
         <BarChart data={data}>
           <XAxis dataKey="name" />

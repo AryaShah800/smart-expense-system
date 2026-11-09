@@ -30,3 +30,55 @@ describe("Modal", () => {
     expect(onClose).toHaveBeenCalledTimes(2);
   });
 });
+
+describe("Modal accessibility", () => {
+  it("is announced as a labelled modal dialog", () => {
+    render(<Modal isOpen onClose={() => {}} title="Set budget"><input aria-label="Limit" /></Modal>);
+    const dialog = screen.getByRole("dialog", { name: "Set budget" });
+    expect(dialog).toHaveAttribute("aria-modal", "true");
+  });
+
+  it("gives the close button an accessible name", () => {
+    render(<Modal isOpen onClose={() => {}} title="T">x</Modal>);
+    expect(screen.getByRole("button", { name: "Close dialog" })).toBeInTheDocument();
+  });
+
+  it("moves focus to the first field on open and restores it to the opener on close", () => {
+    function Harness({ open }: { open: boolean }) {
+      return (
+        <>
+          <button>Open</button>
+          <Modal isOpen={open} onClose={() => {}} title="T"><input aria-label="Name" /></Modal>
+        </>
+      );
+    }
+    const { rerender } = render(<Harness open={false} />);
+    screen.getByRole("button", { name: "Open" }).focus();
+
+    rerender(<Harness open />);
+    expect(screen.getByLabelText("Name")).toHaveFocus();
+
+    rerender(<Harness open={false} />);
+    expect(screen.getByRole("button", { name: "Open" })).toHaveFocus();
+  });
+
+  it("closes on Escape", async () => {
+    const onClose = vi.fn();
+    render(<Modal isOpen onClose={onClose} title="T"><input aria-label="Name" /></Modal>);
+    await userEvent.setup().keyboard("{Escape}");
+    expect(onClose).toHaveBeenCalledOnce();
+  });
+
+  it("keeps Tab focus inside the dialog", async () => {
+    const user = userEvent.setup();
+    render(<Modal isOpen onClose={() => {}} title="T"><input aria-label="Name" /><button>Save</button></Modal>);
+    const close = screen.getByRole("button", { name: "Close dialog" });
+    const save = screen.getByRole("button", { name: "Save" });
+
+    save.focus();
+    await user.tab();
+    expect(close).toHaveFocus(); // wrapped from last to first
+    await user.tab({ shift: true });
+    expect(save).toHaveFocus(); // wrapped from first to last
+  });
+});

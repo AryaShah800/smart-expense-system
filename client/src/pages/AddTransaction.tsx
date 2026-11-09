@@ -116,10 +116,11 @@ function AddTransaction() {
         <form id="add-transaction-form" onSubmit={handleSubmit}>
           {/* Amount input */}
           <div className="form-group amount-group">
-            <label>Amount</label>
+            <label htmlFor="tx-amount">Amount</label>
             <div className="input-wrapper amount-wrapper">
               <span className="currency-symbol">{currencySymbol}</span>
               <input
+                id="tx-amount"
                 type="number"
                 placeholder="0"
                 value={amount}
@@ -168,7 +169,7 @@ function AddTransaction() {
           {/* Category selection */}
           <div className="form-group">
             <div className="label-row">
-              <label>Category</label>
+              <label htmlFor="tx-category">Category</label>
               <button
                 type="button"
                 className="add-category-link"
@@ -179,6 +180,7 @@ function AddTransaction() {
             </div>
             <div className="category-row">
               <select
+                id="tx-category"
                 value={categoryId}
                 onChange={(e) => setCategoryId(e.target.value)}
                 required
@@ -196,8 +198,9 @@ function AddTransaction() {
 
           {/* Description */}
           <div className="form-group">
-            <label>Description (Optional)</label>
+            <label htmlFor="tx-description">Description (Optional)</label>
             <input
+              id="tx-description"
               type="text"
               placeholder="e.g. Dinner with friends, Uber, Groceries"
               value={description}
@@ -208,8 +211,9 @@ function AddTransaction() {
 
           {/* Date */}
           <div className="form-group">
-            <label>Date</label>
+            <label htmlFor="tx-date">Date</label>
             <input
+              id="tx-date"
               type="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
@@ -234,8 +238,9 @@ function AddTransaction() {
 
             {isRecurring && (
               <div className="recurring-freq-select-wrap">
-                <label>Frequency</label>
+                <label htmlFor="tx-frequency">Frequency</label>
                 <select
+                  id="tx-frequency"
                   value={frequency}
                   onChange={(e) => setFrequency(e.target.value as Frequency)}
                   className="recurring-freq-select"

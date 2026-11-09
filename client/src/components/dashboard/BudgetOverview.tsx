@@ -5,7 +5,7 @@ const BudgetOverview = ({ budgetStatus }: { budgetStatus?: BudgetProgress[] }) =
 
   return (
     <div className="chart-card">
-      <h4>Budget Status</h4>
+      <h3>Budget Status</h3>
       <div className="budget-list">
         {budgetStatus.map((item) => {
           const percent = Math.min((item.spent / item.limit) * 100, 100);

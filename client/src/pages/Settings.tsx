@@ -69,8 +69,9 @@ const Settings = () => {
         <h3>Account</h3>
         <div className="settings-card">
           <div className="settings-item">
-            <span className="settings-label">Username</span>
+            <label className="settings-label" htmlFor="setting-username">Username</label>
             <input
+              id="setting-username"
               type="text"
               name="username"
               className="settings-input"
@@ -91,8 +92,9 @@ const Settings = () => {
         <h3>Preferences</h3>
         <div className="settings-card">
           <div className="settings-item">
-            <span className="settings-label">Default Currency</span>
+            <label className="settings-label" htmlFor="setting-currency">Default Currency</label>
             <select
+              id="setting-currency"
               name="currency"
               className="settings-select"
               value={formData.currency}
@@ -105,8 +107,9 @@ const Settings = () => {
             </select>
           </div>
           <div className="settings-item">
-            <span className="settings-label">Theme</span>
+            <label className="settings-label" htmlFor="setting-theme">Theme</label>
             <select
+              id="setting-theme"
               name="theme"
               className="settings-select"
               value={formData.theme}

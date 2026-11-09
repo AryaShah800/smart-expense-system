@@ -15,7 +15,7 @@ function ExpenseDonut({ transactions }: { transactions: TransactionWithCategory[
 
   return (
     <div className="chart-card">
-      <h4>Expense Distribution</h4>
+      <h3>Expense Distribution</h3>
       <ResponsiveContainer width="100%" height={250}>
         <PieChart>
           <Pie data={data} dataKey="value" nameKey="name" innerRadius={60} outerRadius={90} />
