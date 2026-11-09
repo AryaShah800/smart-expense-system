@@ -2,10 +2,12 @@ import Navbar from "./Navbar";
 import Header from "./Header";
 import BottomNavigation from "./BottomNavigation";
 import { Outlet } from "react-router-dom";
+import { useRealtime } from "../hooks/useRealtime";
 import "../styles/layout.css";
 import "../styles/responsive.css";
 
 function Layout() {
+  useRealtime();
   return (
     <div className="app-layout">
       {/* Desktop: full navbar (hidden on mobile) */}

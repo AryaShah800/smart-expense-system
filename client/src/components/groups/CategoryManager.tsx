@@ -1,38 +1,25 @@
-import { useState, useEffect } from "react";
-import api from "../../api/axios";
-import type { GroupCategory } from "../../types";
+import { useState } from "react";
+import { useGroupCategories, useAddGroupCategory } from "../../hooks/queries";
 
 function CategoryManager({ groupId }: { groupId: string }) {
-  const [categories, setCategories] = useState<GroupCategory[]>([]);
+  const { data: categories = [] } = useGroupCategories(groupId);
+  const addCategory = useAddGroupCategory(groupId);
   const [newCatName, setNewCatName] = useState("");
   const [showInput, setShowInput] = useState(false);
 
-  // Fetch categories
-  const fetchCategories = async () => {
-    try {
-      const res = await api.get<GroupCategory[]>(`/groups/${groupId}/categories`);
-      setCategories(res.data);
-    } catch {
-      console.error("Failed to load categories");
-    }
-  };
-
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- manual fetch; replaced by React Query in Phase 5
-    fetchCategories();
-  }, [groupId]);
-
-  const handleAdd = async () => {
+  const handleAdd = () => {
     if (!newCatName.trim()) return;
-    try {
-      // Auto-assign a generic icon for now
-      await api.post(`/groups/${groupId}/categories`, { name: newCatName, icon: "✨" });
-      setNewCatName("");
-      setShowInput(false);
-      fetchCategories(); 
-    } catch {
-      alert("Failed to add category");
-    }
+    // Auto-assign a generic icon for now
+    addCategory.mutate(
+      { name: newCatName, icon: "✨" },
+      {
+        onSuccess: () => {
+          setNewCatName("");
+          setShowInput(false);
+        },
+        onError: () => alert("Failed to add category"),
+      }
+    );
   };
 
   return (

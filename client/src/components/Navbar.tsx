@@ -1,8 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
-import api from "../api/axios";
-import { socket } from "../api/socket";
-import type { Notification } from "../types";
+import { useNotifications, useMarkNotificationsRead } from "../hooks/queries";
 import { useAuth } from "../context/AuthContext";
 import "../styles/navbar.css";
 
@@ -11,42 +9,11 @@ function Navbar() {
 
   const { user } = useAuth();
 
-  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-
-  const fetchNotifications = async () => {
-    try {
-      const res = await api.get<Notification[]>("/users/notifications");
-      setNotifications(res.data);
-    } catch (err) {
-      console.error("Failed to fetch notifications", err);
-    }
-  };
-
-// 🔥 SOCKET LOGIC
-  useEffect(() => {
-    if (user) {
-      // 1. Initial Load of notifications
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- manual fetch; replaced by React Query in Phase 5
-      fetchNotifications();
-
-      // 2. Connect Socket (the server joins this user's room after verifying the token)
-      socket.connect();
-
-      // 3. Listen for REAL-TIME notifications
-      socket.on("new_notification", (newNotif: Notification) => {
-        console.log("New real-time notification received!", newNotif);
-        setNotifications((prev) => [newNotif, ...prev]);
-      });
-
-      return () => {
-        socket.off("new_notification");
-        socket.disconnect();
-      };
-    }
-  }, [user]); // Re-run if user changes in context
+  const { data: notifications = [] } = useNotifications(Boolean(user));
+  const markRead = useMarkNotificationsRead();
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -59,15 +26,11 @@ function Navbar() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleBellClick = async () => {
-    setShowDropdown(!showDropdown);
-    if (!showDropdown && unreadCount > 0) {
-      try {
-        await api.put("/users/notifications/read");
-        setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
-      } catch {
-        console.error("Failed to mark notifications as read");
-      }
+  const handleBellClick = () => {
+    const opening = !showDropdown;
+    setShowDropdown(opening);
+    if (opening && notifications.some((n) => !n.isRead)) {
+      markRead.mutate(undefined, { onError: () => console.error("Failed to mark notifications as read") });
     }
   };
 

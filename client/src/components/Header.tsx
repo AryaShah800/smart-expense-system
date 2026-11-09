@@ -1,8 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useLocation, Link, useNavigate } from "react-router-dom";
-import api from "../api/axios";
-import { socket } from "../api/socket";
-import type { Notification } from "../types";
+import { useNotifications, useMarkNotificationsRead } from "../hooks/queries";
 import { useAuth } from "../context/AuthContext";
 import NotificationPanel from "./NotificationPanel";
 
@@ -24,44 +22,16 @@ export default function Header() {
   const location = useLocation();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [showPanel, setShowPanel] = useState(false);
+  const { data: notifications = [] } = useNotifications(Boolean(user));
+  const markRead = useMarkNotificationsRead();
 
   const isMainTab = ["/dashboard", "/expenses", "/budgets", "/groups"].includes(location.pathname);
 
-  const fetchNotifications = async () => {
-    try {
-      const res = await api.get<Notification[]>("/users/notifications");
-      setNotifications(res.data);
-    } catch (err) {
-      console.error("Failed to fetch notifications", err);
-    }
-  };
-
-  useEffect(() => {
-    if (!user) return;
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- manual fetch; replaced by React Query in Phase 5
-    fetchNotifications();
-    socket.connect(); // the server joins this user's room after verifying the token
-    socket.on("new_notification", (newNotif: Notification) => {
-      setNotifications((prev) => [newNotif, ...prev]);
-    });
-    return () => {
-      socket.off("new_notification");
-      socket.disconnect();
-    };
-  }, [user]);
-
-  const handleBellClick = async () => {
+  const handleBellClick = () => {
     setShowPanel(true);
-    const unreadCount = notifications.filter((n) => !n.isRead).length;
-    if (unreadCount > 0) {
-      try {
-        await api.put("/users/notifications/read");
-        setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
-      } catch {
-        console.error("Failed to mark as read");
-      }
+    if (notifications.some((n) => !n.isRead)) {
+      markRead.mutate(undefined, { onError: () => console.error("Failed to mark as read") });
     }
   };
 

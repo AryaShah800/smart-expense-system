@@ -1,5 +1,7 @@
 import ReactDOM from "react-dom/client";
 import App from "./App";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { queryClient } from "./api/queryClient";
 import { AuthProvider } from "./context/AuthContext"; // Import AuthProvider
 import { Toaster } from 'react-hot-toast';
 import "./index.css";
@@ -19,10 +21,12 @@ const updateSW = registerSW({
 });
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
-  <AuthProvider>
-    <>
-      <App />
-      <Toaster position="top-right" />
-    </>
-  </AuthProvider>
+  <QueryClientProvider client={queryClient}>
+    <AuthProvider>
+      <>
+        <App />
+        <Toaster position="top-right" />
+      </>
+    </AuthProvider>
+  </QueryClientProvider>
 );

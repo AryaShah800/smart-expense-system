@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
-import type { TransactionWithCategory } from "../types";
-import api, { isServerDown, getErrorMessage } from "../api/axios";
+import { useMemo, useState } from "react";
+import { isServerDown, getErrorMessage } from "../api/axios";
+import { useTransactions, useDeleteTransaction } from "../hooks/queries";
 import "../styles/expenses.css";
 import "../styles/responsive.css";
 import { exportTransactionsPdf } from "../utils/exportPdf";
@@ -12,37 +12,25 @@ import DataErrorState from "../components/DataErrorState";
 
 function Expenses() {
   const { user } = useAuth();
-  const [transactions, setTransactions] = useState<TransactionWithCategory[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const txQuery = useTransactions();
+  const deleteTransaction = useDeleteTransaction();
+  const transactions = useMemo(() => txQuery.data ?? [], [txQuery.data]);
+  const loading = txQuery.isPending;
+  const error = txQuery.error
+    ? isServerDown(txQuery.error)
+      ? "Server is currently offline or unreachable. Please verify your connection."
+      : getErrorMessage(txQuery.error, "Failed to load transactions.")
+    : "";
+  const fetchTransactions = () => txQuery.refetch();
 
   const [typeFilter, setTypeFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
-  const [visibleDays, setVisibleDays] = useState(25);
-
-  const fetchTransactions = async () => {
-    try {
-      setLoading(true);
-      setError("");
-      const res = await api.get<TransactionWithCategory[]>("/transactions");
-      setTransactions(res.data);
-    } catch (err) {
-      console.error("Failed to fetch transactions", err);
-      setError(
-        isServerDown(err)
-          ? "Server is currently offline or unreachable. Please verify your connection."
-          : (getErrorMessage(err, "Failed to load transactions."))
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchTransactions();
-  }, []);
+  // The page size resets whenever a filter changes (derived from the filter key, no effect needed).
+  const filterKey = `${typeFilter}|${categoryFilter}|${fromDate}|${toDate}`;
+  const [pageSize, setPageSize] = useState({ key: filterKey, days: 25 });
+  const visibleDays = pageSize.key === filterKey ? pageSize.days : 25;
 
   const filtered = useMemo(() => {
     return transactions.filter((t) => {
@@ -54,13 +42,9 @@ function Expenses() {
     });
   }, [transactions, typeFilter, categoryFilter, fromDate, toDate]);
 
-  useEffect(() => {
-    setVisibleDays(25);
-  }, [typeFilter, categoryFilter, fromDate, toDate]);
-
   // Group transactions by date for mobile view
   const groupedTransactions = useMemo(() => {
-    const groups: Record<string, { label: string; items: TransactionWithCategory[]; total: number }> = {};
+    const groups: Record<string, { label: string; items: typeof filtered; total: number }> = {};
     const todayStr = new Date().toDateString();
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
@@ -101,14 +85,9 @@ function Expenses() {
     });
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = (id: string) => {
     if (!window.confirm("Delete this transaction?")) return;
-    try {
-      await api.delete(`/transactions/${id}`);
-      setTransactions((prev) => prev.filter((t) => t._id !== id));
-    } catch {
-      alert("Failed to delete transaction");
-    }
+    deleteTransaction.mutate(id, { onError: () => alert("Failed to delete transaction") });
   };
 
   if (loading) return <p className="expenses-loading">Loading transactions...</p>;
@@ -282,7 +261,7 @@ function Expenses() {
               <button
                 type="button"
                 className="export-btn"
-                onClick={() => setVisibleDays((prev) => prev + 25)}
+                onClick={() => setPageSize({ key: filterKey, days: visibleDays + 25 })}
                 style={{ cursor: "pointer", padding: "10px 24px", fontSize: "0.95rem" }}
               >
                 Load More Days ({visibleDays} of {groupedTransactions.length})

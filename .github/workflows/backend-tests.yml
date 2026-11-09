@@ -41,7 +41,7 @@ jobs:
       - run: npm audit --audit-level=high
 
   client:
-    name: Client (lint, typecheck, build)
+    name: Client (lint, typecheck, test, build)
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -56,4 +56,5 @@ jobs:
       - run: npm ci
       - run: npm run lint -- --quiet
       - run: npm run typecheck
+      - run: npm test
       - run: npm run build

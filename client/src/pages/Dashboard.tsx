@@ -1,10 +1,10 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import formatCurrency from "../utils/currencyFormatter";
 import { getCategoryIcon } from "../utils/categoryIcons";
-import type { BudgetProgress, Insight, TransactionWithCategory } from "../types";
-import api, { isServerDown, getErrorMessage } from "../api/axios";
+import { isServerDown, getErrorMessage } from "../api/axios";
+import { useTransactions, useBudgetStatus, useInsights } from "../hooks/queries";
 import { exportTransactionsPdf } from "../utils/exportPdf";
 
 import SummaryCards from "../components/dashboard/SummaryCards";
@@ -20,57 +20,31 @@ import "../styles/dashboard.css";
 import "../styles/responsive.css";
 
 function Dashboard() {
-  const [transactions, setTransactions] = useState<TransactionWithCategory[]>([]);
-  const [budgetStatus, setBudgetStatus] = useState<BudgetProgress[]>([]);
-  const [insights, setInsights] = useState<Insight[]>([]);
-  const [insightsLoading, setInsightsLoading] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
   const [range, setRange] = useState("90d");
   const { user } = useAuth();
 
   /* ===== FETCH DATA ===== */
-  const fetchData = async () => {
-    try {
-      setLoading(true);
-      setError("");
-      const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      const [txRes, budgetRes, insightRes] = await Promise.all([
-        api.get<TransactionWithCategory[]>("/transactions"),
-        api.get<BudgetProgress[]>("/budgets/status", { params: { timezone: userTimezone } }),
-        api.get<Insight[]>("/dashboard/insights"),
-      ]);
+  const txQuery = useTransactions();
+  const budgetQuery = useBudgetStatus();
+  const insightsQuery = useInsights();
 
-      setTransactions(txRes.data);
-      setBudgetStatus(budgetRes.data);
-      setInsights(insightRes.data || []);
-    } catch (err) {
-      console.error(err);
-      setError(
-        isServerDown(err)
-          ? "The server appears to be offline or unreachable. Please check if the backend service is running."
-          : (getErrorMessage(err, "Failed to load dashboard financial data."))
-      );
-    } finally {
-      setLoading(false);
-    }
+  const transactions = useMemo(() => txQuery.data ?? [], [txQuery.data]);
+  const budgetStatus = budgetQuery.data ?? [];
+  const insights = insightsQuery.data ?? [];
+
+  const loading = txQuery.isPending || budgetQuery.isPending || insightsQuery.isPending;
+  const queryError = txQuery.error ?? budgetQuery.error ?? insightsQuery.error;
+  const error = queryError
+    ? isServerDown(queryError)
+      ? "The server appears to be offline or unreachable. Please check if the backend service is running."
+      : getErrorMessage(queryError, "Failed to load dashboard financial data.")
+    : "";
+
+  const refetchAll = () => {
+    txQuery.refetch();
+    budgetQuery.refetch();
+    insightsQuery.refetch();
   };
-
-  const fetchInsights = async () => {
-    try {
-      setInsightsLoading(true);
-      const res = await api.get<Insight[]>("/dashboard/insights");
-      setInsights(res.data || []);
-    } catch (err) {
-      console.error("Failed to refresh insights", err);
-    } finally {
-      setInsightsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchData();
-  }, []);
 
   /* ===== RANGE LOGIC ===== */
   const daysBack = useMemo(() => {
@@ -142,7 +116,7 @@ function Dashboard() {
       <DataErrorState
         title="Dashboard Unavailable"
         message={error}
-        onRetry={fetchData}
+        onRetry={refetchAll}
       />
     );
   }
@@ -201,8 +175,8 @@ function Dashboard() {
         {/* ACTIONABLE FINANCIAL INSIGHTS */}
         <ActionableInsights
           insights={insights}
-          onRefresh={fetchInsights}
-          loading={insightsLoading}
+          onRefresh={() => insightsQuery.refetch()}
+          loading={insightsQuery.isFetching}
         />
 
         {transactions.length === 0 ? (
@@ -341,8 +315,8 @@ function Dashboard() {
         {/* ACTIONABLE FINANCIAL INSIGHTS (MOBILE) */}
         <ActionableInsights
           insights={insights}
-          onRefresh={fetchInsights}
-          loading={insightsLoading}
+          onRefresh={() => insightsQuery.refetch()}
+          loading={insightsQuery.isFetching}
         />
 
         {transactions.length === 0 ? (

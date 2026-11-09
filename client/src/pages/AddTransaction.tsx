@@ -1,5 +1,8 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useMemo, useState, type FormEvent } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import type { Category, Frequency, TransactionType } from "../types";
+import { queryKeys } from "../api/queryClient";
+import { useCategories, useInvalidateMoneyData } from "../hooks/queries";
 import { useNavigate } from "react-router-dom";
 import api, { getErrorMessage } from "../api/axios";
 import Modal from "../components/Modal";
@@ -15,8 +18,18 @@ function AddTransaction() {
 
   const [type, setType] = useState<TransactionType>("expense");
   const [amount, setAmount] = useState("");
-  const [categoryId, setCategoryId] = useState("");
-  const [categories, setCategories] = useState<Category[]>([]);
+  const [selectedCategoryId, setCategoryId] = useState("");
+  const categoriesQuery = useCategories();
+  const queryClient = useQueryClient();
+  const invalidateMoney = useInvalidateMoneyData();
+  const categories = useMemo(
+    () => (categoriesQuery.data ?? []).filter((c) => c.type === type),
+    [categoriesQuery.data, type]
+  );
+  // Fall back to the first category of this type until the user picks one.
+  const categoryId = categories.some((c) => c._id === selectedCategoryId)
+    ? selectedCategoryId
+    : (categories[0]?._id ?? "");
   const [description, setDescription] = useState("");
   // Pre-fill with today's local date for mobile convenience
   const [date, setDate] = useState(() => new Date().toISOString().split("T")[0]);
@@ -30,23 +43,6 @@ function AddTransaction() {
   const [newCategoryName, setNewCategoryName] = useState("");
 
   const currencySymbol = getCurrencySymbol(user?.currency);
-
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const res = await api.get<Category[]>("/categories");
-        const filtered = res.data.filter((c) => c.type === type);
-        setCategories(filtered);
-        // Pre-select first category if none selected or not in filtered
-        if (filtered.length > 0 && (!categoryId || !filtered.some((c) => c._id === categoryId))) {
-          setCategoryId(filtered[0]._id);
-        }
-      } catch {
-        console.error("Failed to load categories");
-      }
-    };
-    fetchCategories();
-  }, [type]);
 
   const handleQuickAmount = (delta: number) => {
     const current = Number(amount) || 0;
@@ -78,6 +74,7 @@ function AddTransaction() {
         isRecurring,
         frequency: isRecurring ? frequency : undefined,
       });
+      await invalidateMoney();
       navigate(isRecurring ? "/recurring" : "/expenses");
     } catch (err) {
       setError(getErrorMessage(err, "Failed to add transaction"));
@@ -308,7 +305,7 @@ function AddTransaction() {
                       type,
                       icon: getCategoryIcon(newCategoryName, type),
                     });
-                    setCategories([...categories, res.data]);
+                    await queryClient.invalidateQueries({ queryKey: queryKeys.categories });
                     setCategoryId(res.data._id);
                     setNewCategoryName("");
                     setIsModalOpen(false);

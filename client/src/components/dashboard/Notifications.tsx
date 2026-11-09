@@ -1,49 +1,21 @@
-import { useEffect, useState } from "react";
-import api from "../../api/axios";
-import { socket } from "../../api/socket";
-import type { Group } from "../../types";
+import { useInvitations, useRespondToInvitation } from "../../hooks/queries";
 
 function Notifications() {
-  const [invites, setInvites] = useState<Group[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: invites = [] } = useInvitations();
+  const respond = useRespondToInvitation();
 
-  const fetchInvites = async () => {
-    try {
-      const res = await api.get<Group[]>("/users/invitations");
-      setInvites(res.data);
-    } catch {
-      // invitations are optional; the panel just stays empty
-    } finally { setLoading(false); }
-  };
-
-  useEffect(() => {
-    fetchInvites();
-
-    socket.on("new_invite", () => {
-      fetchInvites(); 
-    });
-
-    return () => {
-      socket.off("new_invite");
-    };
-  }, []);
-
-  const handleRespond = async (groupId: string, status: "accept" | "reject") => {
-    try {
-      // This line has been updated to send "action" instead of "status"
-      await api.post("/users/invitations/respond", { groupId, action: status });
-      setInvites(prev => prev.filter(i => i._id !== groupId));
-      
-      if (status === 'accept') {
-        alert("Joined group successfully!");
-        window.location.reload(); 
+  const handleRespond = (groupId: string, status: "accept" | "reject") => {
+    respond.mutate(
+      { groupId, action: status },
+      {
+        onSuccess: () => {
+          if (status === "accept") alert("Joined group successfully!");
+        },
+        onError: () => alert("Action failed"),
       }
-    } catch {
-      alert("Action failed");
-    }
+    );
   };
 
-  if (loading && invites.length === 0) return null; 
   if (invites.length === 0) return null; 
 
   return (

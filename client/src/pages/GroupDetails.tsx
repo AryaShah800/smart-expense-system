@@ -1,5 +1,7 @@
-import { useEffect, useState } from "react";
-import type { GroupDetail, GroupExpenseDetail, GroupSplits } from "../types";
+import { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "../api/queryClient";
+import { useGroupDetails } from "../hooks/queries";
 import { useParams, useNavigate } from "react-router-dom";
 import api, { getErrorMessage } from "../api/axios";
 import { useAuth } from "../context/AuthContext"; // 🔥 Added Context
@@ -7,44 +9,27 @@ import AddExpenseModal from "../components/groups/AddExpenseModal";
 import SettleUpModal from "../components/groups/SettleUpModal";
 import InviteMemberModal from "../components/groups/InviteMemberModal";
 import "../styles/GroupDetails.css";
-import formatCurrency from "../utils/currencyFormatter"; // 🔥 Removed getCurrencySymbol
+import formatCurrency from "../utils/currencyFormatter";
+import { summarizeBalance } from "../utils/splitSummary"; // 🔥 Removed getCurrencySymbol
 
 function GroupDetails() {
   const { id = "" } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth(); // Instantly get the logged-in user & currency
 
-  const [group, setGroup] = useState<GroupDetail | null>(null);
-  const [expenses, setExpenses] = useState<GroupExpenseDetail[]>([]);
-  const [splits, setSplits] = useState<GroupSplits | null>(null);
-  const [loading, setLoading] = useState(true);
+  const detailsQuery = useGroupDetails(id);
+  const queryClient = useQueryClient();
+  const group = detailsQuery.data?.group ?? null;
+  const expenses = detailsQuery.data?.expenses ?? [];
+  const splits = detailsQuery.data?.splits ?? null;
+  const loading = detailsQuery.isPending;
   const [copySuccess, setCopySuccess] = useState("");
 
   const [showAddModal, setShowAddModal] = useState(false);
   const [showSettleModal, setShowSettleModal] = useState(false);
   const [showInviteModal, setShowInviteModal] = useState(false);
 
-  const fetchData = async () => {
-    try {
-      const [groupRes, expenseRes, splitRes] = await Promise.all([
-        api.get<GroupDetail>(`/groups/${id}`),
-        api.get<GroupExpenseDetail[]>(`/groups/${id}/expenses`),
-        api.get<GroupSplits>(`/groups/${id}/splits`)
-      ]);
-
-      setGroup(groupRes.data);
-      setExpenses(expenseRes.data);
-      setSplits(splitRes.data);
-    } catch (err) {
-      console.error("Error loading group details", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchData();
-  }, [id]);
+  const fetchData = () => queryClient.invalidateQueries({ queryKey: queryKeys.group(id) });
 
   /* ===================== ACTIONS ===================== */
 
@@ -52,6 +37,7 @@ function GroupDetails() {
     if (!window.confirm("Are you sure? This will delete the group and all expenses permanently.")) return;
     try {
       await api.delete(`/groups/${id}`);
+      await queryClient.invalidateQueries({ queryKey: queryKeys.groups });
       navigate("/groups");
     } catch (err) {
       alert(getErrorMessage(err, "Failed to delete group"));
@@ -83,25 +69,7 @@ function GroupDetails() {
   const isAdmin = user?._id === group.adminId?._id;
   const myId = user?._id;
 
-  let summaryText = "Loading...";
-  if (splits && user) {
-    const myBalance = splits.balances?.find(b => b.userId === myId);
-    const hasAnySettlements = splits.settlements && splits.settlements.length > 0;
-
-    if (myBalance) {
-      if (myBalance.balance < -0.01) {
-        summaryText = `You owe ${formatCurrency(Math.abs(myBalance.balance), user?.currency)}`;
-      } else if (myBalance.balance > 0.01) {
-        summaryText = `You are owed ${formatCurrency(myBalance.balance, user?.currency)}`;
-      } else {
-        if (hasAnySettlements) {
-          summaryText = "You are all settled up";
-        } else {
-          summaryText = "All settled up ✨";
-        }
-      }
-    }
-  }
+  const summaryText = summarizeBalance(splits, myId, user?.currency);
 
   return (
     <div className="group-details-page">
