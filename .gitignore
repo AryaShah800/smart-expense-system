@@ -14,3 +14,7 @@ build/
 
 # Logs
 *.log
+
+# Local run output and OS shortcuts
+*-results.json
+*.lnk

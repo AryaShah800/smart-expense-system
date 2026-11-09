@@ -32,30 +32,16 @@ function Navbar() {
       // 1. Initial Load of notifications
       fetchNotifications();
 
-      // 2. Connect Socket
+      // 2. Connect Socket (the server joins this user's room after verifying the token)
       socket.connect();
 
-      // 3. Join the room ONLY when the connection is established
-      const handleConnect = () => {
-        console.log("Socket connected! Joining room:", user._id);
-        socket.emit("join_room", user._id);
-      };
-
-      socket.on("connect", handleConnect);
-
-      // If the socket is already connected when this runs, join immediately
-      if (socket.connected) {
-        handleConnect();
-      }
-
-      // 4. Listen for REAL-TIME notifications
+      // 3. Listen for REAL-TIME notifications
       socket.on("new_notification", (newNotif) => {
         console.log("New real-time notification received!", newNotif);
         setNotifications((prev) => [newNotif, ...prev]);
       });
 
       return () => {
-        socket.off("connect", handleConnect);
         socket.off("new_notification");
         socket.disconnect();
       };

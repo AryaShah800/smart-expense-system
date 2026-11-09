@@ -40,15 +40,11 @@ export default function Header() {
   useEffect(() => {
     if (!user) return;
     fetchNotifications();
-    socket.connect();
-    const handleConnect = () => socket.emit("join_room", user._id);
-    socket.on("connect", handleConnect);
-    if (socket.connected) handleConnect();
+    socket.connect(); // the server joins this user's room after verifying the token
     socket.on("new_notification", (newNotif) => {
       setNotifications((prev) => [newNotif, ...prev]);
     });
     return () => {
-      socket.off("connect", handleConnect);
       socket.off("new_notification");
       socket.disconnect();
     };

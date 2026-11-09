@@ -1,7 +1,7 @@
 import User from "../models/user.js";
 import Group from "../models/Group.js";
 import bcrypt from "bcrypt";
-import generateToken from "../utils/createToken.js";
+import generateToken, { cookieOptions, generateSocketToken } from "../utils/createToken.js";
 
 // Helper function to send email via Brevo API
 const sendEmailViaBrevo = async (toEmail, subject, htmlContent) => {
@@ -116,13 +116,12 @@ export const verifyEmail = async (req, res) => {
     user.otpExpires = undefined;
     await user.save();
 
-    const token = generateToken(res, user._id);
+    generateToken(res, user._id);
 
     res.json({
       _id: user._id,
       username: user.username,
       email: user.email,
-      token,
       message: "Email verified successfully!"
     });
 
@@ -145,13 +144,12 @@ export const login = async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ message: "Invalid credentials" });
 
-    const token = generateToken(res, user._id);
+    generateToken(res, user._id);
 
     res.json({
       _id: user._id,
       username: user.username,
       email: user.email,
-      token, 
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -160,8 +158,13 @@ export const login = async (req, res) => {
 
 // LOGOUT
 export const logout = (req, res) => {
-  res.cookie("jwt", "", { httpOnly: true, expires: new Date(0) });
+  res.clearCookie("jwt", cookieOptions());
   res.status(200).json({ message: "Logged out successfully" });
+};
+
+// SOCKET TOKEN: short-lived JWT for the Socket.io handshake
+export const getSocketToken = (req, res) => {
+  res.json({ token: generateSocketToken(req.user._id.toString()) });
 };
 
 // GET CURRENT USER
@@ -291,7 +294,7 @@ export const updateProfile = async (req, res) => {
 
 export const debugGetOtp = async (req, res) => {
   try {
-    if (process.env.NODE_ENV === 'production') return res.status(403).json({ message: 'Not allowed' });
+    if (process.env.ENABLE_DEBUG_OTP !== 'true') return res.status(404).json({ message: 'Not found' });
     const email = req.query.email;
     if (!email) return res.status(400).json({ message: 'Email required' });
     const user = await User.findOne({ email });

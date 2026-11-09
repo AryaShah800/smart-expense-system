@@ -14,25 +14,7 @@ const api = axios.create({
   },
 });
 
-// Attach JWT token to every request
-api.interceptors.request.use(
-  (config) => {
-    const savedUser = localStorage.getItem("user");
-    if (savedUser) {
-      try {
-        const userData = JSON.parse(savedUser);
-        const token = userData.token || userData.accessToken || userData.data?.token;
-        if (token) {
-          config.headers.Authorization = `Bearer ${token}`;
-        }
-      } catch (err) {
-        console.error("Failed to parse user from localStorage", err);
-      }
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
+// Auth relies on the httpOnly "jwt" cookie (withCredentials), so no token is attached here.
 
 // Robust response error handling
 api.interceptors.response.use(

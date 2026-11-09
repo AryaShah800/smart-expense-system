@@ -1,9 +1,9 @@
-import dotenv from "dotenv";
-dotenv.config();
+import "./loadEnv.js"; // must be first so env vars exist before other modules read them
 import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import helmet from "helmet";
 import { createServer } from "http";
 import { Server } from "socket.io";
 import dns from "dns";
@@ -20,6 +20,7 @@ import reportRoutes from "./routes/report.js";
 import recurringRoutes from "./routes/recurring.js";
 import { processDueRecurring } from "./controllers/recurring.js";
 import { seedDefaultCategories } from "./utils/seedDefaultCategories.js";
+import { registerSocketHandlers } from "./middlewares/socketAuth.js";
 
 const PORT = process.env.PORT || 7000;
 
@@ -49,22 +50,14 @@ const io = new Server(httpServer, {
 
 app.set("io", io);
 
-io.on("connection", (socket) => {
-  console.log("User connected:", socket.id);
+// Sockets must present a valid JWT; each one joins only its own user room.
+registerSocketHandlers(io);
 
-  socket.on("join_room", (userId) => {
-    socket.join(userId);
-    console.log(`User ${userId} joined room`);
-  });
-
-  socket.on("disconnect", () => {
-    console.log("User disconnected");
-  });
-});
-
-// Apply CORS before any body parsers so responses always include CORS headers
+app.set("trust proxy", 1); // behind Render's proxy, so rate limits see the real client IP
+app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
+// CORS before body parsers so error responses still carry CORS headers
 app.use(cors(corsOptions));
-app.use(express.json());
+app.use(express.json({ limit: "50kb" }));
 app.use(cookieParser());
 
 // app.use("/api/auth", userRoutes); // Removed duplicate mounting

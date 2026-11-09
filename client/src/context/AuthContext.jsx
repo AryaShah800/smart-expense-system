@@ -7,7 +7,11 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
     // Check localStorage on initial load
     const savedUser = localStorage.getItem("user");
-    return savedUser ? JSON.parse(savedUser) : null;
+    if (!savedUser) return null;
+    // Older sessions saved the JWT here; drop it, the httpOnly cookie is the only token store.
+    const { token: _legacyToken, ...profile } = JSON.parse(savedUser);
+    localStorage.setItem("user", JSON.stringify(profile));
+    return profile;
   });
 
   // 🔥 NEW: Instantly apply theme to the HTML document when user changes
@@ -20,8 +24,9 @@ export const AuthProvider = ({ children }) => {
   }, [user?.theme]);
 
   const login = (userData) => {
-    localStorage.setItem("user", JSON.stringify(userData));
-    setUser(userData); // This triggers the Navbar and ProtectedRoute to update!
+    const { token: _token, ...profile } = userData; // never persist a token
+    localStorage.setItem("user", JSON.stringify(profile));
+    setUser(profile); // This triggers the Navbar and ProtectedRoute to update!
   };
 
   const logout = () => {
