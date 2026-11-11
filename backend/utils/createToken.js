@@ -1,7 +1,10 @@
 import jwt from "jsonwebtoken";
 
 const generateToken = (res, _id) => {
-  const JWT_SECRET = process.env.JWT_SECRET || "yourSuperStrongSecretKeyHere";
+  const JWT_SECRET = process.env.JWT_SECRET;
+  if (!JWT_SECRET) {
+    throw new Error("JWT_SECRET is not configured");
+  }
 
   if (!_id) {
     throw new Error("User ID is required to generate token");
@@ -11,21 +14,7 @@ const generateToken = (res, _id) => {
     expiresIn: "30d",
   });
 
-  // res.cookie("jwt", token, {
-  //   httpOnly: true,
-  //   sameSite: "lax",
-  //   secure: false,
-  //   maxAge: 30 * 24 * 60 * 60 * 1000
-  // });
-
   // for production ready
-  // res.cookie("jwt", token, {
-  //   httpOnly: true,
-  //   sameSite: "none",   // cross-site
-  //   secure: true,       // REQUIRED with sameSite:none
-  //   maxAge: 30 * 24 * 60 * 60 * 1000
-  // });
-
   res.cookie("jwt", token, {
     httpOnly: true,
     sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",

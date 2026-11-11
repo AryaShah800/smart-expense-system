@@ -23,14 +23,24 @@ import { seedDefaultCategories } from "./utils/seedDefaultCategories.js";
 
 const PORT = process.env.PORT || 7000;
 
+// Exact origins only. Add more with ALLOWED_ORIGINS (comma-separated) or FRONTEND_URL.
+const allowedOrigins = new Set(
+  [
+    "https://smart-expense-system.vercel.app",
+    process.env.FRONTEND_URL,
+    ...(process.env.ALLOWED_ORIGINS || "").split(","),
+  ]
+    .map((o) => (o || "").trim().replace(/\/$/, ""))
+    .filter(Boolean)
+);
+
+const isLocalDevOrigin = (origin) =>
+  process.env.NODE_ENV !== "production" &&
+  /^http:\/\/(localhost|127\.0\.0\.1|192\.168\.\d+\.\d+)(:\d+)?$/.test(origin);
+
 const corsOptions = {
   origin: function (origin, callback) {
-    if (
-      !origin ||
-      origin.endsWith(".vercel.app") ||
-      origin.startsWith("http://localhost") ||
-      origin.startsWith("http://192.168.")
-    ) {
+    if (!origin || allowedOrigins.has(origin) || isLocalDevOrigin(origin)) {
       callback(null, true);
     } else {
       callback(new Error("Not allowed by CORS"));
