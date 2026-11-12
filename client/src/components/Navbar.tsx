@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import api from "../api/axios";
 import { socket } from "../api/socket";
 import { useAuth } from "../context/AuthContext";
+import type { Notification } from "../types/models";
 import "../styles/navbar.css";
 
 function Navbar() {
@@ -10,17 +11,17 @@ function Navbar() {
 
   const { user } = useAuth();
 
-  const [notifications, setNotifications] = useState([]);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const dropdownRef = useRef(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
 // 🔥 SOCKET LOGIC
   useEffect(() => {
     if (user) {
       const fetchNotifications = async () => {
         try {
-          const res = await api.get("/users/notifications");
+          const res = await api.get<Notification[]>("/users/notifications");
           setNotifications(res.data);
         } catch (err) {
           console.error("Failed to fetch notifications", err);
@@ -47,7 +48,7 @@ function Navbar() {
       }
 
       // 4. Listen for REAL-TIME notifications
-      socket.on("new_notification", (newNotif) => {
+      socket.on("new_notification", (newNotif: Notification) => {
         console.log("New real-time notification received!", newNotif);
         setNotifications((prev) => [newNotif, ...prev]);
       });
@@ -62,8 +63,8 @@ function Navbar() {
 
   // Close dropdown when clicking outside
   useEffect(() => {
-    function handleClickOutside(event) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setShowDropdown(false);
       }
     }

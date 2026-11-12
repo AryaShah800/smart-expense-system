@@ -1,10 +1,14 @@
-import React from "react";
+interface DataErrorStateProps {
+  title?: string;
+  message?: string;
+  onRetry?: () => void;
+}
 
 export default function DataErrorState({
   title = "Unable to connect to server",
   message = "Could not reach the server. Please make sure the server is running and check your connection.",
   onRetry,
-}) {
+}: DataErrorStateProps) {
   return (
     <div
       style={{

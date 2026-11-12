@@ -1,9 +1,16 @@
 import { useEffect } from "react";
+import type { Notification } from "../types/models";
 
-export default function NotificationPanel({ isOpen, onClose, notifications }) {
+interface NotificationPanelProps {
+  isOpen: boolean;
+  onClose: () => void;
+  notifications: Notification[];
+}
+
+export default function NotificationPanel({ isOpen, onClose, notifications }: NotificationPanelProps) {
   useEffect(() => {
     if (!isOpen) return;
-    const handleEscape = (e) => e.key === "Escape" && onClose();
+    const handleEscape = (e: KeyboardEvent) => e.key === "Escape" && onClose();
     document.addEventListener("keydown", handleEscape);
     document.body.style.overflow = "hidden";
     return () => {

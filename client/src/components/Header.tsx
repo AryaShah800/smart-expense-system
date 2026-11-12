@@ -4,8 +4,9 @@ import api from "../api/axios";
 import { socket } from "../api/socket";
 import { useAuth } from "../context/AuthContext";
 import NotificationPanel from "./NotificationPanel";
+import type { Notification } from "../types/models";
 
-const routeTitles = {
+const routeTitles: Record<string, string> = {
   "/dashboard": "Dashboard",
   "/add-transaction": "New Transaction",
   "/expenses": "Transactions",
@@ -14,7 +15,7 @@ const routeTitles = {
   "/settings": "Settings",
 };
 
-function getPageTitle(pathname) {
+function getPageTitle(pathname: string): string {
   if (pathname.startsWith("/groups/") && pathname !== "/groups") return "Group Details";
   return routeTitles[pathname] || "SmartExpense";
 }
@@ -23,7 +24,7 @@ export default function Header() {
   const location = useLocation();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [notifications, setNotifications] = useState([]);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [showPanel, setShowPanel] = useState(false);
 
   const isMainTab = ["/dashboard", "/expenses", "/budgets", "/groups"].includes(location.pathname);
@@ -32,7 +33,7 @@ export default function Header() {
     if (!user) return;
     const fetchNotifications = async () => {
       try {
-        const res = await api.get("/users/notifications");
+        const res = await api.get<Notification[]>("/users/notifications");
         setNotifications(res.data);
       } catch (err) {
         console.error("Failed to fetch notifications", err);
@@ -43,7 +44,7 @@ export default function Header() {
     const handleConnect = () => socket.emit("join_room", user._id);
     socket.on("connect", handleConnect);
     if (socket.connected) handleConnect();
-    socket.on("new_notification", (newNotif) => {
+    socket.on("new_notification", (newNotif: Notification) => {
       setNotifications((prev) => [newNotif, ...prev]);
     });
     return () => {
