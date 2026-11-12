@@ -31,7 +31,7 @@ function AddExpenseModal({ groupId, groupMembers, onClose, onAdded }) {
       try {
         const res = await api.get(`/groups/${groupId}/categories`);
         setCategories(res.data);
-      } catch (err) { console.error("Error fetching categories"); }
+      } catch { console.error("Error fetching categories"); }
     };
     fetchCats();
   }, [groupId]);

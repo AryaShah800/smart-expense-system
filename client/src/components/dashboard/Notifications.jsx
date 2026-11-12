@@ -10,7 +10,9 @@ function Notifications() {
     try {
       const res = await api.get("/users/invitations");
       setInvites(res.data);
-    } catch (err) { } finally { setLoading(false); }
+    } catch {
+      // Invitations are optional on the dashboard; keep the list empty on failure.
+    } finally { setLoading(false); }
   };
 
   useEffect(() => {
@@ -35,7 +37,7 @@ function Notifications() {
         alert("Joined group successfully!");
         window.location.reload(); 
       }
-    } catch (err) {
+    } catch {
       alert("Action failed");
     }
   };

@@ -1,4 +1,4 @@
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import api from "../api/axios";
 import { socket } from "../api/socket";
@@ -6,29 +6,27 @@ import { useAuth } from "../context/AuthContext";
 import "../styles/navbar.css";
 
 function Navbar() {
-  const navigate = useNavigate();
   const location = useLocation();
 
-  // Get user and logout function from Context
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
 
   const [notifications, setNotifications] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const dropdownRef = useRef(null);
 
-  const fetchNotifications = async () => {
-    try {
-      const res = await api.get("/users/notifications");
-      setNotifications(res.data);
-    } catch (err) {
-      console.error("Failed to fetch notifications", err);
-    }
-  };
-
 // 🔥 SOCKET LOGIC
   useEffect(() => {
     if (user) {
+      const fetchNotifications = async () => {
+        try {
+          const res = await api.get("/users/notifications");
+          setNotifications(res.data);
+        } catch (err) {
+          console.error("Failed to fetch notifications", err);
+        }
+      };
+
       // 1. Initial Load of notifications
       fetchNotifications();
 
@@ -73,29 +71,13 @@ function Navbar() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleLogout = async () => {
-    try {
-      // 1. Notify backend
-      await api.post("/users/logout");
-
-      // 2. Clear global state via context (removes from localStorage automatically)
-      logout();
-
-      // 3. Cleanup socket and navigate
-      socket.disconnect();
-      navigate("/login");
-    } catch (err) {
-      console.error("Logout failed", err);
-    }
-  };
-
   const handleBellClick = async () => {
     setShowDropdown(!showDropdown);
     if (!showDropdown && unreadCount > 0) {
       try {
         await api.put("/users/notifications/read");
         setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
-      } catch (err) {
+      } catch {
         console.error("Failed to mark notifications as read");
       }
     }

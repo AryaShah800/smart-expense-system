@@ -26,7 +26,7 @@ function Login() {
       try {
         await submitLogin(credentials);
         navigate("/dashboard");
-      } catch (err) {
+      } catch {
         // error state is handled by the hook; optionally integrate a toast here
       }
     },
