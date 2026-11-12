@@ -46,8 +46,8 @@ export interface Category {
 export interface Transaction {
   _id: Id;
   userId: Id;
-  /** Populated with the category on list endpoints. */
-  categoryId: Category | Id;
+  /** Populated with the category on list endpoints; null if the category was deleted. */
+  categoryId: Category | Id | null;
   type: TransactionType;
   amount: number;
   date: IsoDate;
@@ -123,6 +123,11 @@ export interface GroupExpense {
 /** Error body the API sends with 4xx/5xx responses. */
 export interface ApiErrorBody {
   message?: string;
+}
+
+/** Returns the populated object, or null for a bare id or a missing reference. */
+export function populated<T extends { _id: Id }>(value: T | Id | null | undefined): T | null {
+  return isPopulated(value) ? value : null;
 }
 
 /** Narrows a populated reference to the object form. */

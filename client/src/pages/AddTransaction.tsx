@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
-import api from "../api/axios";
+import api, { apiErrorMessage } from "../api/axios";
+import type { Category, Frequency, TransactionType } from "../types/models";
 import Modal from "../components/Modal";
 import { useAuth } from "../context/AuthContext";
 import { getCurrencySymbol } from "../utils/currencyFormatter";
@@ -12,15 +13,15 @@ function AddTransaction() {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  const [type, setType] = useState("expense");
+  const [type, setType] = useState<TransactionType>("expense");
   const [amount, setAmount] = useState("");
   const [categoryId, setCategoryId] = useState("");
-  const [categories, setCategories] = useState([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [description, setDescription] = useState("");
   // Pre-fill with today's local date for mobile convenience
   const [date, setDate] = useState(() => new Date().toISOString().split("T")[0]);
   const [isRecurring, setIsRecurring] = useState(false);
-  const [frequency, setFrequency] = useState("monthly");
+  const [frequency, setFrequency] = useState<Frequency>("monthly");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -33,13 +34,14 @@ function AddTransaction() {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const res = await api.get("/categories");
+        const res = await api.get<Category[]>("/categories");
         const filtered = res.data.filter((c) => c.type === type);
         setCategories(filtered);
         // Pre-select first category if none selected or not in filtered
-        if (filtered.length > 0) {
+        const firstCategory = filtered[0];
+        if (firstCategory) {
           setCategoryId((current) =>
-            current && filtered.some((c) => c._id === current) ? current : filtered[0]._id
+            current && filtered.some((c) => c._id === current) ? current : firstCategory._id
           );
         }
       } catch {
@@ -49,12 +51,12 @@ function AddTransaction() {
     fetchCategories();
   }, [type]);
 
-  const handleQuickAmount = (delta) => {
+  const handleQuickAmount = (delta: number) => {
     const current = Number(amount) || 0;
     setAmount(String(current + delta));
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError("");
 
@@ -81,7 +83,7 @@ function AddTransaction() {
       });
       navigate(isRecurring ? "/recurring" : "/expenses");
     } catch (err) {
-      setError(err.response?.data?.message || "Failed to add transaction");
+      setError(apiErrorMessage(err, "Failed to add transaction"));
     } finally {
       setLoading(false);
     }
@@ -129,7 +131,7 @@ function AddTransaction() {
                 value={amount}
                 onChange={(e) => {
                   const val = e.target.value;
-                  if (val === "" || (!isNaN(val) && Number(val) >= 0)) {
+                  if (val === "" || (!Number.isNaN(Number(val)) && Number(val) >= 0)) {
                     setAmount(val);
                   }
                 }}
@@ -241,7 +243,7 @@ function AddTransaction() {
                 <label>Frequency</label>
                 <select
                   value={frequency}
-                  onChange={(e) => setFrequency(e.target.value)}
+                  onChange={(e) => setFrequency(e.target.value as Frequency)}
                   className="recurring-freq-select"
                 >
                   <option value="monthly">Monthly (Rent, Subscriptions, Salary)</option>
@@ -304,7 +306,7 @@ function AddTransaction() {
                 onClick={async () => {
                   if (!newCategoryName.trim()) return;
                   try {
-                    const res = await api.post("/categories", {
+                    const res = await api.post<Category>("/categories", {
                       name: newCategoryName.trim(),
                       type,
                       icon: getCategoryIcon(newCategoryName, type),
@@ -314,7 +316,7 @@ function AddTransaction() {
                     setNewCategoryName("");
                     setIsModalOpen(false);
                   } catch (err) {
-                    alert(err.response?.data?.message || "Failed to add category");
+                    alert(apiErrorMessage(err, "Failed to add category"));
                   }
                 }}
                 className="btn-modal-confirm"

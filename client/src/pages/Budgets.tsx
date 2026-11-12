@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
-import api from "../api/axios";
+import { useEffect, useState, type FormEvent } from "react";
+import api, { apiErrorMessage, isServerDown } from "../api/axios";
+import { populated, type Budget, type BudgetStatus, type Category } from "../types/models";
 import "../styles/budgets.css";
 import "../styles/responsive.css";
 import { useAuth } from "../context/AuthContext";
@@ -10,9 +11,9 @@ import DataErrorState from "../components/DataErrorState";
 
 function Budgets() {
   const { user } = useAuth();
-  const [budgets, setBudgets] = useState([]);
-  const [categories, setCategories] = useState([]);
-  const [budgetStatus, setBudgetStatus] = useState([]);
+  const [budgets, setBudgets] = useState<Budget[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [budgetStatus, setBudgetStatus] = useState<BudgetStatus[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -27,9 +28,9 @@ function Budgets() {
       setError("");
       const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
       const [catRes, budgetRes, statusRes] = await Promise.all([
-        api.get("/categories"),
-        api.get("/budgets"),
-        api.get("/budgets/status", { params: { timezone: userTimezone } }).catch(() => ({ data: [] })),
+        api.get<Category[]>("/categories"),
+        api.get<Budget[]>("/budgets"),
+        api.get<BudgetStatus[]>("/budgets/status", { params: { timezone: userTimezone } }).catch(() => ({ data: [] as BudgetStatus[] })),
       ]);
 
       const expenseCategories = catRes.data.filter((cat) => cat.type === "expense");
@@ -39,9 +40,9 @@ function Budgets() {
     } catch (err) {
       console.error("Failed to fetch budgets data", err);
       setError(
-        err.isServerDown
+        isServerDown(err)
           ? "Server is currently offline or unreachable. Please verify your connection."
-          : (err.response?.data?.message || "Failed to load budget data.")
+          : apiErrorMessage(err, "Failed to load budget data.")
       );
     } finally {
       setLoading(false);
@@ -52,7 +53,7 @@ function Budgets() {
     fetchData();
   }, []);
 
-  const handleSetBudget = async (e) => {
+  const handleSetBudget = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!selectedCategory) return;
 
@@ -74,15 +75,15 @@ function Budgets() {
       setSelectedCategory("");
       setShowModal(false);
     } catch (error) {
-      alert(error.response?.data?.message || "Failed to set budget");
+      alert(apiErrorMessage(error, "Failed to set budget"));
     } finally {
       setIsSaving(false);
     }
   };
 
-  const getBudgetDetails = (catId) => {
-    const status = budgetStatus.find((s) => s.category?._id === catId);
-    const budgetDoc = budgets.find((b) => b.categoryId?._id === catId);
+  const getBudgetDetails = (catId: string) => {
+    const status = budgetStatus.find((s) => populated(s.category)?._id === catId);
+    const budgetDoc = budgets.find((b) => populated(b.categoryId)?._id === catId);
     const limit = budgetDoc ? budgetDoc.amount : 0;
     const spent = status ? status.spent : 0;
     const percent = limit > 0 ? Math.min(Math.round((spent / limit) * 100), 100) : 0;

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import api from "../api/axios";
+import api, { apiErrorMessage, isServerDown } from "../api/axios";
+import { populated, type Transaction } from "../types/models";
 import "../styles/expenses.css";
 import "../styles/responsive.css";
 import { exportTransactionsPdf } from "../utils/exportPdf";
@@ -11,7 +12,7 @@ import DataErrorState from "../components/DataErrorState";
 
 function Expenses() {
   const { user } = useAuth();
-  const [transactions, setTransactions] = useState([]);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -25,14 +26,14 @@ function Expenses() {
     try {
       setLoading(true);
       setError("");
-      const res = await api.get("/transactions");
+      const res = await api.get<Transaction[]>("/transactions");
       setTransactions(res.data);
     } catch (err) {
       console.error("Failed to fetch transactions", err);
       setError(
-        err.isServerDown
+        isServerDown(err)
           ? "Server is currently offline or unreachable. Please verify your connection."
-          : (err.response?.data?.message || "Failed to load transactions.")
+          : apiErrorMessage(err, "Failed to load transactions.")
       );
     } finally {
       setLoading(false);
@@ -46,7 +47,7 @@ function Expenses() {
   const filtered = useMemo(() => {
     return transactions.filter((t) => {
       if (typeFilter !== "all" && t.type !== typeFilter) return false;
-      if (categoryFilter !== "all" && t.categoryId?.name !== categoryFilter) return false;
+      if (categoryFilter !== "all" && populated(t.categoryId)?.name !== categoryFilter) return false;
       if (fromDate && new Date(t.date) < new Date(fromDate)) return false;
       if (toDate && new Date(t.date) > new Date(toDate)) return false;
       return true;
@@ -59,7 +60,7 @@ function Expenses() {
 
   // Group transactions by date for mobile view
   const groupedTransactions = useMemo(() => {
-    const groups = {};
+    const groups: Record<string, { label: string; items: Transaction[]; total: number }> = {};
     const todayStr = new Date().toDateString();
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
@@ -80,12 +81,10 @@ function Expenses() {
         });
       }
 
-      if (!groups[label]) {
-        groups[label] = { label, items: [], total: 0 };
-      }
-      groups[label].items.push(t);
-      if (t.type === "expense") groups[label].total -= t.amount;
-      else groups[label].total += t.amount;
+      const group = (groups[label] ??= { label, items: [], total: 0 });
+      group.items.push(t);
+      if (t.type === "expense") group.total -= t.amount;
+      else group.total += t.amount;
     });
 
     return Object.values(groups);
@@ -100,7 +99,7 @@ function Expenses() {
     });
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = async (id: string) => {
     if (!window.confirm("Delete this transaction?")) return;
     try {
       await api.delete(`/transactions/${id}`);
@@ -170,8 +169,8 @@ function Expenses() {
           className="filter-select"
         >
           <option value="all">All Categories</option>
-          {[...new Set(transactions.map((t) => t.categoryId?.name))]
-            .filter(Boolean)
+          {[...new Set(transactions.map((t) => populated(t.categoryId)?.name))]
+            .filter((name): name is string => Boolean(name))
             .map((c) => (
               <option key={c} value={c}>{c}</option>
             ))}
@@ -246,7 +245,7 @@ function Expenses() {
                       <div className="card-content">
                         <div className="card-row top">
                           <span className="card-category">
-                            {t.categoryId?.name || "Uncategorized"}
+                            {populated(t.categoryId)?.name || "Uncategorized"}
                           </span>
                           <span className={`card-amount ${t.type}`}>
                             {t.type === "expense" ? "-" : "+"}

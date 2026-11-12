@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
-import api from "../api/axios";
+import { useEffect, useState, type FormEvent } from "react";
+import api, { apiErrorMessage, isServerDown } from "../api/axios";
+import { populated, type Category, type Frequency, type RecurringTransaction, type TransactionType } from "../types/models";
 import { useAuth } from "../context/AuthContext";
 import formatCurrency from "../utils/currencyFormatter";
 import { getCategoryIcon } from "../utils/categoryIcons";
@@ -7,31 +8,53 @@ import toast from "react-hot-toast";
 import DataErrorState from "../components/DataErrorState";
 import "../styles/recurring.css";
 
+interface RecurringSummary {
+  activeCount: number;
+  monthlyRecurringExpense: number;
+  monthlyRecurringIncome: number;
+  netRecurring: number;
+}
+
+interface RecurringResponse {
+  recurring?: RecurringTransaction[];
+  summary?: RecurringSummary;
+}
+
+interface RecurringForm {
+  description: string;
+  amount: string;
+  type: TransactionType;
+  categoryId: string;
+  frequency: Frequency;
+  startDate: string;
+  createInitialTransaction: boolean;
+}
+
 export default function Recurring() {
   const { user } = useAuth();
 
-  const [recurringList, setRecurringList] = useState([]);
-  const [summary, setSummary] = useState({
+  const [recurringList, setRecurringList] = useState<RecurringTransaction[]>([]);
+  const [summary, setSummary] = useState<RecurringSummary>({
     activeCount: 0,
     monthlyRecurringExpense: 0,
     monthlyRecurringIncome: 0,
     netRecurring: 0,
   });
-  const [categories, setCategories] = useState([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [filterType, setFilterType] = useState("all");
+  const [filterType, setFilterType] = useState<"all" | TransactionType>("all");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [syncing, setSyncing] = useState(false);
 
   // Form state
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<RecurringForm>({
     description: "",
     amount: "",
     type: "expense",
     categoryId: "",
     frequency: "monthly",
-    startDate: new Date().toISOString().split("T")[0],
+    startDate: new Date().toISOString().slice(0, 10),
     createInitialTransaction: true,
   });
   const [submitting, setSubmitting] = useState(false);
@@ -42,8 +65,8 @@ export default function Recurring() {
       setLoading(true);
       setError("");
       const [recRes, catRes] = await Promise.all([
-        api.get("/recurring"),
-        api.get("/categories"),
+        api.get<RecurringResponse>("/recurring"),
+        api.get<Category[]>("/categories"),
       ]);
 
       setRecurringList(recRes.data.recurring || []);
@@ -59,9 +82,9 @@ export default function Recurring() {
     } catch (err) {
       console.error("Failed to load recurring data:", err);
       setError(
-        err.isServerDown
+        isServerDown(err)
           ? "The server appears offline. Could not load recurring transactions."
-          : err.response?.data?.message || "Failed to load recurring transactions."
+          : apiErrorMessage(err, "Failed to load recurring transactions.")
       );
     } finally {
       setLoading(false);
@@ -76,7 +99,7 @@ export default function Recurring() {
   const handleProcessDue = async () => {
     try {
       setSyncing(true);
-      const res = await api.post("/recurring/process");
+      const res = await api.post<{ processedCount: number }>("/recurring/process");
       toast.success(
         res.data.processedCount > 0
           ? `Processed ${res.data.processedCount} due recurring transactions!`
@@ -84,14 +107,14 @@ export default function Recurring() {
       );
       fetchData();
     } catch (err) {
-      toast.error(err.response?.data?.message || "Failed to process recurring transactions");
+      toast.error(apiErrorMessage(err, "Failed to process recurring transactions"));
     } finally {
       setSyncing(false);
     }
   };
 
   /* ===== TOGGLE STATUS (ACTIVE / PAUSED) ===== */
-  const handleToggleStatus = async (item) => {
+  const handleToggleStatus = async (item: RecurringTransaction) => {
     const newStatus = item.status === "active" ? "paused" : "active";
     try {
       await api.put(`/recurring/${item._id}`, { status: newStatus });
@@ -107,7 +130,7 @@ export default function Recurring() {
   };
 
   /* ===== DELETE RECURRING ===== */
-  const handleDelete = async (id) => {
+  const handleDelete = async (id: string) => {
     if (!window.confirm("Remove this recurring schedule? Existing past transactions won't be deleted.")) {
       return;
     }
@@ -122,7 +145,7 @@ export default function Recurring() {
   };
 
   /* ===== SUBMIT NEW RECURRING ===== */
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const numAmount = Number(form.amount);
 
@@ -159,26 +182,26 @@ export default function Recurring() {
         type: "expense",
         categoryId: "",
         frequency: "monthly",
-        startDate: new Date().toISOString().split("T")[0],
+        startDate: new Date().toISOString().slice(0, 10),
         createInitialTransaction: true,
       });
       fetchData();
     } catch (err) {
-      toast.error(err.response?.data?.message || "Failed to create recurring schedule");
+      toast.error(apiErrorMessage(err, "Failed to create recurring schedule"));
     } finally {
       setSubmitting(false);
     }
   };
 
   // Helper for due date badge
-  const getDueBadge = (dueDateStr) => {
+  const getDueBadge = (dueDateStr: string | undefined) => {
     if (!dueDateStr) return null;
     const now = new Date();
     now.setHours(0, 0, 0, 0);
     const due = new Date(dueDateStr);
     due.setHours(0, 0, 0, 0);
 
-    const diffDays = Math.ceil((due - now) / (1000 * 60 * 60 * 24));
+    const diffDays = Math.ceil((due.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
 
     if (diffDays < 0) {
       return { text: "Due today (processing)", class: "due-urgent" };
@@ -335,7 +358,7 @@ export default function Recurring() {
                     <div>
                       <h4 className="rec-title">{item.description}</h4>
                       <span className="rec-category">
-                        {item.categoryId?.name || "General"}
+                        {populated(item.categoryId)?.name || "General"}
                       </span>
                     </div>
                   </div>
@@ -457,7 +480,7 @@ export default function Recurring() {
                   <select
                     className="modal-select"
                     value={form.frequency}
-                    onChange={(e) => setForm({ ...form, frequency: e.target.value })}
+                    onChange={(e) => setForm({ ...form, frequency: e.target.value as Frequency })}
                   >
                     <option value="monthly">Monthly</option>
                     <option value="weekly">Weekly</option>

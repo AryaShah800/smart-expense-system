@@ -3,7 +3,8 @@ import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import formatCurrency from "../utils/currencyFormatter";
 import { getCategoryIcon } from "../utils/categoryIcons";
-import api from "../api/axios";
+import api, { apiErrorMessage, isServerDown } from "../api/axios";
+import { populated, type BudgetStatus, type Insight, type Transaction } from "../types/models";
 import { exportTransactionsPdf } from "../utils/exportPdf";
 
 import SummaryCards from "../components/dashboard/SummaryCards";
@@ -19,9 +20,9 @@ import "../styles/dashboard.css";
 import "../styles/responsive.css";
 
 function Dashboard() {
-  const [transactions, setTransactions] = useState([]);
-  const [budgetStatus, setBudgetStatus] = useState([]);
-  const [insights, setInsights] = useState([]);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [budgetStatus, setBudgetStatus] = useState<BudgetStatus[]>([]);
+  const [insights, setInsights] = useState<Insight[]>([]);
   const [insightsLoading, setInsightsLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -35,9 +36,9 @@ function Dashboard() {
       setError("");
       const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
       const [txRes, budgetRes, insightRes] = await Promise.all([
-        api.get("/transactions"),
-        api.get("/budgets/status", { params: { timezone: userTimezone } }),
-        api.get("/dashboard/insights"),
+        api.get<Transaction[]>("/transactions"),
+        api.get<BudgetStatus[]>("/budgets/status", { params: { timezone: userTimezone } }),
+        api.get<Insight[]>("/dashboard/insights"),
       ]);
 
       setTransactions(txRes.data);
@@ -46,9 +47,9 @@ function Dashboard() {
     } catch (err) {
       console.error(err);
       setError(
-        err.isServerDown
+        isServerDown(err)
           ? "The server appears to be offline or unreachable. Please check if the backend service is running."
-          : (err.response?.data?.message || "Failed to load dashboard financial data.")
+          : apiErrorMessage(err, "Failed to load dashboard financial data.")
       );
     } finally {
       setLoading(false);
@@ -58,7 +59,7 @@ function Dashboard() {
   const fetchInsights = async () => {
     try {
       setInsightsLoading(true);
-      const res = await api.get("/dashboard/insights");
+      const res = await api.get<Insight[]>("/dashboard/insights");
       setInsights(res.data || []);
     } catch (err) {
       console.error("Failed to refresh insights", err);
@@ -70,6 +71,12 @@ function Dashboard() {
   useEffect(() => {
     fetchData();
   }, []);
+
+  // Sort a copy: sorting state in place during render mutates it.
+  const recentTransactions = useMemo(
+    () => [...transactions].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 5),
+    [transactions]
+  );
 
   /* ===== RANGE LOGIC ===== */
   const daysBack = useMemo(() => {
@@ -244,9 +251,7 @@ function Dashboard() {
                 </div>
 
                 <div className="recent-list">
-                  {transactions
-                    .sort((a, b) => new Date(b.date) - new Date(a.date))
-                    .slice(0, 5)
+                  {recentTransactions
                     .map((t) => (
                       <div key={t._id} className="expenses-card mini">
                         <div className={`card-icon ${t.type}`}>
@@ -255,7 +260,7 @@ function Dashboard() {
 
                         <div className="card-content">
                           <div className="card-row top">
-                            <span className="card-category">{t.categoryId?.name || "Other"}</span>
+                            <span className="card-category">{populated(t.categoryId)?.name || "Other"}</span>
                             <span className={`card-amount ${t.type}`}>
                                {t.type === "expense" ? "-" : "+"}{formatCurrency(t.amount, user?.currency)}
                             </span>
@@ -373,14 +378,12 @@ function Dashboard() {
                 <h3 style={{ margin: 0, fontSize: "0.95rem", fontWeight: 700, color: "var(--text)" }}>Recent Activity</h3>
                 <Link to="/expenses" style={{ fontSize: "0.8rem", fontWeight: 600, color: "var(--primary)", textDecoration: "none" }}>View All →</Link>
               </div>
-              {transactions
-                .sort((a, b) => new Date(b.date) - new Date(a.date))
-                .slice(0, 5)
+              {recentTransactions
                 .map((t) => (
                   <div key={t._id} className="recent-item-mobile">
                     <div className={`icon ${t.type}`}>{getCategoryIcon(t.categoryId, t.type)}</div>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontWeight: 700, fontSize: "0.9rem", color: "var(--text)" }}>{t.categoryId?.name || "Other"}</div>
+                      <div style={{ fontWeight: 700, fontSize: "0.9rem", color: "var(--text)" }}>{populated(t.categoryId)?.name || "Other"}</div>
                       <div style={{ fontSize: "0.75rem", color: "var(--muted)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t.description || "No description"}</div>
                     </div>
                     <div style={{ textAlign: "right" }}>
