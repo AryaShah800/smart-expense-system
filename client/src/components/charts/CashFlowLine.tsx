@@ -9,11 +9,12 @@ import {
 } from "recharts";
 import { useAuth } from "../../context/AuthContext";
 import formatCurrency from "../../utils/currencyFormatter";
+import type { Transaction } from "../../types/models";
 
-function CashFlowLine({ transactions }) {
+function CashFlowLine({ transactions }: { transactions: Transaction[] }) {
   const { user } = useAuth();
   const sorted = [...transactions].sort(
-    (a, b) => new Date(a.date) - new Date(b.date)
+    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
   );
 
   let balance = 0;
@@ -61,7 +62,7 @@ function CashFlowLine({ transactions }) {
             tickFormatter={(value) => formatCurrency(value, user?.currency)}
           />
           <Tooltip
-            formatter={(value) => [formatCurrency(value, user?.currency), "Balance"]}
+            formatter={(value) => [formatCurrency(Number(value), user?.currency), "Balance"]}
             contentStyle={{
               borderRadius: "8px",
               border: "none",

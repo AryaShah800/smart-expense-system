@@ -1,13 +1,20 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import "../../styles/insights.css";
+import type { Insight } from "../../types/models";
 
-export default function ActionableInsights({ insights = [], onRefresh, loading = false }) {
-  const [dismissed, setDismissed] = useState([]);
+interface ActionableInsightsProps {
+  insights?: Insight[];
+  onRefresh?: () => void;
+  loading?: boolean;
+}
+
+export default function ActionableInsights({ insights = [], onRefresh, loading = false }: ActionableInsightsProps) {
+  const [dismissed, setDismissed] = useState<string[]>([]);
 
   const visibleInsights = insights.filter((i) => !dismissed.includes(i.id));
 
-  const handleDismiss = (id) => {
+  const handleDismiss = (id: string) => {
     setDismissed((prev) => [...prev, id]);
   };
 

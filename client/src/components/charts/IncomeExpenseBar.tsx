@@ -10,8 +10,9 @@ import {
 } from "recharts";
 import { useAuth } from "../../context/AuthContext";
 import formatCurrency from "../../utils/currencyFormatter";
+import type { Transaction } from "../../types/models";
 
-function IncomeExpenseBar({ transactions }) {
+function IncomeExpenseBar({ transactions }: { transactions: Transaction[] }) {
   let income = 0;
   let expense = 0;
 
@@ -48,7 +49,7 @@ function IncomeExpenseBar({ transactions }) {
           />
           <Tooltip
             cursor={{ fill: "transparent" }}
-            formatter={(value) => [formatCurrency(value, user?.currency), "Amount"]}
+            formatter={(value) => [formatCurrency(Number(value), user?.currency), "Amount"]}
             contentStyle={{
               borderRadius: "8px",
               border: "none",

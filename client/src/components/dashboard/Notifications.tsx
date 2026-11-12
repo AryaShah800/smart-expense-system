@@ -1,14 +1,15 @@
 import { useEffect, useState } from "react";
 import api from "../../api/axios";
-import { socket } from "../../api/socket"; 
+import { socket } from "../../api/socket";
+import type { GroupInvite } from "../../types/models";
 
 function Notifications() {
-  const [invites, setInvites] = useState([]);
+  const [invites, setInvites] = useState<GroupInvite[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchInvites = async () => {
     try {
-      const res = await api.get("/users/invitations");
+      const res = await api.get<GroupInvite[]>("/users/invitations");
       setInvites(res.data);
     } catch {
       // Invitations are optional on the dashboard; keep the list empty on failure.
@@ -27,7 +28,7 @@ function Notifications() {
     };
   }, []);
 
-  const handleRespond = async (groupId, status) => {
+  const handleRespond = async (groupId: string, status: "accept" | "reject") => {
     try {
       // This line has been updated to send "action" instead of "status"
       await api.post("/users/invitations/respond", { groupId, action: status });

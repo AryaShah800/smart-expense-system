@@ -129,3 +129,36 @@ export interface ApiErrorBody {
 export function isPopulated<T extends { _id: Id }>(value: T | Id | null | undefined): value is T {
   return typeof value === 'object' && value !== null;
 }
+
+/** One row of GET /budgets/status. */
+export interface BudgetStatus {
+  category: Category | Id;
+  limit: number;
+  spent: number;
+  remaining: number;
+  exceeded: boolean;
+}
+
+export type InsightType = 'danger' | 'warning' | 'info' | 'success' | 'expense';
+
+/** One card from GET /dashboard/insights. */
+export interface Insight {
+  id: string;
+  type: InsightType;
+  icon: string;
+  category?: string;
+  badge?: string;
+  title: string;
+  message: string;
+  metric?: string;
+  actionText?: string;
+  actionLink?: string;
+  actionFilter?: string;
+}
+
+/** A pending group invitation from GET /users/invitations. */
+export interface GroupInvite {
+  _id: Id;
+  name: string;
+  type: string;
+}

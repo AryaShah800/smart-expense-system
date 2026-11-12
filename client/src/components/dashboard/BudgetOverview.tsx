@@ -1,20 +1,21 @@
-import React from "react";
+import { isPopulated, type BudgetStatus } from "../../types/models";
 
-const BudgetOverview = ({ budgetStatus }) => {
+const BudgetOverview = ({ budgetStatus }: { budgetStatus: BudgetStatus[] }) => {
   if (!budgetStatus || budgetStatus.length === 0) return null;
 
   return (
     <div className="chart-card">
       <h4>Budget Status</h4>
       <div className="budget-list">
-        {budgetStatus.map((item) => {
+        {budgetStatus.map((item, index) => {
+          const category = isPopulated(item.category) ? item.category : null;
           const percent = Math.min((item.spent / item.limit) * 100, 100);
           const isExceeded = item.spent > item.limit;
           
           return (
-            <div key={item.category._id} className="budget-item">
+            <div key={category?._id ?? index} className="budget-item">
               <div className="budget-header">
-                <span className="budget-name">{item.category.name}</span>
+                <span className="budget-name">{category?.name ?? "Category"}</span>
                 <span className="budget-values">
                   {new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(item.spent)} 
                   {' / '}

@@ -8,6 +8,12 @@ import {
 } from "recharts";
 import { useAuth } from "../../context/AuthContext";
 import formatCurrency from "../../utils/currencyFormatter";
+import { isPopulated, type Transaction } from "../../types/models";
+
+interface DonutTooltipProps {
+  active?: boolean;
+  payload?: ReadonlyArray<{ name?: string | number; value?: number | string | Array<number | string> }>;
+}
 
 const COLORS = [
   "#2563eb", // blue-600
@@ -19,14 +25,14 @@ const COLORS = [
   "#e879f9", // fuchsia-400
 ];
 
-function ExpenseCategoryDonut({ transactions }) {
+function ExpenseCategoryDonut({ transactions }: { transactions: Transaction[] }) {
   const { user } = useAuth();
-  const map = {};
+  const map: Record<string, number> = {};
   let totalExpense = 0;
 
   transactions.forEach((t) => {
     if (t.type === "expense") {
-      const name = t.categoryId?.name || "Other";
+      const name = (isPopulated(t.categoryId) && t.categoryId.name) || "Other";
       map[name] = (map[name] || 0) + t.amount;
       totalExpense += t.amount;
     }
@@ -41,9 +47,11 @@ function ExpenseCategoryDonut({ transactions }) {
     return <p style={{ textAlign: "center", color: "#666" }}>No expense data</p>;
   }
 
-  const renderTooltip = ({ active, payload }) => {
-    if (active && payload && payload.length) {
-      const { name, value } = payload[0];
+  const renderTooltip = ({ active, payload }: DonutTooltipProps) => {
+    const entry = payload?.[0];
+    if (active && entry) {
+      const name = entry.name;
+      const value = Number(entry.value);
       const percent = ((value / totalExpense) * 100).toFixed(1);
       return (
         <div style={{ backgroundColor: "#fff", padding: "10px", borderRadius: "8px", boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}>

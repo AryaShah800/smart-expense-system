@@ -1,12 +1,25 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import { isPopulated, type Transaction } from "../types/models";
+
+type Rgb = [number, number, number];
+
+export interface PdfExportOptions {
+  userName?: string;
+  transactions?: Transaction[];
+  fromDate?: string;
+  toDate?: string;
+}
+
+const categoryName = (t: Transaction): string =>
+  (isPopulated(t.categoryId) && t.categoryId.name) || "Other";
 
 export function exportTransactionsPdf({
   userName = "User",
   transactions = [],
   fromDate,
   toDate,
-}) {
+}: PdfExportOptions): void {
   if (!transactions.length) {
     alert("No transactions to export");
     return;
@@ -15,10 +28,9 @@ export function exportTransactionsPdf({
   const doc = new jsPDF("p", "mm", "a4");
 
   // Colors
-  const COLOR_PRIMARY = [99, 102, 241]; // Indigo
-  const COLOR_SUCCESS = [34, 197, 94];  // Green
-  const COLOR_DANGER = [239, 68, 68];   // Red
-  const COLOR_GRAY = [107, 114, 128];   // Gray
+  const COLOR_PRIMARY: Rgb = [99, 102, 241]; // Indigo
+  const COLOR_SUCCESS: Rgb = [34, 197, 94];  // Green
+  const COLOR_DANGER: Rgb = [239, 68, 68];   // Red
 
   /* =====================
      CALCULATIONS
@@ -64,7 +76,7 @@ export function exportTransactionsPdf({
   const gap = 10;
 
   // func to draw card
-  const drawCard = (x, title, value, color) => {
+  const drawCard = (x: number, title: string, value: number, color: Rgb) => {
     doc.setDrawColor(220, 220, 220);
     doc.setFillColor(250, 250, 250);
     doc.roundedRect(x, startY, cardWidth, cardHeight, 3, 3, "FD");
@@ -132,10 +144,10 @@ export function exportTransactionsPdf({
      CHART 2: TOP EXPENSES (Horizontal Bars)
   ===================== */
   // Aggregate categories
-  const categoryTotals = {};
+  const categoryTotals: Record<string, number> = {};
   transactions.forEach((t) => {
     if (t.type === "expense") {
-      const name = t.categoryId?.name || "Other";
+      const name = categoryName(t);
       categoryTotals[name] = (categoryTotals[name] || 0) + t.amount;
     }
   });
@@ -150,7 +162,7 @@ export function exportTransactionsPdf({
     doc.text("Top Expenses by Category", 14, currentY);
 
     let barY = currentY + 10;
-    const maxVal = sortedCats[0][1];
+    const maxVal = sortedCats[0]?.[1] || 1;
     const maxBarWidth = 100;
 
     sortedCats.forEach(([name, val]) => {
@@ -195,14 +207,17 @@ export function exportTransactionsPdf({
   const cfWidth = 180;
 
   // Prepare Data Points
-  const sortedTxns = [...transactions].sort((a, b) => new Date(a.date) - new Date(b.date));
+  const sortedTxns = [...transactions].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
   let runningBal = 0;
   const points = sortedTxns.map(t => {
     runningBal += t.type === "income" ? t.amount : -t.amount;
     return { date: t.date, val: runningBal };
   });
 
-  if (points.length > 2) {
+  const firstPoint = points[0];
+  const lastPoint = points[points.length - 1];
+
+  if (points.length > 2 && firstPoint && lastPoint) {
     const minBal = Math.min(...points.map(p => p.val), 0);
     const maxBal = Math.max(...points.map(p => p.val), 100);
     const range = maxBal - minBal;
@@ -220,9 +235,9 @@ export function exportTransactionsPdf({
     if (minBal < 0 && maxBal > 0) {
       const zeroY = cfY + cfHeight - ((0 - minBal) / range) * cfHeight;
       doc.setDrawColor(200);
-      doc.setLineDash([2, 1]);
+      doc.setLineDashPattern([2, 1], 0);
       doc.line(xStart, zeroY, 14 + cfWidth, zeroY);
-      doc.setLineDash([]);
+      doc.setLineDashPattern([], 0);
       doc.setFontSize(8);
       doc.setTextColor(150);
       doc.text("0", xStart - 2, zeroY + 1, { align: "right" });
@@ -240,7 +255,7 @@ export function exportTransactionsPdf({
     doc.setLineWidth(1);
 
     let prevX = xStart;
-    let prevY = cfY + cfHeight - ((points[0].val - minBal) / range) * cfHeight;
+    let prevY = cfY + cfHeight - ((firstPoint.val - minBal) / range) * cfHeight;
 
     points.forEach((p, i) => {
       if (i === 0) return;
@@ -255,8 +270,8 @@ export function exportTransactionsPdf({
     // Labels (X-Axis Start/End)
     doc.setFontSize(8);
     doc.setTextColor(100);
-    doc.text(new Date(points[0].date).toLocaleDateString(), xStart, cfY + cfHeight + 5);
-    doc.text(new Date(points[points.length - 1].date).toLocaleDateString(), 14 + cfWidth, cfY + cfHeight + 5, { align: "right" });
+    doc.text(new Date(firstPoint.date).toLocaleDateString(), xStart, cfY + cfHeight + 5);
+    doc.text(new Date(lastPoint.date).toLocaleDateString(), 14 + cfWidth, cfY + cfHeight + 5, { align: "right" });
   } else {
     doc.setFontSize(10);
     doc.setTextColor(150);
@@ -285,21 +300,21 @@ export function exportTransactionsPdf({
     head: [["Date", "Category", "Type", "Amount", "Description"]],
     body: transactions.map((t) => [
       new Date(t.date).toLocaleDateString(),
-      t.categoryId?.name || "Other",
+      categoryName(t),
       t.type.toUpperCase(),
       `${t.type === "expense" ? "-" : "+"} INR ${t.amount}`,
       t.description || "—",
     ]),
     theme: "grid",
     headStyles: { fillColor: COLOR_PRIMARY, textColor: 255 },
-    alternateRowStyles: { fillColor: [249, 250, 251] },
+    alternateRowStyles: { fillColor: [249, 250, 251] as Rgb },
     styles: { fontSize: 10, cellPadding: 3 },
   });
 
   /* =====================
      FOOTER
   ===================== */
-  const pageCount = doc.internal.getNumberOfPages();
+  const pageCount = doc.getNumberOfPages();
   for (let i = 1; i <= pageCount; i++) {
     doc.setPage(i);
     doc.setFontSize(9);
