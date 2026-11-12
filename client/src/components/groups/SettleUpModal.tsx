@@ -1,18 +1,26 @@
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 import { useAuth } from "../../context/AuthContext";
-import api from "../../api/axios";
+import api, { apiErrorMessage } from "../../api/axios";
 import toast from "react-hot-toast";
 import "../../styles/Modal.css";
 import { getCurrencySymbol } from "../../utils/currencyFormatter";
+import type { MemberSummary } from "../../types/models";
 
-function SettleUpModal({ groupId, groupMembers, onClose, onSettled }) {
+interface SettleUpModalProps {
+  groupId: string;
+  groupMembers: MemberSummary[];
+  onClose: () => void;
+  onSettled: () => void;
+}
+
+function SettleUpModal({ groupId, groupMembers, onClose, onSettled }: SettleUpModalProps) {
   const { user } = useAuth();
   const [fromUserId, setFromUserId] = useState(""); // Fix #2: Add fromUserId state
   const [toUserId, setToUserId] = useState("");
   const [amount, setAmount] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     const effectiveFrom = fromUserId || user?._id;
@@ -50,8 +58,8 @@ function SettleUpModal({ groupId, groupMembers, onClose, onSettled }) {
       onSettled();
       onClose();
     } catch (err) {
-      console.error("SETTLE ERROR:", err.response?.data || err.message);
-      toast.error(err.response?.data?.message || "Failed to record settlement");
+      console.error("SETTLE ERROR:", err);
+      toast.error(apiErrorMessage(err, "Failed to record settlement"));
     } finally {
       setLoading(false);
     }

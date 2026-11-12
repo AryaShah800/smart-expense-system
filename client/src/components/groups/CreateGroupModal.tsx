@@ -1,13 +1,18 @@
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 import api from "../../api/axios";
 import "../../styles/Modal.css";
 
-function CreateGroupModal({ onClose, onCreated }) {
+interface CreateGroupModalProps {
+  onClose: () => void;
+  onCreated: () => void;
+}
+
+function CreateGroupModal({ onClose, onCreated }: CreateGroupModalProps) {
   const [name, setName] = useState("");
   const [type, setType] = useState("Trip");
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!name.trim()) return;
 

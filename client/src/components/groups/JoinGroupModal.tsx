@@ -1,13 +1,18 @@
-import { useState } from "react";
-import api from "../../api/axios";
+import { useState, type FormEvent } from "react";
+import api, { apiErrorMessage } from "../../api/axios";
 import "../../styles/Modal.css";
 
-function JoinGroupModal({ onClose, onJoined }) {
+interface JoinGroupModalProps {
+  onClose: () => void;
+  onJoined: () => void;
+}
+
+function JoinGroupModal({ onClose, onJoined }: JoinGroupModalProps) {
   const [joinCode, setJoinCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!joinCode.trim()) return;
 
@@ -19,7 +24,7 @@ function JoinGroupModal({ onClose, onJoined }) {
       onJoined();
       onClose();
     } catch (err) {
-      setError(err.response?.data?.message || "Invalid code or already a member");
+      setError(apiErrorMessage(err, "Invalid code or already a member"));
     } finally {
       setLoading(false);
     }

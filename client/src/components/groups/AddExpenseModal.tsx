@@ -1,19 +1,43 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { useAuth } from "../../context/AuthContext";
-import api from "../../api/axios";
+import api, { apiErrorMessage } from "../../api/axios";
 import toast from "react-hot-toast";
 import "../../styles/Modal.css";
 import { getCurrencySymbol } from "../../utils/currencyFormatter";
+import type { GroupCategory, MemberSummary, SplitType } from "../../types/models";
 
-function AddExpenseModal({ groupId, groupMembers, onClose, onAdded }) {
+interface AddExpenseModalProps {
+  groupId: string;
+  groupMembers: MemberSummary[];
+  onClose: () => void;
+  onAdded: () => void;
+}
+
+/** A member's share as typed into the form (a percentage or an amount). */
+interface SplitInput {
+  userId: string;
+  value: string;
+}
+
+interface ExpensePayload {
+  description: string;
+  amount: number;
+  categoryId: string;
+  splitType: SplitType;
+  paidBy?: string;
+  involvedUsers?: string[];
+  splits?: Array<{ userId: string; shareAmount: number }>;
+}
+
+function AddExpenseModal({ groupId, groupMembers, onClose, onAdded }: AddExpenseModalProps) {
   const { user: currentUser } = useAuth();
 
   const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
   const [categoryId, setCategoryId] = useState("");
-  const [categories, setCategories] = useState([]);
+  const [categories, setCategories] = useState<GroupCategory[]>([]);
   const [loading, setLoading] = useState(false);
-  const [splitType, setSplitType] = useState("equal");
+  const [splitType, setSplitType] = useState<SplitType>("equal");
   const [paidBy, setPaidBy] = useState(""); // Fix #1: Add paidBy state
 
 
@@ -22,14 +46,14 @@ function AddExpenseModal({ groupId, groupMembers, onClose, onAdded }) {
     index === self.findIndex(m => m._id === member._id)
   );
 
-  const [involvedUsers, setInvolvedUsers] = useState([]);
-  const [customSplits, setCustomSplits] = useState([]);
+  const [involvedUsers, setInvolvedUsers] = useState<string[]>([]);
+  const [customSplits, setCustomSplits] = useState<SplitInput[]>([]);
 
   // Fetch Categories on mount
   useEffect(() => {
     const fetchCats = async () => {
       try {
-        const res = await api.get(`/groups/${groupId}/categories`);
+        const res = await api.get<GroupCategory[]>(`/groups/${groupId}/categories`);
         setCategories(res.data);
       } catch { console.error("Error fetching categories"); }
     };
@@ -43,17 +67,17 @@ function AddExpenseModal({ groupId, groupMembers, onClose, onAdded }) {
     }
   }, [groupMembers]);
 
-  const toggleInvolvedUser = (userId) => {
+  const toggleInvolvedUser = (userId: string) => {
     setInvolvedUsers(prev => prev.includes(userId) ? prev.filter(id => id !== userId) : [...prev, userId]);
   };
 
-  const handleCustomSplitChange = (userId, value) => {
+  const handleCustomSplitChange = (userId: string, value: string) => {
     // Prevent negative numbers
     if (value && Number(value) < 0) return;
     setCustomSplits((prev) => prev.map((s) => (s.userId === userId ? { ...s, value } : s)));
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const numAmount = Number(amount);
     if (!amount || isNaN(numAmount) || numAmount <= 0) {
@@ -67,7 +91,7 @@ function AddExpenseModal({ groupId, groupMembers, onClose, onAdded }) {
 
     try {
       setLoading(true);
-      let payload = {
+      const payload: ExpensePayload = {
         description: (description || "Expense").trim().slice(0, 100),
         amount: numAmount,
         categoryId,
@@ -122,7 +146,7 @@ function AddExpenseModal({ groupId, groupMembers, onClose, onAdded }) {
       onAdded();
       onClose();
     } catch (err) {
-      toast.error(err.response?.data?.message || "Failed to add expense");
+      toast.error(apiErrorMessage(err, "Failed to add expense"));
     } finally {
       setLoading(false);
     }
@@ -153,7 +177,7 @@ function AddExpenseModal({ groupId, groupMembers, onClose, onAdded }) {
                 step="0.01"
                 onKeyDown={(e) => ["-", "+", "e", "E"].includes(e.key) && e.preventDefault()}
                 onChange={(e) => setAmount(e.target.value)}
-                onWheel={(e) => e.target.blur()}
+                onWheel={(e) => e.currentTarget.blur()}
                 required
                 autoFocus
               />
@@ -249,8 +273,8 @@ function AddExpenseModal({ groupId, groupMembers, onClose, onAdded }) {
                       onClick={() => splitType === 'equal' && toggleInvolvedUser(member._id)}
                     >
                       <div className="split-member-info">
-                        <div className="split-member-avatar">{(member.username || member.name || '?').charAt(0)}</div>
-                        <span className="split-member-name">{member.username || member.name}</span>
+                        <div className="split-member-avatar">{(member.username || '?').charAt(0)}</div>
+                        <span className="split-member-name">{member.username}</span>
                       </div>
 
                       {/* Contextual Action Area */}
@@ -268,7 +292,7 @@ function AddExpenseModal({ groupId, groupMembers, onClose, onAdded }) {
                               onKeyDown={(e) => ["-", "+", "e", "E"].includes(e.key) && e.preventDefault()}
                               value={customSplits.find(s => s.userId === member._id)?.value || ""}
                               onChange={(e) => handleCustomSplitChange(member._id, e.target.value)}
-                              onWheel={(e) => e.target.blur()}
+                              onWheel={(e) => e.currentTarget.blur()}
                             />
                             <span className="unit-label">{splitType === 'percentage' ? '%' : getCurrencySymbol(currentUser?.currency)}</span>
                           </div>

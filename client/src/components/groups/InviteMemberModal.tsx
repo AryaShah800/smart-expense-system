@@ -1,14 +1,20 @@
-import { useState } from "react";
-import api from "../../api/axios";
+import { useState, type FormEvent } from "react";
+import api, { apiErrorMessage } from "../../api/axios";
 import "../../styles/Modal.css";
 
-function InviteMemberModal({ groupId, onClose, onInvited }) {
+interface InviteMemberModalProps {
+  groupId: string;
+  onClose: () => void;
+  onInvited?: () => void;
+}
+
+function InviteMemberModal({ groupId, onClose, onInvited }: InviteMemberModalProps) {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!email) return;
 
@@ -29,7 +35,7 @@ function InviteMemberModal({ groupId, onClose, onInvited }) {
 
     } catch (err) {
       console.error("INVITE ERROR:", err);
-      setError(err.response?.data?.message || "Failed to invite user");
+      setError(apiErrorMessage(err, "Failed to invite user"));
     } finally {
       setLoading(false);
     }
