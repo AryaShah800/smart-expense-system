@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import api from "../api/axios";
+import api, { apiErrorMessage } from "../api/axios";
+import type { GroupDetails as GroupDetailsData, GroupExpenseWithPayer, GroupSplits } from "../types/models";
 import { useAuth } from "../context/AuthContext"; // 🔥 Added Context
 import AddExpenseModal from "../components/groups/AddExpenseModal";
 import SettleUpModal from "../components/groups/SettleUpModal";
@@ -9,13 +10,13 @@ import "../styles/GroupDetails.css";
 import formatCurrency from "../utils/currencyFormatter"; // 🔥 Removed getCurrencySymbol
 
 function GroupDetails() {
-  const { id } = useParams();
+  const { id = "" } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth(); // Instantly get the logged-in user & currency
 
-  const [group, setGroup] = useState(null);
-  const [expenses, setExpenses] = useState([]);
-  const [splits, setSplits] = useState(null);
+  const [group, setGroup] = useState<GroupDetailsData | null>(null);
+  const [expenses, setExpenses] = useState<GroupExpenseWithPayer[]>([]);
+  const [splits, setSplits] = useState<GroupSplits | null>(null);
   const [loading, setLoading] = useState(true);
   const [copySuccess, setCopySuccess] = useState("");
 
@@ -26,9 +27,9 @@ function GroupDetails() {
   const fetchData = useCallback(async () => {
     try {
       const [groupRes, expenseRes, splitRes] = await Promise.all([
-        api.get(`/groups/${id}`),
-        api.get(`/groups/${id}/expenses`),
-        api.get(`/groups/${id}/splits`)
+        api.get<GroupDetailsData>(`/groups/${id}`),
+        api.get<GroupExpenseWithPayer[]>(`/groups/${id}/expenses`),
+        api.get<GroupSplits>(`/groups/${id}/splits`)
       ]);
 
       setGroup(groupRes.data);
@@ -53,21 +54,22 @@ function GroupDetails() {
       await api.delete(`/groups/${id}`);
       navigate("/groups");
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to delete group");
+      alert(apiErrorMessage(err, "Failed to delete group"));
     }
   };
 
-  const handleDeleteExpense = async (expenseId) => {
+  const handleDeleteExpense = async (expenseId: string) => {
     if (!window.confirm("Delete this expense?")) return;
     try {
       await api.delete(`/groups/expenses/${expenseId}`);
       fetchData();
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to delete expense");
+      alert(apiErrorMessage(err, "Failed to delete expense"));
     }
   };
 
   const copyJoinCode = () => {
+    if (!group) return;
     const code = group.joinCode || group._id;
     navigator.clipboard.writeText(code);
     setCopySuccess("Code Copied!");

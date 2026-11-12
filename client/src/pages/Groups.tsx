@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import api from "../api/axios";
+import api, { apiErrorMessage, isServerDown } from "../api/axios";
+import type { Group } from "../types/models";
 import CreateGroupModal from "../components/groups/CreateGroupModal";
 import JoinGroupModal from "../components/groups/JoinGroupModal";
 import DataErrorState from "../components/DataErrorState";
 import "../styles/groups.css";
 
 function Groups() {
-  const [groups, setGroups] = useState([]);
+  const [groups, setGroups] = useState<Group[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -19,14 +20,14 @@ function Groups() {
     try {
       setLoading(true);
       setError("");
-      const res = await api.get("/groups");
+      const res = await api.get<Group[]>("/groups");
       setGroups(res.data);
     } catch (err) {
       console.error("Failed to fetch groups", err);
       setError(
-        err.isServerDown
+        isServerDown(err)
           ? "Server is currently offline or unreachable. Please verify your connection."
-          : (err.response?.data?.message || "Failed to load groups.")
+          : apiErrorMessage(err, "Failed to load groups.")
       );
     } finally {
       setLoading(false);

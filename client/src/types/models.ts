@@ -162,3 +162,20 @@ export interface GroupInvite {
   name: string;
   type: string;
 }
+
+/** GET /groups/:id (members and admin populated). */
+export interface GroupDetails extends Omit<Group, 'members' | 'adminId'> {
+  members: MemberSummary[];
+  adminId: MemberSummary | null;
+}
+
+/** GET /groups/:id/expenses (payer populated). */
+export interface GroupExpenseWithPayer extends Omit<GroupExpense, 'paidBy'> {
+  paidBy: MemberSummary | null;
+}
+
+/** GET /groups/:id/splits. */
+export interface GroupSplits {
+  balances: Array<{ userId: Id; username: string; balance: number }>;
+  settlements: Array<{ from: string; to: string; amount: number }>;
+}

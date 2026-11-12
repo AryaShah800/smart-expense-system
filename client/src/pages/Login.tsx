@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, type ChangeEvent, type FormEvent } from "react";
 import { Link, useNavigate, Navigate } from "react-router-dom";
 import Branding from "../components/Branding";
 import useLogin from "../hooks/useLogin";
@@ -14,13 +14,13 @@ function Login() {
   const [showPassword, setShowPassword] = useState(false);
 
 
-  const updateField = useCallback((e) => {
+  const updateField = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setCredentials((prev) => ({ ...prev, [name]: value }));
   }, []);
 
   const onSubmit = useCallback(
-    async (e) => {
+    async (e: FormEvent<HTMLFormElement>) => {
       e.preventDefault();
       setError(null);
       try {

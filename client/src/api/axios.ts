@@ -27,6 +27,11 @@ export function apiErrorMessage(error: unknown, fallback: string): string {
   return fallback;
 }
 
+/** True when the request never reached the server (offline, DNS failure, timeout). */
+export function isServerDown(error: unknown): boolean {
+  return axios.isAxiosError(error) && (error as ApiError).isServerDown === true;
+}
+
 // Attach JWT token to every request
 api.interceptors.request.use(
   (config) => {

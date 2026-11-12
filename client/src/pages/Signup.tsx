@@ -1,5 +1,5 @@
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, type ChangeEvent, type FormEvent } from "react";
 import { useNavigate, Link, Navigate } from "react-router-dom";
 import Branding from "../components/Branding";
 import useSignup from "../hooks/useSignup";
@@ -18,13 +18,13 @@ function Signup() {
   const [showPassword, setShowPassword] = useState(false);
 
 
-  const updateField = useCallback((e) => {
+  const updateField = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setCredentials((prev) => ({ ...prev, [name]: value }));
   }, []);
 
   const onCreateAccount = useCallback(
-    async (e) => {
+    async (e: FormEvent<HTMLFormElement>) => {
       e.preventDefault();
       setError(null);
       try {
@@ -38,7 +38,7 @@ function Signup() {
   );
 
   const onVerify = useCallback(
-    async (e) => {
+    async (e: FormEvent<HTMLFormElement>) => {
       e.preventDefault();
       setError(null);
       try {
