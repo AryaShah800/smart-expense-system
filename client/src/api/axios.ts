@@ -1,7 +1,14 @@
-import axios from "axios";
+import axios, { type AxiosError } from "axios";
 import toast from "react-hot-toast";
+import type { ApiErrorBody, AuthUser } from "../types/models";
 
-const baseURL =
+/** Axios error with the API's error body, plus a flag set when the server could not be reached. */
+export type ApiError = AxiosError<ApiErrorBody> & { isServerDown?: boolean };
+
+/** Older stored sessions kept the token under different keys. */
+type StoredSession = Partial<AuthUser> & { accessToken?: string; data?: { token?: string } };
+
+const baseURL: string =
   import.meta.env.VITE_API_URL ||
   (import.meta.env.DEV ? "http://localhost:7000/api" : "http://localhost:7000/api");
 
@@ -14,13 +21,19 @@ const api = axios.create({
   },
 });
 
+/** Returns the message the API sent with an error response, or `fallback`. */
+export function apiErrorMessage(error: unknown, fallback: string): string {
+  if (axios.isAxiosError<ApiErrorBody>(error)) return error.response?.data?.message || fallback;
+  return fallback;
+}
+
 // Attach JWT token to every request
 api.interceptors.request.use(
   (config) => {
     const savedUser = localStorage.getItem("user");
     if (savedUser) {
       try {
-        const userData = JSON.parse(savedUser);
+        const userData = JSON.parse(savedUser) as StoredSession;
         const token = userData.token || userData.accessToken || userData.data?.token;
         if (token) {
           config.headers.Authorization = `Bearer ${token}`;
@@ -31,13 +44,13 @@ api.interceptors.request.use(
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  (error: unknown) => Promise.reject(error)
 );
 
 // Robust response error handling
 api.interceptors.response.use(
   (res) => res,
-  (error) => {
+  (error: ApiError) => {
     // 1. Server is down or completely unreachable
     if (!error.response) {
       const isTimeout = error.code === "ECONNABORTED" || error.message?.includes("timeout");
