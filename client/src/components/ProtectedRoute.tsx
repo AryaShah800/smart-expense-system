@@ -1,8 +1,9 @@
 import { Navigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
+import axios from "axios";
 import api from "../api/axios";
 
-function ProtectedRoute({ children }) {
+function ProtectedRoute({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [authorized, setAuthorized] = useState(false);
 
@@ -27,7 +28,7 @@ function ProtectedRoute({ children }) {
       } catch (err) {
         // Only logout on 401 (truly expired session)
         // NOT on network errors (Render cold start, offline, etc.)
-        if (err.response?.status === 401) {
+        if (axios.isAxiosError(err) && err.response?.status === 401) {
           localStorage.removeItem("user");
           setAuthorized(false);
         }
