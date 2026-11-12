@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import api, { apiErrorMessage, isServerDown } from "../api/axios";
 import { populated, type Category, type Frequency, type RecurringTransaction, type TransactionType } from "../types/models";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../hooks/useAuth";
 import formatCurrency from "../utils/currencyFormatter";
 import { getCategoryIcon } from "../utils/categoryIcons";
 import toast from "react-hot-toast";
