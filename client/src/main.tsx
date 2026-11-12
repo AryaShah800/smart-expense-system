@@ -1,10 +1,6 @@
-import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
-import { AuthProvider } from "./context/AuthContext"; // Import AuthProvider
-import { Toaster } from 'react-hot-toast';
 import "./index.css";
-// Add the PWA register import
 import { registerSW } from 'virtual:pwa-register';
 
 // Register the service worker
@@ -19,11 +15,8 @@ const updateSW = registerSW({
   },
 });
 
-ReactDOM.createRoot(document.getElementById("root")).render(
-  <AuthProvider>
-    <>
-      <App />
-      <Toaster position="top-right" />
-    </>
-  </AuthProvider>
-);
+const root = document.getElementById("root");
+if (!root) throw new Error("Missing #root element in index.html");
+
+// App mounts the single AuthProvider and Toaster.
+ReactDOM.createRoot(root).render(<App />);
