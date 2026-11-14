@@ -70,6 +70,10 @@ cd client && npm run typecheck
 
 Redux Toolkit holds the session (the `auth` slice, whose session check signs out only on a 401 so a cold-starting API does not log anyone out) and the socket-fed notifications. Server data (transactions, groups, budgets, recurring schedules, insights) lives in TanStack Query: mutations invalidate the affected queries, socket events invalidate group and invitation queries, and the whole cache is cleared when the signed-in user changes.
 
+## Load testing
+
+`perf/` has a k6 script and instructions for a user with 50,000 transactions. The dashboard endpoint now reads the two-month window with one `$facet` aggregation instead of three reads plus in-memory summing; results and method are in [perf/README.md](perf/README.md).
+
 ## Deployment
 
 See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
