@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import api, { apiErrorMessage } from "../api/axios";
 import type { Category, Frequency, TransactionType } from "../types/models";
 import Modal from "../components/Modal";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../hooks/useAuth";
 import { getCurrencySymbol } from "../utils/currencyFormatter";
 import { getCategoryIcon } from "../utils/categoryIcons";
 import "../styles/addTransaction.css";

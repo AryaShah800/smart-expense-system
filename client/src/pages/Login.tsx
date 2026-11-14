@@ -1,6 +1,7 @@
 import { useState, useCallback, type ChangeEvent, type FormEvent } from "react";
 import { Link, useNavigate, Navigate } from "react-router-dom";
 import Branding from "../components/Branding";
+import { useAppSelector, selectUser } from "../store/hooks";
 import useLogin from "../hooks/useLogin";
 import "../styles/auth.css";
 
@@ -8,6 +9,7 @@ const SUBMIT_BUTTON_CLASSES = "submit-btn login-btn";
 
 function Login() {
   const navigate = useNavigate();
+  const signedIn = useAppSelector(selectUser) !== null;
   const { submit: submitLogin, loading, error, setError } = useLogin();
 
   const [credentials, setCredentials] = useState({ email: "", password: "" });
@@ -33,8 +35,7 @@ function Login() {
     [credentials, submitLogin, navigate, setError]
   );
 
-  const savedUser = localStorage.getItem("user");
-  if (savedUser) return <Navigate to="/dashboard" replace />;
+  if (signedIn) return <Navigate to="/dashboard" replace />;
 
   return (
     <div className="auth-page">

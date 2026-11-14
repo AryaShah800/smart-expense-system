@@ -1,6 +1,6 @@
 import { useState, type ChangeEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../hooks/useAuth';
 import api from '../api/axios';
 import '../styles/settings.css';
 
@@ -50,10 +50,12 @@ const Settings = () => {
   const handleLogout = async () => {
     try {
       await api.post('/users/logout');
+    } catch (err) {
+      // Still sign out locally: the server cookie expires on its own.
+      console.error(err);
+    } finally {
       logout();
       navigate('/login');
-    } catch (err) {
-      console.error(err);
     }
   };
 

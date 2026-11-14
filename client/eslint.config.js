@@ -5,8 +5,7 @@ import reactRefresh from 'eslint-plugin-react-refresh'
 import tseslint from 'typescript-eslint'
 import { defineConfig, globalIgnores } from 'eslint/config'
 
-// AuthContext exports its hook next to the provider; allow that one name.
-const refreshRule = ['error', { allowConstantExport: true, allowExportNames: ['useAuth'] }]
+const refreshRule = ['error', { allowConstantExport: true }]
 
 export default defineConfig([
   globalIgnores(['dist', 'dev-dist']),

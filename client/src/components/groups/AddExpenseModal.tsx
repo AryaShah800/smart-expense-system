@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../hooks/useAuth";
 import api, { apiErrorMessage } from "../../api/axios";
 import toast from "react-hot-toast";
 import "../../styles/Modal.css";

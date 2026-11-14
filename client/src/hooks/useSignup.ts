@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
 import api, { apiErrorMessage } from "../api/axios";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../hooks/useAuth";
 import toast from "react-hot-toast";
 import type { AuthUser } from "../types/models";
 
