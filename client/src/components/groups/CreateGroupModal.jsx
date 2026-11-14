@@ -16,7 +16,7 @@ function CreateGroupModal({ onClose, onCreated }) {
       await api.post("/groups", { name, type });
       onCreated();
       onClose();
-    } catch (err) {
+    } catch {
       console.error("Failed to create group");
     } finally {
       setLoading(false);
