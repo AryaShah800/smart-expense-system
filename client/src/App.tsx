@@ -1,5 +1,7 @@
 import { useEffect } from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Route, Navigate } from "react-router-dom";
+import { SentryRoutes, setSentryUser } from "./lib/sentry";
+import SentryTest from "./pages/SentryTest";
 import { useAppSelector, selectUser } from "./store/hooks";
 import { Toaster } from "react-hot-toast";
 import ErrorBoundary from "./components/ErrorBoundary";
@@ -26,6 +28,12 @@ const RootRedirect = () => {
 
 function App() {
   const theme = useAppSelector((state) => state.auth.user?.theme);
+  const userId = useAppSelector((state) => state.auth.user?._id);
+
+  // Tag Sentry events with the user id so one person's errors can be grouped.
+  useEffect(() => {
+    setSentryUser(userId);
+  }, [userId]);
 
   // Apply the signed-in user's theme to the whole document.
   useEffect(() => {
@@ -49,11 +57,12 @@ function App() {
           }}
         />
         <BrowserRouter>
-          <Routes>
+          <SentryRoutes>
             {/* Public routes */}
             <Route path="/" element={<RootRedirect />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
+            {import.meta.env.DEV && <Route path="/sentry-test" element={<SentryTest />} />}
 
             {/* Protected Layout */}
             <Route
@@ -72,7 +81,7 @@ function App() {
               <Route path="/groups/:id" element={<GroupDetails />} />
               <Route path="/settings" element={<Settings />} />
             </Route>
-          </Routes>
+          </SentryRoutes>
         </BrowserRouter>
       </>
     </ErrorBoundary>
