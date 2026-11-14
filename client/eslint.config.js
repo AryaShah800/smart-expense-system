@@ -31,6 +31,11 @@ export default defineConfig([
     },
   },
   {
+    // Build and tool config files run in Node, not the browser.
+    files: ['*.config.{js,ts}'],
+    languageOptions: { globals: globals.node },
+  },
+  {
     files: ['**/*.{ts,tsx}'],
     extends: [
       js.configs.recommended,

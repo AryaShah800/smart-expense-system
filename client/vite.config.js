@@ -1,8 +1,18 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
+import { sentryVitePlugin } from '@sentry/vite-plugin'
+
+// Upload source maps to Sentry only when the build has credentials (set in Vercel).
+const uploadSourceMaps = Boolean(
+  process.env.SENTRY_AUTH_TOKEN && process.env.SENTRY_ORG && process.env.SENTRY_PROJECT
+)
 
 export default defineConfig({
+  build: {
+    // 'hidden' writes maps without a sourceMappingURL comment; they are deleted after upload.
+    sourcemap: uploadSourceMaps ? 'hidden' : false,
+  },
   plugins: [
     react(),
     VitePWA({
@@ -83,6 +93,14 @@ export default defineConfig({
     }
   ]
 }
-    })
+    }),
+    uploadSourceMaps &&
+      sentryVitePlugin({
+        authToken: process.env.SENTRY_AUTH_TOKEN,
+        org: process.env.SENTRY_ORG,
+        project: process.env.SENTRY_PROJECT,
+        sourcemaps: { filesToDeleteAfterUpload: ['./dist/**/*.map'] },
+        telemetry: false,
+      }),
   ],
 })
