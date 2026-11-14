@@ -1,42 +1,31 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import api, { apiErrorMessage, isServerDown } from "../api/axios";
-import type { Group } from "../types/models";
+import { useAppDispatch, useAppSelector } from "../store/hooks";
+import { fetchGroups as fetchGroupsThunk } from "../store/groupsSlice";
+import { loadErrorText } from "../store/loadError";
 import CreateGroupModal from "../components/groups/CreateGroupModal";
 import JoinGroupModal from "../components/groups/JoinGroupModal";
 import DataErrorState from "../components/DataErrorState";
 import "../styles/groups.css";
 
 function Groups() {
-  const [groups, setGroups] = useState<Group[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const dispatch = useAppDispatch();
+  const { items: groups, status, error: loadError } = useAppSelector((state) => state.groups);
+  // Keep showing cached groups while a refresh runs.
+  const loading = (status === "idle" || status === "loading") && groups.length === 0;
+  const error = loadErrorText(loadError, "Server is currently offline or unreachable. Please verify your connection.");
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showJoinModal, setShowJoinModal] = useState(false);
 
   const navigate = useNavigate();
 
-  const fetchGroups = async () => {
-    try {
-      setLoading(true);
-      setError("");
-      const res = await api.get<Group[]>("/groups");
-      setGroups(res.data);
-    } catch (err) {
-      console.error("Failed to fetch groups", err);
-      setError(
-        isServerDown(err)
-          ? "Server is currently offline or unreachable. Please verify your connection."
-          : apiErrorMessage(err, "Failed to load groups.")
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
+  const fetchGroups = useCallback(() => {
+    dispatch(fetchGroupsThunk());
+  }, [dispatch]);
 
   useEffect(() => {
     fetchGroups();
-  }, []);
+  }, [fetchGroups]);
 
   return (
     <div className="groups-page">

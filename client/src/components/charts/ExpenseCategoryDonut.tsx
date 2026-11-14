@@ -6,7 +6,7 @@ import {
   ResponsiveContainer,
   Legend,
 } from "recharts";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../hooks/useAuth";
 import formatCurrency from "../../utils/currencyFormatter";
 import { isPopulated, type Transaction } from "../../types/models";
 

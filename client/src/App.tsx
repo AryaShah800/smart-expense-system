@@ -1,5 +1,6 @@
+import { useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { AuthProvider } from "./context/AuthContext";
+import { useAppSelector, selectUser } from "./store/hooks";
 import { Toaster } from "react-hot-toast";
 import ErrorBoundary from "./components/ErrorBoundary";
 
@@ -19,13 +20,21 @@ import Layout from "./components/Layout";
 
 // Smart redirect for root path: sends logged-in users to dashboard
 const RootRedirect = () => {
-  const savedUser = localStorage.getItem("user");
-  return savedUser ? <Navigate to="/dashboard" replace /> : <Navigate to="/login" replace />;
+  const user = useAppSelector(selectUser);
+  return user ? <Navigate to="/dashboard" replace /> : <Navigate to="/login" replace />;
 };
+
 function App() {
+  const theme = useAppSelector((state) => state.auth.user?.theme);
+
+  // Apply the signed-in user's theme to the whole document.
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme || "light");
+  }, [theme]);
+
   return (
     <ErrorBoundary>
-      <AuthProvider>
+      <>
         <Toaster
           position="top-center"
           toastOptions={{
@@ -65,7 +74,7 @@ function App() {
             </Route>
           </Routes>
         </BrowserRouter>
-      </AuthProvider>
+      </>
     </ErrorBoundary>
   );
 }

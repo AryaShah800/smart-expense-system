@@ -1,47 +1,23 @@
 import { Navigate } from "react-router-dom";
-import { useEffect, useState, type ReactNode } from "react";
-import axios from "axios";
-import api from "../api/axios";
+import { useEffect, type ReactNode } from "react";
+import { useAppDispatch, useAppSelector, selectUser } from "../store/hooks";
+import { verifySession } from "../store/authSlice";
 
+/**
+ * Lets a signed-in user in straight away, then checks the session in the background.
+ * `verifySession` signs out only on a 401, so Render cold starts and network errors
+ * never log the user out.
+ */
 function ProtectedRoute({ children }: { children: ReactNode }) {
-  const [loading, setLoading] = useState(true);
-  const [authorized, setAuthorized] = useState(false);
+  const user = useAppSelector(selectUser);
+  const dispatch = useAppDispatch();
+  const signedIn = user !== null;
 
   useEffect(() => {
-    const checkAuth = async () => {
-      // 1. Check localStorage first — if no user, redirect immediately
-      const savedUser = localStorage.getItem("user");
-      if (!savedUser) {
-        setAuthorized(false);
-        setLoading(false);
-        return;
-      }
+    if (signedIn) dispatch(verifySession());
+  }, [signedIn, dispatch]);
 
-      // 2. User exists in localStorage — optimistically allow access
-      setAuthorized(true);
-      setLoading(false);
-
-      // 3. Verify with server in background (don't block UI)
-      try {
-        await api.get("/users/me");
-        // Still valid — do nothing
-      } catch (err) {
-        // Only logout on 401 (truly expired session)
-        // NOT on network errors (Render cold start, offline, etc.)
-        if (axios.isAxiosError(err) && err.response?.status === 401) {
-          localStorage.removeItem("user");
-          setAuthorized(false);
-        }
-        // 500, network error, timeout → stay logged in
-      }
-    };
-
-    checkAuth();
-  }, []);
-
-  if (loading) return null;
-  if (!authorized) return <Navigate to="/login" />;
-
+  if (!signedIn) return <Navigate to="/login" replace />;
   return children;
 }
 

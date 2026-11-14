@@ -2,6 +2,7 @@
 import { useState, useCallback, type ChangeEvent, type FormEvent } from "react";
 import { useNavigate, Link, Navigate } from "react-router-dom";
 import Branding from "../components/Branding";
+import { useAppSelector, selectUser } from "../store/hooks";
 import useSignup from "../hooks/useSignup";
 import "../styles/auth.css";
 
@@ -10,6 +11,7 @@ const RESEND_STYLE = { color: "var(--success, #15803d)", fontSize: 14, marginBot
 
 function Signup() {
   const navigate = useNavigate();
+  const signedIn = useAppSelector(selectUser) !== null;
   const { createAccount, verifyOtp, resendOtp, loading, error, resendMessage, setError } = useSignup();
 
   const [step, setStep] = useState(1);
@@ -60,8 +62,7 @@ function Signup() {
     }
   }, [credentials.email, resendOtp, setError]);
 
-  const savedUser = localStorage.getItem("user");
-  if (savedUser) return <Navigate to="/dashboard" replace />;
+  if (signedIn) return <Navigate to="/dashboard" replace />;
 
   return (
     <div className="auth-page">

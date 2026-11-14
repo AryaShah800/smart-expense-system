@@ -3,7 +3,7 @@ import api, { apiErrorMessage, isServerDown } from "../api/axios";
 import { populated, type Budget, type BudgetStatus, type Category } from "../types/models";
 import "../styles/budgets.css";
 import "../styles/responsive.css";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../hooks/useAuth";
 import formatCurrency, { getCurrencySymbol } from "../utils/currencyFormatter";
 import { getCategoryIcon } from "../utils/categoryIcons";
 import Modal from "../components/Modal";

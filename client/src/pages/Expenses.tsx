@@ -1,10 +1,12 @@
-import { useEffect, useMemo, useState } from "react";
-import api, { apiErrorMessage, isServerDown } from "../api/axios";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { populated, type Transaction } from "../types/models";
+import { useAppDispatch, useAppSelector } from "../store/hooks";
+import { deleteTransaction, fetchTransactions as fetchTransactionsThunk } from "../store/transactionsSlice";
+import { loadErrorText } from "../store/loadError";
 import "../styles/expenses.css";
 import "../styles/responsive.css";
 import { exportTransactionsPdf } from "../utils/exportPdf";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../hooks/useAuth";
 import formatCurrency from "../utils/currencyFormatter";
 import { getCategoryIcon } from "../utils/categoryIcons";
 import { Link } from "react-router-dom";
@@ -12,9 +14,11 @@ import DataErrorState from "../components/DataErrorState";
 
 function Expenses() {
   const { user } = useAuth();
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const dispatch = useAppDispatch();
+  const { items: transactions, status, error: loadError } = useAppSelector((state) => state.transactions);
+  // Keep showing cached transactions while a refresh runs.
+  const loading = (status === "idle" || status === "loading") && transactions.length === 0;
+  const error = loadErrorText(loadError, "Server is currently offline or unreachable. Please verify your connection.");
 
   const [typeFilter, setTypeFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
@@ -22,27 +26,13 @@ function Expenses() {
   const [toDate, setToDate] = useState("");
   const [visibleDays, setVisibleDays] = useState(25);
 
-  const fetchTransactions = async () => {
-    try {
-      setLoading(true);
-      setError("");
-      const res = await api.get<Transaction[]>("/transactions");
-      setTransactions(res.data);
-    } catch (err) {
-      console.error("Failed to fetch transactions", err);
-      setError(
-        isServerDown(err)
-          ? "Server is currently offline or unreachable. Please verify your connection."
-          : apiErrorMessage(err, "Failed to load transactions.")
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
+  const fetchTransactions = useCallback(() => {
+    dispatch(fetchTransactionsThunk());
+  }, [dispatch]);
 
   useEffect(() => {
     fetchTransactions();
-  }, []);
+  }, [fetchTransactions]);
 
   const filtered = useMemo(() => {
     return transactions.filter((t) => {
@@ -102,8 +92,7 @@ function Expenses() {
   const handleDelete = async (id: string) => {
     if (!window.confirm("Delete this transaction?")) return;
     try {
-      await api.delete(`/transactions/${id}`);
-      setTransactions((prev) => prev.filter((t) => t._id !== id));
+      await dispatch(deleteTransaction(id)).unwrap();
     } catch {
       alert("Failed to delete transaction");
     }

@@ -1,5 +1,7 @@
 import ReactDOM from "react-dom/client";
+import { Provider } from "react-redux";
 import App from "./App";
+import { store } from "./store";
 import "./index.css";
 import { registerSW } from 'virtual:pwa-register';
 
@@ -18,5 +20,9 @@ const updateSW = registerSW({
 const root = document.getElementById("root");
 if (!root) throw new Error("Missing #root element in index.html");
 
-// App mounts the single AuthProvider and Toaster.
-ReactDOM.createRoot(root).render(<App />);
+// App mounts the single Toaster; the Redux store holds auth and shared data.
+ReactDOM.createRoot(root).render(
+  <Provider store={store}>
+    <App />
+  </Provider>
+);

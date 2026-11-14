@@ -1,10 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useLocation, Link, useNavigate } from "react-router-dom";
-import api from "../api/axios";
-import { socket } from "../api/socket";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../hooks/useAuth";
 import NotificationPanel from "./NotificationPanel";
-import type { Notification } from "../types/models";
+import { useAppDispatch, useAppSelector, selectNotifications, selectUnreadCount } from "../store/hooks";
+import { markAllRead } from "../store/notificationsSlice";
 
 const routeTitles: Record<string, string> = {
   "/dashboard": "Dashboard",
@@ -24,50 +23,19 @@ export default function Header() {
   const location = useLocation();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const notifications = useAppSelector(selectNotifications);
+  const unreadCount = useAppSelector(selectUnreadCount);
+  const dispatch = useAppDispatch();
   const [showPanel, setShowPanel] = useState(false);
-
   const isMainTab = ["/dashboard", "/expenses", "/budgets", "/groups"].includes(location.pathname);
 
-  useEffect(() => {
-    if (!user) return;
-    const fetchNotifications = async () => {
-      try {
-        const res = await api.get<Notification[]>("/users/notifications");
-        setNotifications(res.data);
-      } catch (err) {
-        console.error("Failed to fetch notifications", err);
-      }
-    };
-    fetchNotifications();
-    socket.connect();
-    const handleConnect = () => socket.emit("join_room", user._id);
-    socket.on("connect", handleConnect);
-    if (socket.connected) handleConnect();
-    socket.on("new_notification", (newNotif: Notification) => {
-      setNotifications((prev) => [newNotif, ...prev]);
-    });
-    return () => {
-      socket.off("connect", handleConnect);
-      socket.off("new_notification");
-      socket.disconnect();
-    };
-  }, [user]);
-
-  const handleBellClick = async () => {
+  const handleBellClick = () => {
     setShowPanel(true);
-    const unreadCount = notifications.filter((n) => !n.isRead).length;
     if (unreadCount > 0) {
-      try {
-        await api.put("/users/notifications/read");
-        setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
-      } catch {
-        console.error("Failed to mark as read");
-      }
+      dispatch(markAllRead()).unwrap().catch(() => console.error("Failed to mark as read"));
     }
   };
 
-  const unreadCount = notifications.filter((n) => !n.isRead).length;
   const title = getPageTitle(location.pathname);
 
   return (

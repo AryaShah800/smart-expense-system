@@ -8,7 +8,7 @@ import {
   CartesianGrid,
   Cell,
 } from "recharts";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../hooks/useAuth";
 import formatCurrency from "../../utils/currencyFormatter";
 import type { Transaction } from "../../types/models";
 

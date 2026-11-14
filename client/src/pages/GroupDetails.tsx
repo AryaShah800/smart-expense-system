@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import api, { apiErrorMessage } from "../api/axios";
 import type { GroupDetails as GroupDetailsData, GroupExpenseWithPayer, GroupSplits } from "../types/models";
-import { useAuth } from "../context/AuthContext"; // 🔥 Added Context
+import { useAuth } from "../hooks/useAuth"; // 🔥 Added Context
 import AddExpenseModal from "../components/groups/AddExpenseModal";
 import SettleUpModal from "../components/groups/SettleUpModal";
 import InviteMemberModal from "../components/groups/InviteMemberModal";

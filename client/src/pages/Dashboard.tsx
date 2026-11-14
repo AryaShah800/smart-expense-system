@@ -1,10 +1,13 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../hooks/useAuth";
 import formatCurrency from "../utils/currencyFormatter";
 import { getCategoryIcon } from "../utils/categoryIcons";
-import api, { apiErrorMessage, isServerDown } from "../api/axios";
-import { populated, type BudgetStatus, type Insight, type Transaction } from "../types/models";
+import api from "../api/axios";
+import { populated, type BudgetStatus, type Insight } from "../types/models";
+import { useAppDispatch, useAppSelector } from "../store/hooks";
+import { fetchTransactions } from "../store/transactionsSlice";
+import { asLoadError, loadErrorText } from "../store/loadError";
 import { exportTransactionsPdf } from "../utils/exportPdf";
 
 import SummaryCards from "../components/dashboard/SummaryCards";
@@ -20,7 +23,8 @@ import "../styles/dashboard.css";
 import "../styles/responsive.css";
 
 function Dashboard() {
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const dispatch = useAppDispatch();
+  const transactions = useAppSelector((state) => state.transactions.items);
   const [budgetStatus, setBudgetStatus] = useState<BudgetStatus[]>([]);
   const [insights, setInsights] = useState<Insight[]>([]);
   const [insightsLoading, setInsightsLoading] = useState(false);
@@ -30,31 +34,31 @@ function Dashboard() {
   const { user } = useAuth();
 
   /* ===== FETCH DATA ===== */
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       setLoading(true);
       setError("");
       const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      const [txRes, budgetRes, insightRes] = await Promise.all([
-        api.get<Transaction[]>("/transactions"),
+      const [, budgetRes, insightRes] = await Promise.all([
+        dispatch(fetchTransactions()).unwrap(),
         api.get<BudgetStatus[]>("/budgets/status", { params: { timezone: userTimezone } }),
         api.get<Insight[]>("/dashboard/insights"),
       ]);
 
-      setTransactions(txRes.data);
       setBudgetStatus(budgetRes.data);
       setInsights(insightRes.data || []);
     } catch (err) {
       console.error(err);
       setError(
-        isServerDown(err)
-          ? "The server appears to be offline or unreachable. Please check if the backend service is running."
-          : apiErrorMessage(err, "Failed to load dashboard financial data.")
+        loadErrorText(
+          asLoadError(err, "Failed to load dashboard financial data."),
+          "The server appears to be offline or unreachable. Please check if the backend service is running."
+        )
       );
     } finally {
       setLoading(false);
     }
-  };
+  }, [dispatch]);
 
   const fetchInsights = async () => {
     try {
@@ -70,7 +74,7 @@ function Dashboard() {
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [fetchData]);
 
   // Sort a copy: sorting state in place during render mutates it.
   const recentTransactions = useMemo(
