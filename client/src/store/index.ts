@@ -1,10 +1,10 @@
 import { combineReducers, configureStore } from "@reduxjs/toolkit";
 import auth, { USER_STORAGE_KEY } from "./authSlice";
 import notifications from "./notificationsSlice";
-import transactions from "./transactionsSlice";
-import groups from "./groupsSlice";
 
-const rootReducer = combineReducers({ auth, notifications, transactions, groups });
+// Redux holds the session and the socket-fed notifications; server data
+// (transactions, groups, budgets, recurring) lives in TanStack Query.
+const rootReducer = combineReducers({ auth, notifications });
 
 export type RootState = ReturnType<typeof rootReducer>;
 

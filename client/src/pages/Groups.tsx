@@ -1,31 +1,35 @@
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAppDispatch, useAppSelector } from "../store/hooks";
-import { fetchGroups as fetchGroupsThunk } from "../store/groupsSlice";
-import { loadErrorText } from "../store/loadError";
+import { useGroups, useInvalidateGroups } from "../hooks/queries";
+import { loadErrorText, toLoadError } from "../store/loadError";
 import CreateGroupModal from "../components/groups/CreateGroupModal";
 import JoinGroupModal from "../components/groups/JoinGroupModal";
 import DataErrorState from "../components/DataErrorState";
 import "../styles/groups.css";
 
 function Groups() {
-  const dispatch = useAppDispatch();
-  const { items: groups, status, error: loadError } = useAppSelector((state) => state.groups);
-  // Keep showing cached groups while a refresh runs.
-  const loading = (status === "idle" || status === "loading") && groups.length === 0;
-  const error = loadErrorText(loadError, "Server is currently offline or unreachable. Please verify your connection.");
+  const groupsQuery = useGroups();
+  const invalidateGroups = useInvalidateGroups();
+  const groups = groupsQuery.data ?? [];
+  // Cached groups stay on screen while a background refetch runs.
+  const loading = groupsQuery.isPending;
+  const error = groupsQuery.error
+    ? loadErrorText(
+        toLoadError(groupsQuery.error, "Failed to load groups."),
+        "Server is currently offline or unreachable. Please verify your connection."
+      )
+    : "";
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showJoinModal, setShowJoinModal] = useState(false);
 
   const navigate = useNavigate();
 
-  const fetchGroups = useCallback(() => {
-    dispatch(fetchGroupsThunk());
-  }, [dispatch]);
-
-  useEffect(() => {
-    fetchGroups();
-  }, [fetchGroups]);
+  const fetchGroups = () => {
+    groupsQuery.refetch();
+  };
+  const onGroupsChanged = () => {
+    invalidateGroups();
+  };
 
   return (
     <div className="groups-page">
@@ -105,14 +109,14 @@ function Groups() {
       {showCreateModal && (
         <CreateGroupModal
           onClose={() => setShowCreateModal(false)}
-          onCreated={fetchGroups}
+          onCreated={onGroupsChanged}
         />
       )}
 
       {showJoinModal && (
         <JoinGroupModal
           onClose={() => setShowJoinModal(false)}
-          onJoined={fetchGroups}
+          onJoined={onGroupsChanged}
         />
       )}
     </div>

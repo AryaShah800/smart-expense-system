@@ -1,6 +1,8 @@
 import { describe, it, expect, vi } from "vitest";
 import { act, render, screen, waitFor } from "@testing-library/react";
 import { Provider } from "react-redux";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { createQueryClient } from "../api/queryClient";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import api from "../api/axios";
 import { socket } from "../api/socket";
@@ -13,6 +15,7 @@ import { httpError, notification, serverDownError, user } from "../test/fixtures
 function renderApp(store = makeStore({ auth: { user } })) {
   render(
     <Provider store={store}>
+      <QueryClientProvider client={createQueryClient({ retry: false })}>
       <MemoryRouter initialEntries={["/dashboard"]}>
         <Routes>
           <Route path="/login" element={<p>Login page</p>} />
@@ -21,6 +24,7 @@ function renderApp(store = makeStore({ auth: { user } })) {
           </Route>
         </Routes>
       </MemoryRouter>
+      </QueryClientProvider>
     </Provider>
   );
   return store;

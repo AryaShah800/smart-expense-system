@@ -1,7 +1,9 @@
 import ReactDOM from "react-dom/client";
 import { Provider } from "react-redux";
+import { QueryClientProvider } from "@tanstack/react-query";
 import App from "./App";
 import { store } from "./store";
+import { clearCacheOnUserChange, queryClient } from "./api/queryClient";
 import { initSentry, Sentry } from "./lib/sentry";
 
 // Start Sentry before anything renders so early errors are captured.
@@ -24,7 +26,10 @@ const updateSW = registerSW({
 const root = document.getElementById("root");
 if (!root) throw new Error("Missing #root element in index.html");
 
-// App mounts the single Toaster; the Redux store holds auth and shared data.
+clearCacheOnUserChange(store, queryClient);
+
+// App mounts the single Toaster. Redux holds the session and notifications;
+// TanStack Query holds server data.
 ReactDOM.createRoot(root, {
   // Errors no boundary caught, and errors React recovered from. Boundary-caught
   // errors are reported by ErrorBoundary itself, so they are not sent twice.
@@ -32,6 +37,8 @@ ReactDOM.createRoot(root, {
   onRecoverableError: Sentry.reactErrorHandler(),
 }).render(
   <Provider store={store}>
-    <App />
+    <QueryClientProvider client={queryClient}>
+      <App />
+    </QueryClientProvider>
   </Provider>
 );

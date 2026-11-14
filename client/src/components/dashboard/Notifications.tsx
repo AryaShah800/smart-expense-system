@@ -1,50 +1,25 @@
-import { useEffect, useState } from "react";
-import api from "../../api/axios";
-import { socket } from "../../api/socket";
-import type { GroupInvite } from "../../types/models";
+import { useInvitations, useRespondToInvitation } from "../../hooks/queries";
 
 function Notifications() {
-  const [invites, setInvites] = useState<GroupInvite[]>([]);
-  const [loading, setLoading] = useState(true);
+  // Invitations are optional on the dashboard; a failed load shows nothing.
+  // New invites arrive over the shared socket (useNotificationsSocket invalidates this query).
+  const invites = useInvitations().data ?? [];
+  const respond = useRespondToInvitation();
 
-  const fetchInvites = async () => {
-    try {
-      const res = await api.get<GroupInvite[]>("/users/invitations");
-      setInvites(res.data);
-    } catch {
-      // Invitations are optional on the dashboard; keep the list empty on failure.
-    } finally { setLoading(false); }
-  };
-
-  useEffect(() => {
-    fetchInvites();
-
-    socket.on("new_invite", () => {
-      fetchInvites(); 
-    });
-
-    return () => {
-      socket.off("new_invite");
-    };
-  }, []);
-
-  const handleRespond = async (groupId: string, status: "accept" | "reject") => {
-    try {
-      // This line has been updated to send "action" instead of "status"
-      await api.post("/users/invitations/respond", { groupId, action: status });
-      setInvites(prev => prev.filter(i => i._id !== groupId));
-      
-      if (status === 'accept') {
-        alert("Joined group successfully!");
-        window.location.reload(); 
+  const handleRespond = (groupId: string, action: "accept" | "reject") => {
+    respond.mutate(
+      { groupId, action },
+      {
+        // The groups list refreshes from the cache, so no page reload is needed.
+        onSuccess: () => {
+          if (action === "accept") alert("Joined group successfully!");
+        },
+        onError: () => alert("Action failed"),
       }
-    } catch {
-      alert("Action failed");
-    }
+    );
   };
 
-  if (loading && invites.length === 0) return null; 
-  if (invites.length === 0) return null; 
+  if (invites.length === 0) return null;
 
   return (
     <div style={{ marginBottom: "20px", padding: "15px", background: "#fff", border: "1px solid #e2e8f0", borderRadius: "8px", boxShadow: "0 2px 4px rgba(0,0,0,0.05)" }}>

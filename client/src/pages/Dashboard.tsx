@@ -1,13 +1,11 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import formatCurrency from "../utils/currencyFormatter";
 import { getCategoryIcon } from "../utils/categoryIcons";
-import api from "../api/axios";
-import { populated, type BudgetStatus, type Insight } from "../types/models";
-import { useAppDispatch, useAppSelector } from "../store/hooks";
-import { fetchTransactions } from "../store/transactionsSlice";
-import { asLoadError, loadErrorText } from "../store/loadError";
+import { populated } from "../types/models";
+import { useTransactions, useBudgetStatus, useInsights } from "../hooks/queries";
+import { toLoadError, loadErrorText } from "../store/loadError";
 import { exportTransactionsPdf } from "../utils/exportPdf";
 
 import SummaryCards from "../components/dashboard/SummaryCards";
@@ -23,58 +21,35 @@ import "../styles/dashboard.css";
 import "../styles/responsive.css";
 
 function Dashboard() {
-  const dispatch = useAppDispatch();
-  const transactions = useAppSelector((state) => state.transactions.items);
-  const [budgetStatus, setBudgetStatus] = useState<BudgetStatus[]>([]);
-  const [insights, setInsights] = useState<Insight[]>([]);
-  const [insightsLoading, setInsightsLoading] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
   const [range, setRange] = useState("90d");
   const { user } = useAuth();
 
-  /* ===== FETCH DATA ===== */
-  const fetchData = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError("");
-      const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      const [, budgetRes, insightRes] = await Promise.all([
-        dispatch(fetchTransactions()).unwrap(),
-        api.get<BudgetStatus[]>("/budgets/status", { params: { timezone: userTimezone } }),
-        api.get<Insight[]>("/dashboard/insights"),
-      ]);
+  /* ===== SERVER DATA (TanStack Query) ===== */
+  const txQuery = useTransactions();
+  const budgetQuery = useBudgetStatus();
+  const insightsQuery = useInsights();
 
-      setBudgetStatus(budgetRes.data);
-      setInsights(insightRes.data || []);
-    } catch (err) {
-      console.error(err);
-      setError(
-        loadErrorText(
-          asLoadError(err, "Failed to load dashboard financial data."),
-          "The server appears to be offline or unreachable. Please check if the backend service is running."
-        )
-      );
-    } finally {
-      setLoading(false);
-    }
-  }, [dispatch]);
+  const transactions = useMemo(() => txQuery.data ?? [], [txQuery.data]);
+  const budgetStatus = budgetQuery.data ?? [];
+  const insights = insightsQuery.data ?? [];
 
-  const fetchInsights = async () => {
-    try {
-      setInsightsLoading(true);
-      const res = await api.get<Insight[]>("/dashboard/insights");
-      setInsights(res.data || []);
-    } catch (err) {
-      console.error("Failed to refresh insights", err);
-    } finally {
-      setInsightsLoading(false);
-    }
+  const loading = txQuery.isPending || budgetQuery.isPending || insightsQuery.isPending;
+  const queryError = txQuery.error ?? budgetQuery.error ?? insightsQuery.error;
+  const error = queryError
+    ? loadErrorText(
+        toLoadError(queryError, "Failed to load dashboard financial data."),
+        "The server appears to be offline or unreachable. Please check if the backend service is running."
+      )
+    : "";
+
+  const refetchAll = () => {
+    txQuery.refetch();
+    budgetQuery.refetch();
+    insightsQuery.refetch();
   };
-
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+  const refreshInsights = () => {
+    insightsQuery.refetch();
+  };
 
   // Sort a copy: sorting state in place during render mutates it.
   const recentTransactions = useMemo(
@@ -152,7 +127,7 @@ function Dashboard() {
       <DataErrorState
         title="Dashboard Unavailable"
         message={error}
-        onRetry={fetchData}
+        onRetry={refetchAll}
       />
     );
   }
@@ -211,8 +186,8 @@ function Dashboard() {
         {/* ACTIONABLE FINANCIAL INSIGHTS */}
         <ActionableInsights
           insights={insights}
-          onRefresh={fetchInsights}
-          loading={insightsLoading}
+          onRefresh={refreshInsights}
+          loading={insightsQuery.isFetching}
         />
 
         {transactions.length === 0 ? (
@@ -349,8 +324,8 @@ function Dashboard() {
         {/* ACTIONABLE FINANCIAL INSIGHTS (MOBILE) */}
         <ActionableInsights
           insights={insights}
-          onRefresh={fetchInsights}
-          loading={insightsLoading}
+          onRefresh={refreshInsights}
+          loading={insightsQuery.isFetching}
         />
 
         {transactions.length === 0 ? (

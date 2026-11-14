@@ -1,6 +1,8 @@
-import { useEffect, useState, type FormEvent } from "react";
-import api, { apiErrorMessage, isServerDown } from "../api/axios";
-import { populated, type Budget, type BudgetStatus, type Category } from "../types/models";
+import { useMemo, useState, type FormEvent } from "react";
+import { apiErrorMessage } from "../api/axios";
+import { populated } from "../types/models";
+import { useBudgets, useBudgetStatus, useCategories, useSetBudget } from "../hooks/queries";
+import { loadErrorText, toLoadError } from "../store/loadError";
 import "../styles/budgets.css";
 import "../styles/responsive.css";
 import { useAuth } from "../hooks/useAuth";
@@ -11,47 +13,37 @@ import DataErrorState from "../components/DataErrorState";
 
 function Budgets() {
   const { user } = useAuth();
-  const [budgets, setBudgets] = useState<Budget[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [budgetStatus, setBudgetStatus] = useState<BudgetStatus[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const categoriesQuery = useCategories();
+  const budgetsQuery = useBudgets();
+  // Status is optional here: a failure shows the budgets without spending.
+  const statusQuery = useBudgetStatus({ tolerateErrors: true });
+  const setBudget = useSetBudget();
+
+  const categories = useMemo(
+    () => (categoriesQuery.data ?? []).filter((cat) => cat.type === "expense"),
+    [categoriesQuery.data]
+  );
+  const budgets = budgetsQuery.data ?? [];
+  const budgetStatus = statusQuery.data ?? [];
+  const loading = categoriesQuery.isPending || budgetsQuery.isPending;
+  const queryError = categoriesQuery.error ?? budgetsQuery.error;
+  const error = queryError
+    ? loadErrorText(
+        toLoadError(queryError, "Failed to load budget data."),
+        "Server is currently offline or unreachable. Please verify your connection."
+      )
+    : "";
+  const fetchData = () => {
+    categoriesQuery.refetch();
+    budgetsQuery.refetch();
+    statusQuery.refetch();
+  };
 
   const [selectedCategory, setSelectedCategory] = useState("");
   const [amount, setAmount] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
-  const fetchData = async () => {
-    try {
-      setLoading(true);
-      setError("");
-      const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      const [catRes, budgetRes, statusRes] = await Promise.all([
-        api.get<Category[]>("/categories"),
-        api.get<Budget[]>("/budgets"),
-        api.get<BudgetStatus[]>("/budgets/status", { params: { timezone: userTimezone } }).catch(() => ({ data: [] as BudgetStatus[] })),
-      ]);
-
-      const expenseCategories = catRes.data.filter((cat) => cat.type === "expense");
-      setCategories(expenseCategories);
-      setBudgets(budgetRes.data);
-      setBudgetStatus(statusRes.data || []);
-    } catch (err) {
-      console.error("Failed to fetch budgets data", err);
-      setError(
-        isServerDown(err)
-          ? "Server is currently offline or unreachable. Please verify your connection."
-          : apiErrorMessage(err, "Failed to load budget data.")
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchData();
-  }, []);
 
   const handleSetBudget = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -65,12 +57,7 @@ function Budgets() {
 
     setIsSaving(true);
     try {
-      await api.post("/budgets", {
-        categoryId: selectedCategory,
-        amount: numAmount,
-      });
-
-      await fetchData();
+      await setBudget.mutateAsync({ categoryId: selectedCategory, amount: numAmount });
       setAmount("");
       setSelectedCategory("");
       setShowModal(false);

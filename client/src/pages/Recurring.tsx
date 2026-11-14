@@ -1,6 +1,8 @@
-import { useEffect, useState, type FormEvent } from "react";
-import api, { apiErrorMessage, isServerDown } from "../api/axios";
-import { populated, type Category, type Frequency, type RecurringTransaction, type TransactionType } from "../types/models";
+import { useState, type FormEvent } from "react";
+import api, { apiErrorMessage } from "../api/axios";
+import { populated, type Frequency, type RecurringTransaction, type TransactionType } from "../types/models";
+import { useCategories, useInvalidateMoneyData, useRecurring } from "../hooks/queries";
+import { loadErrorText, toLoadError } from "../store/loadError";
 import { useAuth } from "../hooks/useAuth";
 import formatCurrency from "../utils/currencyFormatter";
 import { getCategoryIcon } from "../utils/categoryIcons";
@@ -8,17 +10,6 @@ import toast from "react-hot-toast";
 import DataErrorState from "../components/DataErrorState";
 import "../styles/recurring.css";
 
-interface RecurringSummary {
-  activeCount: number;
-  monthlyRecurringExpense: number;
-  monthlyRecurringIncome: number;
-  netRecurring: number;
-}
-
-interface RecurringResponse {
-  recurring?: RecurringTransaction[];
-  summary?: RecurringSummary;
-}
 
 interface RecurringForm {
   description: string;
@@ -33,16 +24,25 @@ interface RecurringForm {
 export default function Recurring() {
   const { user } = useAuth();
 
-  const [recurringList, setRecurringList] = useState<RecurringTransaction[]>([]);
-  const [summary, setSummary] = useState<RecurringSummary>({
+  const recurringQuery = useRecurring();
+  const categoriesQuery = useCategories();
+  const invalidateMoneyData = useInvalidateMoneyData();
+  const recurringList = recurringQuery.data?.recurring ?? [];
+  const summary = recurringQuery.data?.summary ?? {
     activeCount: 0,
     monthlyRecurringExpense: 0,
     monthlyRecurringIncome: 0,
     netRecurring: 0,
-  });
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  };
+  const categories = categoriesQuery.data ?? [];
+  const loading = recurringQuery.isPending || categoriesQuery.isPending;
+  const queryError = recurringQuery.error ?? categoriesQuery.error;
+  const error = queryError
+    ? loadErrorText(
+        toLoadError(queryError, "Failed to load recurring transactions."),
+        "The server appears offline. Could not load recurring transactions."
+      )
+    : "";
   const [filterType, setFilterType] = useState<"all" | TransactionType>("all");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [syncing, setSyncing] = useState(false);
@@ -60,40 +60,11 @@ export default function Recurring() {
   const [submitting, setSubmitting] = useState(false);
 
   /* ===== FETCH RECURRING DATA ===== */
-  const fetchData = async () => {
-    try {
-      setLoading(true);
-      setError("");
-      const [recRes, catRes] = await Promise.all([
-        api.get<RecurringResponse>("/recurring"),
-        api.get<Category[]>("/categories"),
-      ]);
-
-      setRecurringList(recRes.data.recurring || []);
-      setSummary(
-        recRes.data.summary || {
-          activeCount: 0,
-          monthlyRecurringExpense: 0,
-          monthlyRecurringIncome: 0,
-          netRecurring: 0,
-        }
-      );
-      setCategories(catRes.data || []);
-    } catch (err) {
-      console.error("Failed to load recurring data:", err);
-      setError(
-        isServerDown(err)
-          ? "The server appears offline. Could not load recurring transactions."
-          : apiErrorMessage(err, "Failed to load recurring transactions.")
-      );
-    } finally {
-      setLoading(false);
-    }
+  // Recurring changes can create transactions and move budgets, so refresh all money data.
+  const fetchData = () => {
+    invalidateMoneyData();
+    categoriesQuery.refetch();
   };
-
-  useEffect(() => {
-    fetchData();
-  }, []);
 
   /* ===== PROCESS / SYNC DUE RECURRING ===== */
   const handleProcessDue = async () => {
@@ -119,10 +90,6 @@ export default function Recurring() {
     try {
       await api.put(`/recurring/${item._id}`, { status: newStatus });
       toast.success(`Schedule ${newStatus === "active" ? "resumed" : "paused"}`);
-      setRecurringList((prev) =>
-        prev.map((r) => (r._id === item._id ? { ...r, status: newStatus } : r))
-      );
-      // Recalculate summary locally or re-fetch
       fetchData();
     } catch {
       toast.error("Failed to update status");
@@ -137,7 +104,6 @@ export default function Recurring() {
     try {
       await api.delete(`/recurring/${id}`);
       toast.success("Recurring schedule removed");
-      setRecurringList((prev) => prev.filter((r) => r._id !== id));
       fetchData();
     } catch {
       toast.error("Failed to remove recurring schedule");
