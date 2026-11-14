@@ -223,7 +223,7 @@
 .group-icon.couple { background: linear-gradient(135deg, #fae8ff 0%, #f0abfc 100%); color: #a21caf; }
 
 .group-badge {
-  font-size: clamp(9px, 1.5vw, 10px);
+  font-size: clamp(12px, 1.5vw, 10px);
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -247,7 +247,7 @@
 }
 
 .member-count {
-  font-size: clamp(11px, 1.8vw, 13px);
+  font-size: clamp(12px, 1.8vw, 13px);
   font-weight: 600;
   color: var(--muted);
   display: flex;

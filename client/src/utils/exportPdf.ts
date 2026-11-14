@@ -1,5 +1,4 @@
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
+import type { jsPDF } from "jspdf";
 import { isPopulated, type Transaction } from "../types/models";
 
 type Rgb = [number, number, number];
@@ -14,18 +13,30 @@ export interface PdfExportOptions {
 const categoryName = (t: Transaction): string =>
   (isPopulated(t.categoryId) && t.categoryId.name) || "Other";
 
-export function exportTransactionsPdf({
+export async function exportTransactionsPdf({
   userName = "User",
   transactions = [],
   fromDate,
   toDate,
-}: PdfExportOptions): void {
+}: PdfExportOptions): Promise<void> {
   if (!transactions.length) {
     alert("No transactions to export");
     return;
   }
 
-  const doc = new jsPDF("p", "mm", "a4");
+  // jsPDF, html2canvas and DOMPurify are ~400 kB: only fetch them when someone actually exports.
+  let JsPDF: typeof jsPDF;
+  let autoTable: typeof import("jspdf-autotable").default;
+  try {
+    const [pdf, table] = await Promise.all([import("jspdf"), import("jspdf-autotable")]);
+    JsPDF = pdf.default;
+    autoTable = table.default;
+  } catch {
+    alert("Could not load the PDF exporter. Check your connection and try again.");
+    return;
+  }
+
+  const doc = new JsPDF("p", "mm", "a4");
 
   // Colors
   const COLOR_PRIMARY: Rgb = [99, 102, 241]; // Indigo

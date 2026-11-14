@@ -40,7 +40,15 @@ export default defineConfig({
         ]
       },
       workbox: {
+        // The PDF export libraries (~800 kB) load on demand; keep them out of the install-time
+        // precache and cache them the first time someone exports.
+        globIgnores: ['**/jspdf*', '**/html2canvas*', '**/purify*', '**/index.es-*', '**/exportPdf-*'],
   runtimeCaching: [
+    {
+      urlPattern: ({ url }) => /\/assets\/(jspdf|html2canvas|purify|index\.es|exportPdf)/.test(url.pathname),
+      handler: 'CacheFirst',
+      options: { cacheName: 'pdf-export-chunks', expiration: { maxEntries: 10 } }
+    },
     {
       // Match the full Render domain
       urlPattern: /^https:\/\/smart-expense-system-api\.onrender\.com\/api\/.*/i,

@@ -5,7 +5,7 @@ const BudgetOverview = ({ budgetStatus }: { budgetStatus: BudgetStatus[] }) => {
 
   return (
     <div className="chart-card">
-      <h4>Budget Status</h4>
+      <h3>Budget Status</h3>
       <div className="budget-list">
         {budgetStatus.map((item, index) => {
           const category = isPopulated(item.category) ? item.category : null;

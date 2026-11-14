@@ -42,8 +42,9 @@ function CreateGroupModal({ onClose, onCreated }: CreateGroupModalProps) {
         </p>
 
         <form onSubmit={handleSubmit}>
-          <label className="modal-section-label">Group Name</label>
+          <label className="modal-section-label" htmlFor="creategroupmodal-group-name">Group Name</label>
           <input
+            id="creategroupmodal-group-name"
             type="text"
             className="modal-input"
             placeholder="e.g. Goa Trip 2024"
@@ -53,8 +54,9 @@ function CreateGroupModal({ onClose, onCreated }: CreateGroupModalProps) {
             autoFocus
           />
 
-          <label className="modal-section-label">Group Type</label>
+          <label className="modal-section-label" htmlFor="creategroupmodal-group-type">Group Type</label>
           <select
+            id="creategroupmodal-group-type"
             className="modal-select"
             value={type}
             onChange={(e) => setType(e.target.value)}

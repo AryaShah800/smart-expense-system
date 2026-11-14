@@ -141,8 +141,9 @@ function Signup() {
             {resendMessage && <p style={RESEND_STYLE}>{resendMessage}</p>}
 
             <div className="form-group">
-              <label>Verification Code</label>
+              <label htmlFor="signup-verification-code">Verification Code</label>
               <input
+                id="signup-verification-code"
                 type="text"
                 placeholder="• • • • • •"
                 value={otp}
