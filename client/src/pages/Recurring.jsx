@@ -101,7 +101,7 @@ export default function Recurring() {
       );
       // Recalculate summary locally or re-fetch
       fetchData();
-    } catch (err) {
+    } catch {
       toast.error("Failed to update status");
     }
   };
@@ -116,7 +116,7 @@ export default function Recurring() {
       toast.success("Recurring schedule removed");
       setRecurringList((prev) => prev.filter((r) => r._id !== id));
       fetchData();
-    } catch (err) {
+    } catch {
       toast.error("Failed to remove recurring schedule");
     }
   };

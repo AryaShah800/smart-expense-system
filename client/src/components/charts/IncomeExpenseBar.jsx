@@ -11,11 +11,6 @@ import {
 import { useAuth } from "../../context/AuthContext";
 import formatCurrency from "../../utils/currencyFormatter";
 
-const data = [
-  { name: "Income", amount: 0, color: "#22c55e" }, // Green
-  { name: "Expense", amount: 0, color: "#ef4444" }, // Red
-];
-
 function IncomeExpenseBar({ transactions }) {
   let income = 0;
   let expense = 0;

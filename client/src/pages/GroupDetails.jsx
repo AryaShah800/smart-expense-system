@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import api from "../api/axios";
 import { useAuth } from "../context/AuthContext"; // 🔥 Added Context
@@ -23,7 +23,7 @@ function GroupDetails() {
   const [showSettleModal, setShowSettleModal] = useState(false);
   const [showInviteModal, setShowInviteModal] = useState(false);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       const [groupRes, expenseRes, splitRes] = await Promise.all([
         api.get(`/groups/${id}`),
@@ -39,11 +39,11 @@ function GroupDetails() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
 
   useEffect(() => {
     fetchData();
-  }, [id]);
+  }, [fetchData]);
 
   /* ===================== ACTIONS ===================== */
 

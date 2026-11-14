@@ -37,8 +37,10 @@ function AddTransaction() {
         const filtered = res.data.filter((c) => c.type === type);
         setCategories(filtered);
         // Pre-select first category if none selected or not in filtered
-        if (filtered.length > 0 && (!categoryId || !filtered.some((c) => c._id === categoryId))) {
-          setCategoryId(filtered[0]._id);
+        if (filtered.length > 0) {
+          setCategoryId((current) =>
+            current && filtered.some((c) => c._id === current) ? current : filtered[0]._id
+          );
         }
       } catch {
         console.error("Failed to load categories");

@@ -28,17 +28,16 @@ export default function Header() {
 
   const isMainTab = ["/dashboard", "/expenses", "/budgets", "/groups"].includes(location.pathname);
 
-  const fetchNotifications = async () => {
-    try {
-      const res = await api.get("/users/notifications");
-      setNotifications(res.data);
-    } catch (err) {
-      console.error("Failed to fetch notifications", err);
-    }
-  };
-
   useEffect(() => {
     if (!user) return;
+    const fetchNotifications = async () => {
+      try {
+        const res = await api.get("/users/notifications");
+        setNotifications(res.data);
+      } catch (err) {
+        console.error("Failed to fetch notifications", err);
+      }
+    };
     fetchNotifications();
     socket.connect();
     const handleConnect = () => socket.emit("join_room", user._id);
@@ -61,7 +60,7 @@ export default function Header() {
       try {
         await api.put("/users/notifications/read");
         setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
-      } catch (err) {
+      } catch {
         console.error("Failed to mark as read");
       }
     }
