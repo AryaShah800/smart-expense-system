@@ -24,7 +24,7 @@ export default function ActionableInsights({ insights = [], onRefresh, loading =
         <div className="insights-header">
           <div className="insights-title-row">
             <span className="insights-glow-icon">💡</span>
-            <h3>Actionable Financial Intelligence</h3>
+            <h2>Actionable Financial Intelligence</h2>
           </div>
           {onRefresh && (
             <button
@@ -55,7 +55,7 @@ export default function ActionableInsights({ insights = [], onRefresh, loading =
         <div className="insights-title-row">
           <span className="insights-glow-icon">💡</span>
           <div>
-            <h3>Actionable Financial Insights</h3>
+            <h2>Actionable Financial Insights</h2>
             <span className="insights-subtitle">
               Proactive analysis based on your spending velocity
             </span>
@@ -105,7 +105,7 @@ export default function ActionableInsights({ insights = [], onRefresh, loading =
             </div>
 
             <div className="insight-body">
-              <h4 className="insight-headline">{insight.title}</h4>
+              <h3 className="insight-headline">{insight.title}</h3>
               <p className="insight-message">{insight.message}</p>
             </div>
 

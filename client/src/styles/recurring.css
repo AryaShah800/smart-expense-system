@@ -26,7 +26,7 @@
 
 .recurring-subtitle {
   margin: 4px 0 0 0;
-  font-size: 0.85rem;
+  font-size: max(12px, 0.85rem);
   color: var(--muted, #64748b);
 }
 
@@ -42,7 +42,7 @@
   color: var(--text, #0f172a);
   padding: 8px 14px;
   border-radius: 10px;
-  font-size: 0.85rem;
+  font-size: max(12px, 0.85rem);
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
@@ -53,7 +53,7 @@
 }
 
 .btn-new-recurring {
-  background: var(--primary, #6366f1);
+  background: var(--primary, #4f46e5);
   color: #ffffff;
   border: none;
   padding: 8px 16px;
@@ -89,7 +89,7 @@
 }
 
 .recurring-summary-card .summary-label {
-  font-size: 0.78rem;
+  font-size: max(12px, 0.78rem);
   font-weight: 600;
   color: var(--muted, #64748b);
   text-transform: uppercase;
@@ -104,19 +104,19 @@
 }
 
 .recurring-summary-card .summary-value.expense {
-  color: #ef4444;
+  color: var(--danger);
 }
 
 .recurring-summary-card .summary-value.income {
-  color: #10b981;
+  color: var(--success);
 }
 
 .recurring-summary-card .summary-value.count {
-  color: var(--primary, #6366f1);
+  color: var(--primary, #4f46e5);
 }
 
 .recurring-summary-card .summary-subtext {
-  font-size: 0.75rem;
+  font-size: max(12px, 0.75rem);
   color: var(--muted, #94a3b8);
 }
 
@@ -137,7 +137,7 @@
   border: none;
   padding: 6px 14px;
   border-radius: 8px;
-  font-size: 0.82rem;
+  font-size: max(12px, 0.82rem);
   font-weight: 600;
   color: var(--muted, #64748b);
   cursor: pointer;
@@ -183,9 +183,10 @@
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.07);
 }
 
+/* Paused is shown with a dashed border and a badge rather than by fading the text, which fails contrast. */
 .recurring-card.paused {
-  opacity: 0.65;
-  filter: grayscale(20%);
+  border-style: dashed;
+  background: var(--bg);
 }
 
 .rec-card-header {
@@ -213,12 +214,12 @@
 
 .rec-icon.expense {
   background: rgba(239, 68, 68, 0.1);
-  color: #ef4444;
+  color: var(--danger);
 }
 
 .rec-icon.income {
   background: rgba(16, 185, 129, 0.1);
-  color: #10b981;
+  color: var(--success);
 }
 
 .rec-title {
@@ -229,14 +230,14 @@
 }
 
 .rec-category {
-  font-size: 0.76rem;
+  font-size: max(12px, 0.76rem);
   color: var(--muted, #64748b);
   display: block;
 }
 
 .btn-status-toggle {
   border: none;
-  font-size: 0.72rem;
+  font-size: max(12px, 0.75rem);
   font-weight: 700;
   padding: 3px 8px;
   border-radius: 20px;
@@ -263,7 +264,7 @@
 }
 
 .rec-frequency-badge {
-  font-size: 0.74rem;
+  font-size: max(12px, 0.75rem);
   font-weight: 600;
   background: var(--bg, #f1f5f9);
   color: var(--text, #0f172a);
@@ -273,7 +274,7 @@
 }
 
 .rec-due-badge {
-  font-size: 0.74rem;
+  font-size: max(12px, 0.75rem);
   font-weight: 600;
   padding: 3px 8px;
   border-radius: 6px;
@@ -315,15 +316,15 @@
 }
 
 .rec-amount.expense {
-  color: #ef4444;
+  color: var(--danger);
 }
 
 .rec-amount.income {
-  color: #10b981;
+  color: var(--success);
 }
 
 .rec-period-label {
-  font-size: 0.75rem;
+  font-size: max(12px, 0.75rem);
   color: var(--muted, #64748b);
 }
 
@@ -389,7 +390,7 @@
   background: var(--card, #ffffff);
   border-radius: 10px;
   font-weight: 700;
-  font-size: 0.85rem;
+  font-size: max(12px, 0.85rem);
   cursor: pointer;
   transition: all 0.2s;
   color: var(--text, #0f172a);
@@ -417,7 +418,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 0.85rem;
+  font-size: max(12px, 0.85rem);
   color: var(--text, #0f172a);
   cursor: pointer;
   margin-top: 8px;

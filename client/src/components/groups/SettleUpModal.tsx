@@ -79,8 +79,9 @@ function SettleUpModal({ groupId, groupMembers, onClose, onSettled }: SettleUpMo
 
         <form onSubmit={handleSubmit}>
           {/* Fix #2: Add Paid From selector */}
-          <label className="modal-section-label">Paid From</label>
+          <label className="modal-section-label" htmlFor="settleupmodal-paid-from">Paid From</label>
           <select
+            id="settleupmodal-paid-from"
             className="modal-select"
             value={fromUserId}
             onChange={(e) => setFromUserId(e.target.value)}
@@ -93,8 +94,9 @@ function SettleUpModal({ groupId, groupMembers, onClose, onSettled }: SettleUpMo
             ))}
           </select>
 
-          <label className="modal-section-label">Paid To</label>
+          <label className="modal-section-label" htmlFor="settleupmodal-paid-to">Paid To</label>
           <select
+            id="settleupmodal-paid-to"
             className="modal-select"
             value={toUserId}
             onChange={(e) => setToUserId(e.target.value)}
@@ -108,10 +110,11 @@ function SettleUpModal({ groupId, groupMembers, onClose, onSettled }: SettleUpMo
             ))}
           </select>
 
-          <label className="modal-section-label">Amount</label>
+          <label className="modal-section-label" htmlFor="settleupmodal-amount">Amount</label>
           <div className="modal-amount-wrapper small">
             <span className="currency-symbol">{getCurrencySymbol(user?.currency)}</span>
             <input
+              id="settleupmodal-amount"
               type="number"
               className="modal-input"
               placeholder="0.00"

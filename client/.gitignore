@@ -28,3 +28,4 @@ dist-ssr
 .env.*
 
 # end of file
+.lighthouseci/

@@ -49,7 +49,7 @@
   margin-bottom: 24px;
 }
 
-.modal-header h3 {
+.modal-header h2 {
   font-size: clamp(18px, 4vw, 22px);
   font-weight: 700;
   color: var(--text);
@@ -317,7 +317,7 @@
 }
 
 .split-member-item.selected {
-  border-color: #6366f1;
+  border-color: #4f46e5;
   background-color: #f8faff;
 }
 
@@ -331,7 +331,7 @@
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background-color: #6366f1;
+  background-color: #4f46e5;
   color: white;
   display: flex;
   align-items: center;
@@ -348,7 +348,7 @@
 }
 
 .check-icon {
-  color: #6366f1;
+  color: var(--primary);
   font-size: 18px;
   display: flex;
   align-items: center;

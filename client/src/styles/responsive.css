@@ -133,7 +133,7 @@
 }
 .notification-panel-time {
   display: block;
-  font-size: 0.75rem;
+  font-size: max(12px, 0.75rem);
   color: var(--muted); /* Theme aware */
   margin-top: 0.25rem;
 }
@@ -255,7 +255,7 @@
   border-radius: 9999px;
   background: var(--danger);
   color: white;
-  font-size: 0.7rem;
+  font-size: max(12px, 0.75rem);
   font-weight: 800;
   display: flex;
   align-items: center;
@@ -316,7 +316,7 @@
 }
 
 .bottom-nav-label {
-  font-size: 0.7rem;
+  font-size: max(12px, 0.75rem);
   font-weight: 700;
   letter-spacing: -0.2px;
 }
@@ -326,7 +326,7 @@
   height: 3.5rem;
   margin-top: -1.25rem;
   border-radius: 50%;
-  background: linear-gradient(135deg, #6366f1, #4f46e5);
+  background: linear-gradient(135deg, #4f46e5, #4f46e5);
   color: white;
   box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4);
   display: flex;
@@ -372,7 +372,7 @@
   box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
 }
 .dashboard-mobile .summary-mobile-balance span {
-  font-size: 0.7rem;
+  font-size: max(12px, 0.75rem);
   font-weight: 600;
   color: rgba(255, 255, 255, 0.8); /* Ensures visibility */
   text-transform: uppercase;
@@ -398,7 +398,7 @@
   box-shadow: var(--shadow); /* Theme aware */
 }
 .dashboard-mobile .summary-mobile-card span {
-  font-size: 0.75rem;
+  font-size: max(12px, 0.75rem);
   font-weight: 500;
   color: var(--muted); /* Theme aware */
 }
@@ -422,7 +422,7 @@
   box-shadow: 0 4px 12px rgba(109, 40, 217, 0.25);
 }
 .dashboard-mobile .projection-mobile-card span {
-  font-size: 0.75rem;
+  font-size: max(12px, 0.75rem);
   color: rgba(255,255,255,0.8);
   font-weight: 600;
   text-transform: uppercase;
@@ -464,7 +464,7 @@
 
 .quick-action-pill.income {
   background: rgba(34, 197, 94, 0.1);
-  color: var(--success);
+  color: var(--success-text);
   border: 1px solid rgba(34, 197, 94, 0.25);
 }
 
@@ -487,7 +487,7 @@
   min-height: 220px;
   overflow: hidden;
 }
-.dashboard-mobile .chart-card-mobile h4 {
+.dashboard-mobile .chart-card-mobile h3 {
   font-size: 0.875rem;
   font-weight: 500;
   color: var(--muted); /* Theme aware */

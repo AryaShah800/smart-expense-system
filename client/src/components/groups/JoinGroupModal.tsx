@@ -53,8 +53,9 @@ function JoinGroupModal({ onClose, onJoined }: JoinGroupModalProps) {
 
         {/* Form */}
         <form onSubmit={handleSubmit}>
-          <label className="modal-section-label">Invite Code</label>
+          <label className="modal-section-label" htmlFor="joingroupmodal-invite-code">Invite Code</label>
           <input
+            id="joingroupmodal-invite-code"
             type="text"
             className="modal-input code-input"
             placeholder="Ex: X7K-9P2"

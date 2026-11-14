@@ -149,6 +149,7 @@ function Expenses() {
       {/* SECONDARY FILTERS */}
       <div className="expenses-filters">
         <select
+          aria-label="Filter by category"
           value={categoryFilter}
           onChange={(e) => setCategoryFilter(e.target.value)}
           className="filter-select"

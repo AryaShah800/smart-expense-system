@@ -114,8 +114,9 @@ function Budgets() {
           <h3>Set New Budget</h3>
           <form onSubmit={handleSetBudget}>
             <div className="form-group">
-              <label>Category</label>
+              <label htmlFor="budget-category">Category</label>
               <select
+                id="budget-category"
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
                 required
@@ -130,8 +131,9 @@ function Budgets() {
             </div>
 
             <div className="form-group">
-              <label>Monthly Limit ({currencySymbol})</label>
+              <label htmlFor="budget-limit">Monthly Limit ({currencySymbol})</label>
               <input
+                id="budget-limit"
                 type="number"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
@@ -247,8 +249,9 @@ function Budgets() {
       >
         <form onSubmit={handleSetBudget} className="budget-modal-form">
           <div className="form-group">
-            <label>Category</label>
+            <label htmlFor="budget-modal-category">Category</label>
             <select
+              id="budget-modal-category"
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
               required
@@ -264,8 +267,9 @@ function Budgets() {
           </div>
 
           <div className="form-group">
-            <label>Monthly Budget Limit ({currencySymbol})</label>
+            <label htmlFor="budget-modal-limit">Monthly Budget Limit ({currencySymbol})</label>
             <input
+              id="budget-modal-limit"
               type="number"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}

@@ -4,6 +4,7 @@ import { useAuth } from "../hooks/useAuth";
 import formatCurrency from "../utils/currencyFormatter";
 import { getCategoryIcon } from "../utils/categoryIcons";
 import { populated } from "../types/models";
+import { useIsDesktop } from "../hooks/useMediaQuery";
 import { useTransactions, useBudgetStatus, useInsights } from "../hooks/queries";
 import { toLoadError, loadErrorText } from "../store/loadError";
 import { exportTransactionsPdf } from "../utils/exportPdf";
@@ -22,6 +23,8 @@ import "../styles/responsive.css";
 
 function Dashboard() {
   const [range, setRange] = useState("90d");
+  // Only one layout is mounted: rendering both doubled the chart work on every load.
+  const isDesktop = useIsDesktop();
   const { user } = useAuth();
 
   /* ===== SERVER DATA (TanStack Query) ===== */
@@ -135,6 +138,7 @@ function Dashboard() {
   return (
     <>
       {/* ========== DESKTOP LAYOUT ========== */}
+      {isDesktop && (
       <div className="dashboard-page show-from-md-block">
         {/* HEADER */}
         <div className="dashboard-header-row">
@@ -150,6 +154,7 @@ function Dashboard() {
 
             <div className="filter-wrapper">
               <select
+                aria-label="Date range"
                 className="range-dropdown"
                 value={range}
                 onChange={(e) => setRange(e.target.value)}
@@ -204,17 +209,17 @@ function Dashboard() {
             {/* LEFT COLUMN: CHARTS */}
             <div className="charts-column">
               <div className="chart-card">
-                <h4>Income vs Expense</h4>
+                <h3>Income vs Expense</h3>
                 <IncomeExpenseBar transactions={filteredTransactions} />
               </div>
 
               <div className="chart-card">
-                <h4>Spending Categories</h4>
+                <h3>Spending Categories</h3>
                 <ExpenseCategoryDonut transactions={filteredTransactions} />
               </div>
 
               <div className="chart-card">
-                <h4>Cash Flow Trend</h4>
+                <h3>Cash Flow Trend</h3>
                 <CashFlowLine transactions={filteredTransactions} />
               </div>
             </div>
@@ -264,10 +269,14 @@ function Dashboard() {
         )}
       </div>
 
+      )}
+
       {/* ========== MOBILE LAYOUT ========== */}
+      {!isDesktop && (
       <div className="dashboard-mobile hide-from-md">
         <div className="dashboard-mobile-actions">
           <select
+            aria-label="Date range"
             className="range-dropdown"
             value={range}
             onChange={(e) => setRange(e.target.value)}
@@ -340,15 +349,15 @@ function Dashboard() {
         ) : (
           <>
             <div className="chart-card-mobile">
-              <h4>Income vs Expense</h4>
+              <h3>Income vs Expense</h3>
               <IncomeExpenseBar transactions={filteredTransactions} />
             </div>
             <div className="chart-card-mobile">
-              <h4>Spending Categories</h4>
+              <h3>Spending Categories</h3>
               <ExpenseCategoryDonut transactions={filteredTransactions} />
             </div>
             <div className="chart-card-mobile">
-              <h4>Cash Flow Trend</h4>
+              <h3>Cash Flow Trend</h3>
               <CashFlowLine transactions={filteredTransactions} />
             </div>
             <BudgetOverview budgetStatus={budgetStatus} />
@@ -377,6 +386,7 @@ function Dashboard() {
           </>
         )}
       </div>
+      )}
     </>
   );
 }
