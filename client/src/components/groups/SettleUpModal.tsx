@@ -1,0 +1,141 @@
+import { useState, type FormEvent } from "react";
+import { useAuth } from "../../context/AuthContext";
+import api, { apiErrorMessage } from "../../api/axios";
+import toast from "react-hot-toast";
+import "../../styles/Modal.css";
+import { getCurrencySymbol } from "../../utils/currencyFormatter";
+import type { MemberSummary } from "../../types/models";
+
+interface SettleUpModalProps {
+  groupId: string;
+  groupMembers: MemberSummary[];
+  onClose: () => void;
+  onSettled: () => void;
+}
+
+function SettleUpModal({ groupId, groupMembers, onClose, onSettled }: SettleUpModalProps) {
+  const { user } = useAuth();
+  const [fromUserId, setFromUserId] = useState(""); // Fix #2: Add fromUserId state
+  const [toUserId, setToUserId] = useState("");
+  const [amount, setAmount] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    const effectiveFrom = fromUserId || user?._id;
+    if (!toUserId) {
+      toast.error("Please select a recipient");
+      return;
+    }
+
+    if (effectiveFrom && effectiveFrom.toString() === toUserId.toString()) {
+      toast.error("Payer and recipient cannot be the same person");
+      return;
+    }
+
+    const numAmount = Number(amount);
+    if (!amount || isNaN(numAmount) || numAmount <= 0) {
+      toast.error("Please enter a valid amount greater than 0");
+      return;
+    }
+
+    if (numAmount > 1000000000) {
+      toast.error("Amount cannot exceed ₹1,000,000,000");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      // Fix #2: Include fromUserId in settlement request
+      await api.post(`/groups/${groupId}/settle`, {
+        fromUserId: fromUserId || undefined,
+        toUserId,
+        amount: numAmount
+      });
+
+      toast.success("Payment recorded successfully!");
+      onSettled();
+      onClose();
+    } catch (err) {
+      console.error("SETTLE ERROR:", err);
+      toast.error(apiErrorMessage(err, "Failed to record settlement"));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="modal-overlay">
+      <div className="modal">
+        <div className="modal-header">
+          <h3>Record Payment</h3>
+          <button className="btn-close" onClick={onClose}>✕</button>
+        </div>
+
+        <p className="modal-desc">
+          Record a cash payment to settle debt between group members.
+        </p>
+
+        <form onSubmit={handleSubmit}>
+          {/* Fix #2: Add Paid From selector */}
+          <label className="modal-section-label">Paid From</label>
+          <select
+            className="modal-select"
+            value={fromUserId}
+            onChange={(e) => setFromUserId(e.target.value)}
+          >
+            <option value="">You (Me)</option>
+            {groupMembers?.map((member) => (
+              <option key={member._id} value={member._id}>
+                {member.username}
+              </option>
+            ))}
+          </select>
+
+          <label className="modal-section-label">Paid To</label>
+          <select
+            className="modal-select"
+            value={toUserId}
+            onChange={(e) => setToUserId(e.target.value)}
+            required
+          >
+            <option value="">Select Recipient</option>
+            {groupMembers.map((member) => (
+              <option key={member._id} value={member._id}>
+                {member.username}
+              </option>
+            ))}
+          </select>
+
+          <label className="modal-section-label">Amount</label>
+          <div className="modal-amount-wrapper small">
+            <span className="currency-symbol">{getCurrencySymbol(user?.currency)}</span>
+            <input
+              type="number"
+              className="modal-input"
+              placeholder="0.00"
+              min="0.01"
+              step="0.01"
+              onKeyDown={(e) => ["-", "+", "e", "E"].includes(e.key) && e.preventDefault()}
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              required
+            />
+          </div>
+
+          <div className="modal-actions">
+            <button type="button" className="modal-btn secondary" onClick={onClose}>
+              Cancel
+            </button>
+            <button type="submit" className="modal-btn primary" disabled={loading}>
+              {loading ? "Recording..." : "Record Payment"}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+export default SettleUpModal;
