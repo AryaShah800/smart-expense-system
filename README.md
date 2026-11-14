@@ -70,6 +70,16 @@ cd client && npm run typecheck
 
 Redux Toolkit holds the session (the `auth` slice, whose session check signs out only on a 401 so a cold-starting API does not log anyone out) and the socket-fed notifications. Server data (transactions, groups, budgets, recurring schedules, insights) lives in TanStack Query: mutations invalidate the affected queries, socket events invalidate group and invitation queries, and the whole cache is cleared when the signed-in user changes.
 
+## Run everything with Docker
+
+```bash
+docker compose up --build            # app on http://localhost:8080, API on :7000, MongoDB included
+```
+
+The web container serves the built client with nginx and proxies `/api` to the API. Sign-up sends its OTP through the
+Brevo HTTP API, so put `BREVO_API_KEY` (and a `JWT_SECRET`) in a `.env` file next to `docker-compose.yml`. Compose is
+for local use: it falls back to a placeholder `JWT_SECRET` and runs the API in development mode. Do not deploy it as is.
+
 ## Load testing
 
 `perf/` has a k6 script and instructions for a user with 50,000 transactions. The dashboard endpoint now reads the two-month window with one `$facet` aggregation instead of three reads plus in-memory summing; results and method are in [perf/README.md](perf/README.md).
