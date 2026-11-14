@@ -1,8 +1,7 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { populated, type Transaction } from "../types/models";
-import { useAppDispatch, useAppSelector } from "../store/hooks";
-import { deleteTransaction, fetchTransactions as fetchTransactionsThunk } from "../store/transactionsSlice";
-import { loadErrorText } from "../store/loadError";
+import { useTransactions, useDeleteTransaction } from "../hooks/queries";
+import { loadErrorText, toLoadError } from "../store/loadError";
 import "../styles/expenses.css";
 import "../styles/responsive.css";
 import { exportTransactionsPdf } from "../utils/exportPdf";
@@ -14,25 +13,29 @@ import DataErrorState from "../components/DataErrorState";
 
 function Expenses() {
   const { user } = useAuth();
-  const dispatch = useAppDispatch();
-  const { items: transactions, status, error: loadError } = useAppSelector((state) => state.transactions);
-  // Keep showing cached transactions while a refresh runs.
-  const loading = (status === "idle" || status === "loading") && transactions.length === 0;
-  const error = loadErrorText(loadError, "Server is currently offline or unreachable. Please verify your connection.");
+  const txQuery = useTransactions();
+  const deleteTransaction = useDeleteTransaction();
+  const transactions = useMemo(() => txQuery.data ?? [], [txQuery.data]);
+  // Cached transactions stay on screen while a background refetch runs.
+  const loading = txQuery.isPending;
+  const error = txQuery.error
+    ? loadErrorText(
+        toLoadError(txQuery.error, "Failed to load transactions."),
+        "Server is currently offline or unreachable. Please verify your connection."
+      )
+    : "";
+  const fetchTransactions = () => {
+    txQuery.refetch();
+  };
 
   const [typeFilter, setTypeFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
-  const [visibleDays, setVisibleDays] = useState(25);
-
-  const fetchTransactions = useCallback(() => {
-    dispatch(fetchTransactionsThunk());
-  }, [dispatch]);
-
-  useEffect(() => {
-    fetchTransactions();
-  }, [fetchTransactions]);
+  // The page size resets whenever a filter changes (derived from the filter key, no effect needed).
+  const filterKey = `${typeFilter}|${categoryFilter}|${fromDate}|${toDate}`;
+  const [pageSize, setPageSize] = useState({ key: filterKey, days: 25 });
+  const visibleDays = pageSize.key === filterKey ? pageSize.days : 25;
 
   const filtered = useMemo(() => {
     return transactions.filter((t) => {
@@ -44,9 +47,6 @@ function Expenses() {
     });
   }, [transactions, typeFilter, categoryFilter, fromDate, toDate]);
 
-  useEffect(() => {
-    setVisibleDays(25);
-  }, [typeFilter, categoryFilter, fromDate, toDate]);
 
   // Group transactions by date for mobile view
   const groupedTransactions = useMemo(() => {
@@ -89,13 +89,9 @@ function Expenses() {
     });
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = (id: string) => {
     if (!window.confirm("Delete this transaction?")) return;
-    try {
-      await dispatch(deleteTransaction(id)).unwrap();
-    } catch {
-      alert("Failed to delete transaction");
-    }
+    deleteTransaction.mutate(id, { onError: () => alert("Failed to delete transaction") });
   };
 
   if (loading) return <p className="expenses-loading">Loading transactions...</p>;
@@ -269,7 +265,7 @@ function Expenses() {
               <button
                 type="button"
                 className="export-btn"
-                onClick={() => setVisibleDays((prev) => prev + 25)}
+                onClick={() => setPageSize({ key: filterKey, days: visibleDays + 25 })}
                 style={{ cursor: "pointer", padding: "10px 24px", fontSize: "0.95rem" }}
               >
                 Load More Days ({visibleDays} of {groupedTransactions.length})

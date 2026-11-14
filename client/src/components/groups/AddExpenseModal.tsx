@@ -4,7 +4,8 @@ import api, { apiErrorMessage } from "../../api/axios";
 import toast from "react-hot-toast";
 import "../../styles/Modal.css";
 import { getCurrencySymbol } from "../../utils/currencyFormatter";
-import type { GroupCategory, MemberSummary, SplitType } from "../../types/models";
+import { useGroupCategories } from "../../hooks/queries";
+import type { MemberSummary, SplitType } from "../../types/models";
 
 interface AddExpenseModalProps {
   groupId: string;
@@ -35,7 +36,7 @@ function AddExpenseModal({ groupId, groupMembers, onClose, onAdded }: AddExpense
   const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
   const [categoryId, setCategoryId] = useState("");
-  const [categories, setCategories] = useState<GroupCategory[]>([]);
+  const categories = useGroupCategories(groupId).data ?? [];
   const [loading, setLoading] = useState(false);
   const [splitType, setSplitType] = useState<SplitType>("equal");
   const [paidBy, setPaidBy] = useState(""); // Fix #1: Add paidBy state
@@ -49,16 +50,6 @@ function AddExpenseModal({ groupId, groupMembers, onClose, onAdded }: AddExpense
   const [involvedUsers, setInvolvedUsers] = useState<string[]>([]);
   const [customSplits, setCustomSplits] = useState<SplitInput[]>([]);
 
-  // Fetch Categories on mount
-  useEffect(() => {
-    const fetchCats = async () => {
-      try {
-        const res = await api.get<GroupCategory[]>(`/groups/${groupId}/categories`);
-        setCategories(res.data);
-      } catch { console.error("Error fetching categories"); }
-    };
-    fetchCats();
-  }, [groupId]);
 
   useEffect(() => {
     if (groupMembers?.length) {
