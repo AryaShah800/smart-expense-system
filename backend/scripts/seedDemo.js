@@ -21,11 +21,11 @@ import Group from "../models/Group.js";
 import GroupExpense from "../models/GroupExpense.js";
 import GroupCategory from "../models/GroupCategory.js";
 import Settlement from "../models/Settlement.js";
+import { DEMO_EMAIL, FRIEND_EMAILS } from "../config/demo.js";
 import { seedDefaultCategories } from "../utils/seedDefaultCategories.js";
 
-export const DEMO_EMAIL = "demo@smartexpense.app";
+export { DEMO_EMAIL };
 export const DEMO_PASSWORD = process.env.DEMO_PASSWORD || "Demo@1234";
-const FRIEND_EMAILS = ["rahul.demo@smartexpense.app", "sneha.demo@smartexpense.app", "priya.demo@smartexpense.app"];
 
 // Small seeded PRNG so every run produces the same demo data.
 const prng = (seed) => () => {

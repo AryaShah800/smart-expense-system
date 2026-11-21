@@ -5,9 +5,10 @@ import {
   getNotifications, markNotificationsRead,
   updateProfile, resendOtp, debugGetOtp, getSocketToken
 } from "../controllers/user.js";
+import { demoLogin, demoStatus } from "../controllers/demo.js";
 import auth from "../middlewares/auth.js";
 import {
-  loginLimiter, signupLimiter, verifyOtpLimiter, resendOtpLimiter,
+  loginLimiter, signupLimiter, demoLimiter, verifyOtpLimiter, resendOtpLimiter,
 } from "../middlewares/rateLimiters.js";
 
 const router = express.Router();
@@ -21,6 +22,8 @@ if (process.env.ENABLE_DEBUG_OTP === "true") {
   router.get("/debug/otp", debugGetOtp);
 }
 router.post("/login", loginLimiter(), login);
+router.get("/demo-status", demoStatus);
+router.post("/demo-login", demoLimiter(), demoLogin);
 router.post("/logout", logout);
 router.get("/socket-token", auth, getSocketToken);
 router.get("/me", auth, (req, res) => {

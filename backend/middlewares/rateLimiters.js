@@ -28,3 +28,7 @@ export const loginLimiter = () => buildLimiter({ skipSuccessfulRequests: true })
 export const signupLimiter = () => buildLimiter();
 export const verifyOtpLimiter = () => buildLimiter();
 export const resendOtpLimiter = () => buildLimiter();
+
+// Demo sessions are keyed by IP only; each one rebuilds data when stale, so keep it modest.
+export const demoLimiter = () =>
+  buildLimiter({ limit: 10, keyGenerator: (req) => ipKeyGenerator(req.ip) });

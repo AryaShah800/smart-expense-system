@@ -1,6 +1,7 @@
 import User from "../models/user.js";
 import Group from "../models/Group.js";
 import bcrypt from "bcrypt";
+import { isDemoEmail } from "../config/demo.js";
 import generateToken, { cookieOptions, generateSocketToken } from "../utils/createToken.js";
 
 // Helper function to send email via Brevo API
@@ -33,6 +34,7 @@ const sendEmailViaBrevo = async (toEmail, subject, htmlContent) => {
 export const resendOtp = async (req, res) => {
   const { email } = req.body;
   try {
+    if (isDemoEmail(email)) return res.status(403).json({ message: "No email is sent for demo accounts" });
     const user = await User.findOne({ email });
     if (!user) return res.status(400).json({ message: "User not found" });
     if (user.isVerified) return res.status(400).json({ message: "Email is already verified" });
@@ -64,6 +66,7 @@ export const resendOtp = async (req, res) => {
 export const signup = async (req, res) => {
   const { username, email, password } = req.body;
   try {
+    if (isDemoEmail(email)) return res.status(403).json({ message: "No email is sent for demo accounts" });
     const existingUser = await User.findOne({ $or: [{ email }, { username }] });
     if (existingUser) return res.status(400).json({ message: "Username or Email already exists" });
 
@@ -134,6 +137,8 @@ export const verifyEmail = async (req, res) => {
 export const login = async (req, res) => {
   const { email, password } = req.body;
   try {
+    // Demo accounts have a published password, so they can only be entered via /demo-login.
+    if (isDemoEmail(email)) return res.status(403).json({ message: "Use the demo button to open the demo workspace" });
     const user = await User.findOne({ email });
     if (!user) return res.status(400).json({ message: "Invalid credentials" });
 
@@ -266,6 +271,10 @@ export const updateProfile = async (req, res) => {
   try {
     const { username, currency, theme } = req.body;
     const userId = req.user._id;
+
+    if (isDemoEmail(req.user.email) && (req.body.email !== undefined || req.body.password !== undefined)) {
+      return res.status(403).json({ message: "The demo account cannot change its email or password" });
+    }
 
     const user = await User.findById(userId);
     if (!user) {

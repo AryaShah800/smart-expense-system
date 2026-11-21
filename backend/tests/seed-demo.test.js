@@ -19,7 +19,8 @@ test("seedDemo builds a demo account that can log in and has data to show", asyn
   assert.ok(transactions > 100);
 
   const agent = request.agent(app);
-  assert.equal((await agent.post("/api/users/login").send({ email: DEMO_EMAIL, password: DEMO_PASSWORD })).status, 200);
+  process.env.DEMO_MODE = "true";
+  assert.equal((await agent.post("/api/users/demo-login")).status, 200);
 
   const dash = (await agent.get("/api/dashboard")).body;
   assert.ok(dash.summary.totalIncome > 0, "this month has income");
