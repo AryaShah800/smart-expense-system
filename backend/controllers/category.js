@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import Category from "../models/Category.js";
 import GroupCategory from "../models/GroupCategory.js";
 import Group from "../models/Group.js";
@@ -81,6 +82,19 @@ export const createGroupCategory = async (req, res) => {
 export const getGroupCategories = async (req, res) => {
   try {
     const { groupId } = req.params;
+    if (!mongoose.isValidObjectId(groupId)) {
+      return res.status(400).json({ message: "Invalid group ID" });
+    }
+
+    // Only members may see a group's categories
+    const group = await Group.findById(groupId);
+    if (!group) {
+      return res.status(404).json({ message: "Group not found" });
+    }
+    if (!group.members.some(m => m.equals(req.user._id))) {
+      return res.status(403).json({ message: "Access denied" });
+    }
+
     const categories = await GroupCategory.find({ groupId });
     res.json(categories);
   } catch (error) {

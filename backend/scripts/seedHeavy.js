@@ -11,6 +11,14 @@ import Settlement from "../models/Settlement.js";
 
 dotenv.config();
 
+// DESTRUCTIVE: wipes every user, category, transaction and group in the target database.
+// Local/dev databases only. For the public demo account use `npm run seed:demo` instead.
+if (!process.argv.includes("--wipe")) {
+  console.error("Refusing to run: this script deletes ALL data in the target database.");
+  console.error("Use `npm run seed:demo` for the demo account, or pass --wipe for a local database.");
+  process.exit(1);
+}
+
 // CONFIG
 const MAIN_USER_EMAIL = "aryas@example.com"; // login with this
 const PASSWORD = "password123";

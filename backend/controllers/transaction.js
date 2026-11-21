@@ -1,5 +1,5 @@
 import Transaction from "../models/Transaction.js";
-import Category from "../models/Category.js";
+import { findUsableCategory } from "../utils/findUsableCategory.js";
 import RecurringTransaction from "../models/RecurringTransaction.js";
 import { calculateNextDueDate } from "./recurring.js";
 
@@ -24,7 +24,7 @@ export const addTransaction = async (req, res) => {
     }
 
     // ✅ Validate category exists
-    const category = await Category.findById(categoryId);
+    const category = await findUsableCategory(categoryId, req.user._id);
     if (!category) {
       return res.status(400).json({ message: "Invalid category" });
     }

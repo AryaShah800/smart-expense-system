@@ -1,30 +1,40 @@
 import RecurringTransaction from "../models/RecurringTransaction.js";
 import Transaction from "../models/Transaction.js";
-import Category from "../models/Category.js";
+import { findUsableCategory } from "../utils/findUsableCategory.js";
 import User from "../models/user.js";
+
+// Moves `date` forward by whole months, landing on `anchorDay` or the last day of a shorter month.
+// (Plain setMonth would turn Jan 31 + 1 month into Mar 3 and skip February.)
+const addMonths = (date, months, anchorDay) => {
+  const d = new Date(date);
+  d.setDate(1);
+  d.setMonth(d.getMonth() + months);
+  const lastDay = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+  d.setDate(Math.min(anchorDay, lastDay));
+  return d;
+};
 
 /**
  * Calculates the next due date based on frequency.
+ * `anchorDay` is the day of the month the schedule is meant to land on (default: the
+ * day of `baseDate`). Pass the schedule's start day so a bill on the 31st returns to the
+ * 31st after February instead of staying on the 28th.
  */
-export const calculateNextDueDate = (baseDate, frequency) => {
+export const calculateNextDueDate = (baseDate, frequency, anchorDay = new Date(baseDate).getDate()) => {
   const d = new Date(baseDate);
   switch (frequency) {
     case "daily":
       d.setDate(d.getDate() + 1);
-      break;
+      return d;
     case "weekly":
       d.setDate(d.getDate() + 7);
-      break;
-    case "monthly":
-      d.setMonth(d.getMonth() + 1);
-      break;
+      return d;
     case "yearly":
-      d.setFullYear(d.getFullYear() + 1);
-      break;
+      return addMonths(d, 12, anchorDay);
+    case "monthly":
     default:
-      d.setMonth(d.getMonth() + 1);
+      return addMonths(d, 1, anchorDay);
   }
-  return d;
 };
 
 /**
@@ -65,7 +75,11 @@ export const processDueRecurring = async (targetUserId = null) => {
     createdTransactions.push(newTx);
 
     // Compute the subsequent due date
-    const nextDate = calculateNextDueDate(item.nextDueDate, item.frequency);
+    const nextDate = calculateNextDueDate(
+      item.nextDueDate,
+      item.frequency,
+      new Date(item.startDate || item.nextDueDate).getDate()
+    );
 
     const advanced = await RecurringTransaction.findOneAndUpdate(
       { _id: item._id, status: "active", nextDueDate: dueDate },
@@ -175,7 +189,7 @@ export const createRecurringTransaction = async (req, res) => {
       return res.status(400).json({ message: "Invalid frequency" });
     }
 
-    const category = await Category.findById(categoryId);
+    const category = await findUsableCategory(categoryId, userId);
     if (!category) {
       return res.status(400).json({ message: "Invalid category" });
     }
@@ -275,7 +289,7 @@ export const updateRecurringTransaction = async (req, res) => {
     }
 
     if (categoryId) {
-      const cat = await Category.findById(categoryId);
+      const cat = await findUsableCategory(categoryId, userId);
       if (cat) recurring.categoryId = categoryId;
     }
 

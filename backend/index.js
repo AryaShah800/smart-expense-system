@@ -1,95 +1,26 @@
-import dotenv from "dotenv";
-dotenv.config();
-import express from "express";
+import "./loadEnv.js"; // must be first so env vars exist before other modules read them
 import mongoose from "mongoose";
-import cors from "cors";
-import cookieParser from "cookie-parser";
 import { createServer } from "http";
 import { Server } from "socket.io";
 import dns from "dns";
 
 dns.setServers(["8.8.8.8", "8.8.4.4"]);
 
-import userRoutes from "./routes/user.js";
-import categoryRoutes from "./routes/category.js";
-import transactionRoutes from "./routes/transaction.js";
-import budgetRoutes from "./routes/budget.js";
-import groupRoutes from "./routes/group.js";
-import dashboardRoutes from "./routes/dashboard.js";
-import reportRoutes from "./routes/report.js";
-import recurringRoutes from "./routes/recurring.js";
+import app from "./app.js";
 import { processDueRecurring } from "./controllers/recurring.js";
 import { seedDefaultCategories } from "./utils/seedDefaultCategories.js";
+import { registerSocketHandlers } from "./middlewares/socketAuth.js";
+import { corsOptions } from "./config/cors.js";
 
 const PORT = process.env.PORT || 7000;
 
-// Exact origins only. Add more with ALLOWED_ORIGINS (comma-separated) or FRONTEND_URL.
-const allowedOrigins = new Set(
-  [
-    "https://smart-expense-system.vercel.app",
-    process.env.FRONTEND_URL,
-    ...(process.env.ALLOWED_ORIGINS || "").split(","),
-  ]
-    .map((o) => (o || "").trim().replace(/\/$/, ""))
-    .filter(Boolean)
-);
-
-const isLocalDevOrigin = (origin) =>
-  process.env.NODE_ENV !== "production" &&
-  /^http:\/\/(localhost|127\.0\.0\.1|192\.168\.\d+\.\d+)(:\d+)?$/.test(origin);
-
-const corsOptions = {
-  origin: function (origin, callback) {
-    if (!origin || allowedOrigins.has(origin) || isLocalDevOrigin(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error("Not allowed by CORS"));
-    }
-  },
-  credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-};
-
-const app = express();
 const httpServer = createServer(app);
-
-const io = new Server(httpServer, {
-  cors: corsOptions,
-});
+const io = new Server(httpServer, { cors: corsOptions });
 
 app.set("io", io);
 
-io.on("connection", (socket) => {
-  console.log("User connected:", socket.id);
-
-  socket.on("join_room", (userId) => {
-    socket.join(userId);
-    console.log(`User ${userId} joined room`);
-  });
-
-  socket.on("disconnect", () => {
-    console.log("User disconnected");
-  });
-});
-
-// Apply CORS before any body parsers so responses always include CORS headers
-app.use(cors(corsOptions));
-app.use(express.json());
-app.use(cookieParser());
-
-// app.use("/api/auth", userRoutes); // Removed duplicate mounting
-app.use("/api/users", userRoutes);
-app.use("/api/categories", categoryRoutes);
-app.use("/api/transactions", transactionRoutes);
-app.use("/api/budgets", budgetRoutes);
-app.use("/api/groups", groupRoutes);
-app.use("/api/dashboard", dashboardRoutes);
-app.use("/api/reports", reportRoutes);
-app.use("/api/recurring", recurringRoutes);
-
-app.get("/", (req, res) => {
-  res.send({ activeStatus: true, error: false });
-});
+// Sockets must present a valid JWT; each one joins only its own user room.
+registerSocketHandlers(io);
 
 const mongoCredentials = process.env.MONGO_USER && process.env.MONGO_PASSWORD
   ? { user: process.env.MONGO_USER, pass: process.env.MONGO_PASSWORD, authSource: "admin" }
