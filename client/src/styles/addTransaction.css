@@ -35,8 +35,6 @@
   font-weight: 700;
   padding: 4px 12px;
   border-radius: 9999px;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
 }
 
 .transaction-card h2 {
@@ -372,7 +370,6 @@
   font-weight: 600;
   color: var(--muted);
   margin-bottom: 6px;
-  text-transform: uppercase;
 }
 
 .recurring-freq-select {

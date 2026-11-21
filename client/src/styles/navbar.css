@@ -199,8 +199,6 @@
   color: var(--text); /* Changed from #0f172a */
   background: var(--bg); /* Theme aware */
   border-bottom: 1px solid var(--border);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
 }
 
 .dropdown-list {

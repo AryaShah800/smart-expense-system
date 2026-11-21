@@ -190,10 +190,11 @@ function Dashboard() {
           />
           {/* FIX: Replaced hardcoded INR format with formatCurrency utility */}
           <div className="summary-card projected">
-            <span>Projected (Month End)</span>
+            <span>Projected month-end spend</span>
             <strong>
               {formatCurrency(projection, user?.currency)}
             </strong>
+            <small className="projected-note">Estimate from your pace so far this month</small>
           </div>
         </div>
 
@@ -306,7 +307,7 @@ function Dashboard() {
         <Notifications />
 
         <div className="summary-mobile-balance">
-          <span>Total Balance</span>
+          <span>Total balance</span>
           <strong>{formatCurrency(summary.balance, user?.currency)}</strong>
         </div>
 
@@ -323,7 +324,7 @@ function Dashboard() {
 
         {/* FIX: Ensure formatCurrency receives user.currency explicitly to prevent default mismatches */}
         <div className="projection-mobile-card">
-          <span>Projected (Month End)</span>
+          <span>Projected month-end spend</span>
           <strong>{formatCurrency(projection, user?.currency)}</strong>
         </div>
 
