@@ -1,0 +1,144 @@
+{
+    "root_group": {
+        "id": "d41d8cd98f00b204e9800998ecf8427e",
+        "groups": {},
+        "checks": {
+                "status is 200": {
+                    "fails": 0,
+                    "name": "status is 200",
+                    "path": "::status is 200",
+                    "id": "6210a8cd14cd70477eba5c5e4cb3fb5f",
+                    "passes": 150
+                },
+                "dashboard has a summary": {
+                    "passes": 50,
+                    "fails": 0,
+                    "name": "dashboard has a summary",
+                    "path": "::dashboard has a summary",
+                    "id": "68a87f1a06bdbd5d20cc7aef74a5c18d"
+                }
+            },
+        "name": "",
+        "path": ""
+    },
+    "metrics": {
+        "http_req_waiting": {
+            "avg": 10597.282875985078,
+            "med": 13489.284074,
+            "p(95)": 14875.134911,
+            "p(99)": 15046.091106,
+            "max": 15090.046847
+        },
+        "vus_max": {
+            "max": 50,
+            "value": 50,
+            "min": 50
+        },
+        "http_req_failed": {
+            "passes": 0,
+            "fails": 201,
+            "thresholds": {
+                "rate==0": false
+            },
+            "value": 0
+        },
+        "checks": {
+            "passes": 200,
+            "fails": 0,
+            "thresholds": {
+                "rate==1": false
+            },
+            "value": 1
+        },
+        "http_reqs": {
+            "count": 201,
+            "rate": 4.010531871307391
+        },
+        "http_req_connecting": {
+            "avg": 2.756911691542289,
+            "med": 0,
+            "p(95)": 13.288297,
+            "p(99)": 18.284933,
+            "max": 19.888037
+        },
+        "http_req_blocked": {
+            "avg": 2.8060425621890572,
+            "med": 0.008386,
+            "p(95)": 13.316145,
+            "p(99)": 18.346171,
+            "max": 19.992101
+        },
+        "http_req_sending": {
+            "avg": 0.08748153731343285,
+            "med": 0.040519,
+            "p(95)": 0.301333,
+            "p(99)": 0.849426,
+            "max": 0.930152
+        },
+        "http_req_duration": {
+            "avg": 10597.605367796024,
+            "med": 13489.435187,
+            "p(95)": 14876.264411,
+            "p(99)": 15046.356422,
+            "max": 15091.082165
+        },
+        "http_req_duration{expected_response:true}": {
+            "p(99)": 15046.356422,
+            "max": 15091.082165,
+            "avg": 10597.605367796024,
+            "med": 13489.435187,
+            "p(95)": 14876.264411
+        },
+        "data_sent": {
+            "count": 76367,
+            "rate": 1523.7427234633408
+        },
+        "http_req_tls_handshaking": {
+            "avg": 0,
+            "med": 0,
+            "p(95)": 0,
+            "p(99)": 0,
+            "max": 0
+        },
+        "data_received": {
+            "count": 771114,
+            "rate": 15385.956584135956
+        },
+        "http_req_duration{endpoint:dashboard}": {
+            "max": 15091.082165,
+            "avg": 13608.193133339993,
+            "med": 13693.040487,
+            "p(95)": 14838.7714735,
+            "p(99)": 15052.30366304,
+            "thresholds": {
+                "p(95)<2000": true
+            }
+        },
+        "iteration_duration": {
+            "avg": 30202.694735800003,
+            "med": 30197.745449000002,
+            "p(95)": 30478.24555045,
+            "p(99)": 30514.83165638,
+            "max": 30521.099902
+        },
+        "iterations": {
+            "count": 50,
+            "rate": 0.9976447441063161
+        },
+        "http_req_receiving": {
+            "med": 0.170773,
+            "p(95)": 0.36965,
+            "p(99)": 1.457237,
+            "max": 2.963304,
+            "avg": 0.2350102736318408
+        },
+        "vus": {
+            "value": 50,
+            "min": 50,
+            "max": 50
+        }
+    },
+    "setup_data": {
+        "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2YjAxYzhhMGRlZDc3OGNkYmYxY2RhMTQiLCJpYXQiOjE3OTUyNzkwMTgsImV4cCI6MTc5Nzg3MTAxOH0.rlaFql0VHd6-5GT4s4q-W6Pd2N57ShOhODMPV5CFdfU"
+    }
+}
