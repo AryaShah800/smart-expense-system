@@ -6,7 +6,7 @@
   --muted: #5c5a52;
   --primary: #1e6b52;
   --primary-strong: #15503d;
-  --font-display: "Newsreader", Georgia, "Times New Roman", serif;
+  --font-display: Georgia, "Times New Roman", serif;
   --success: #15803d;
   --success-text: #166534; /* for text on tinted green backgrounds */
   --danger: #b91c1c;
