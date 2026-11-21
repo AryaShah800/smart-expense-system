@@ -6,6 +6,12 @@ A full-stack expense tracker with email-verified sign-up, budgets, recurring tra
 
 **[Live demo](https://smart-expense-system.vercel.app)** · The API runs on Render's free tier, so the first request after a quiet period can take up to a minute while it wakes.
 
+## Screenshots
+
+![Tour of the demo: dashboard, expenses, budgets, groups, recurring](docs/screenshots/demo-tour.gif)
+
+![Dashboard](docs/screenshots/dashboard.png)
+
 ## Features
 
 - Email OTP sign-up with resend and edit-email, JWT sessions, bcrypt password hashing
@@ -25,15 +31,23 @@ A full-stack expense tracker with email-verified sign-up, budgets, recurring tra
 | Database | MongoDB Atlas |
 | Email | Brevo transactional API |
 | Hosting | Vercel (frontend), Render (API) |
-| Tests | Node test runner (API), Vitest + React Testing Library (client) |
+| Tests | Node test runner + supertest on an in-memory MongoDB (111 API tests), Vitest + React Testing Library (58 client tests), Playwright (6 e2e specs) |
 | CI | GitHub Actions: backend tests and `npm audit`; client lint, type check, tests and build; daily API health check |
 
 ## Architecture
 
-```
-React PWA (Vercel) ──HTTPS + JWT──▶ Express API (Render) ──▶ MongoDB Atlas
-        ▲                                   │
-        └──────── Socket.IO (live updates) ─┘        Brevo ◀── OTP emails
+```mermaid
+flowchart LR
+  subgraph Client["React 19 PWA (Vercel)"]
+    RTK["Redux Toolkit<br/>session, notifications"]
+    TQ["TanStack Query<br/>server data"]
+    SW["Workbox service worker<br/>offline cache, sync queue"]
+  end
+  Client -- "HTTPS, JWT cookie" --> API["Express API (Render)"]
+  Client <-- "Socket.IO" --> API
+  API --> DB[("MongoDB Atlas")]
+  API -- "OTP emails" --> Brevo
+  API -. "DEMO_MODE only" .-> Seed["Demo seed<br/>resets when stale"]
 ```
 
 Routes live in `backend/routes`, request handling in `backend/controllers`, Mongoose schemas in `backend/models`, and auth middleware in `backend/middlewares`. Group endpoints check membership on every request; `backend/tests/group-authorization.test.js` covers those rules.
@@ -80,6 +94,15 @@ cd client && npm run typecheck
 ### Client state
 
 Redux Toolkit holds the session (the `auth` slice, whose session check signs out only on a 401 so a cold-starting API does not log anyone out) and the socket-fed notifications. Server data (transactions, groups, budgets, recurring schedules, insights) lives in TanStack Query: mutations invalidate the affected queries, socket events invalidate group and invitation queries, and the whole cache is cleared when the signed-in user changes.
+
+## End-to-end tests
+
+```bash
+cd e2e && npm ci && npx playwright install chromium
+npx playwright test   # starts the API on an in-memory MongoDB with DEMO_MODE=true, and the Vite client
+```
+
+Set `E2E_CHANNEL=msedge` (or `chrome`) to reuse an installed browser instead of downloading Chromium.
 
 ## Run everything with Docker
 
