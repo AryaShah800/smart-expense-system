@@ -10,6 +10,9 @@ interface ActionableInsightsProps {
   loading?: boolean;
 }
 
+const MAX_VISIBLE = 4;
+const SEVERITY: Record<string, number> = { danger: 0, warning: 1, info: 2, success: 3 };
+
 const INSIGHT_ICONS = { warning: AlertTriangle, success: TrendingUp, danger: OctagonAlert, info: Info } as const;
 
 function InsightIcon({ type }: { type?: string }) {
@@ -19,8 +22,14 @@ function InsightIcon({ type }: { type?: string }) {
 
 export default function ActionableInsights({ insights = [], onRefresh, loading = false }: ActionableInsightsProps) {
   const [dismissed, setDismissed] = useState<string[]>([]);
+  const [showAll, setShowAll] = useState(false);
 
-  const visibleInsights = insights.filter((i) => !dismissed.includes(i.id));
+  // Most urgent first (stable for equal severity); four fill the grid evenly, the rest sit behind a toggle.
+  const visibleInsights = insights
+    .filter((i) => !dismissed.includes(i.id))
+    .sort((a, b) => (SEVERITY[a.type] ?? 2) - (SEVERITY[b.type] ?? 2));
+  const shownInsights = showAll ? visibleInsights : visibleInsights.slice(0, MAX_VISIBLE);
+  const hiddenCount = visibleInsights.length - shownInsights.length;
 
   const handleDismiss = (id: string) => {
     setDismissed((prev) => [...prev, id]);
@@ -32,7 +41,7 @@ export default function ActionableInsights({ insights = [], onRefresh, loading =
         <div className="insights-header">
           <div className="insights-title-row">
             <span className="insights-glow-icon"><Lightbulb size={20} aria-hidden="true" /></span>
-            <h2>Actionable Financial Intelligence</h2>
+            <h2>Insights</h2>
           </div>
           {onRefresh && (
             <button
@@ -49,8 +58,8 @@ export default function ActionableInsights({ insights = [], onRefresh, loading =
         <div className="insights-empty-card">
           <div className="empty-sparkle"><Lightbulb size={28} strokeWidth={1.5} aria-hidden="true" /></div>
           <p>
-            Your financial intelligence engine is active! As you log expenses and compare this
-            month with previous months, proactive alerts and spending trend warnings will appear here.
+            Insights appear here once there is a month of spending to compare. Log a few expenses
+            and set a budget to see how this month is going.
           </p>
         </div>
       </div>
@@ -63,15 +72,15 @@ export default function ActionableInsights({ insights = [], onRefresh, loading =
         <div className="insights-title-row">
           <span className="insights-glow-icon"><Lightbulb size={20} aria-hidden="true" /></span>
           <div>
-            <h2>Actionable Financial Insights</h2>
+            <h2>Insights</h2>
             <span className="insights-subtitle">
-              Proactive analysis based on your spending velocity
+              This month compared with last month and your budgets
             </span>
           </div>
         </div>
         <div className="insights-header-actions">
           <span className="insights-pill-count">
-            {visibleInsights.length} active
+            {visibleInsights.length} {visibleInsights.length === 1 ? "insight" : "insights"}
           </span>
           {onRefresh && (
             <button
@@ -89,7 +98,7 @@ export default function ActionableInsights({ insights = [], onRefresh, loading =
       </div>
 
       <div className="insights-grid">
-        {visibleInsights.map((insight) => (
+        {shownInsights.map((insight) => (
           <div key={insight.id} className={`insight-card ${insight.type || "info"}`}>
             <div className="insight-card-top">
               <div className="insight-badge-row">
@@ -137,6 +146,11 @@ export default function ActionableInsights({ insights = [], onRefresh, loading =
           </div>
         ))}
       </div>
+      {(hiddenCount > 0 || showAll) && visibleInsights.length > MAX_VISIBLE && (
+        <button type="button" className="insights-more-btn" onClick={() => setShowAll((v) => !v)}>
+          {showAll ? "Show fewer" : `Show ${hiddenCount} more`}
+        </button>
+      )}
     </div>
   );
 }

@@ -45,6 +45,12 @@ describe("Budgets", () => {
     expect(screen.getAllByText(/6,500/).length).toBeGreaterThan(0);
   });
 
+  it("labels an over-budget category in words, not only colour", async () => {
+    respond();
+    renderWithProviders(<Budgets />);
+    expect((await screen.findAllByText(/over budget by/i)).length).toBeGreaterThan(0);
+  });
+
   it("still renders budgets when only the spending status request fails", async () => {
     respond({ status: "fail" });
     renderWithProviders(<Budgets />);

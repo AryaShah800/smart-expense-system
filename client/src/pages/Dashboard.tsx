@@ -7,6 +7,7 @@ import { populated } from "../types/models";
 import { useIsDesktop } from "../hooks/useMediaQuery";
 import { useTransactions, useBudgetStatus, useInsights } from "../hooks/queries";
 import { toLoadError, loadErrorText } from "../store/loadError";
+import { useSlowLoad } from "../hooks/useSlowLoad";
 import { exportTransactionsPdf } from "../utils/exportPdf";
 
 import SummaryCards from "../components/dashboard/SummaryCards";
@@ -46,6 +47,7 @@ function Dashboard() {
   const insights = insightsQuery.data ?? [];
 
   const loading = txQuery.isPending || budgetQuery.isPending || insightsQuery.isPending;
+  const slowLoad = useSlowLoad(loading);
   const queryError = txQuery.error ?? budgetQuery.error ?? insightsQuery.error;
   const error = queryError
     ? loadErrorText(
@@ -133,7 +135,18 @@ function Dashboard() {
     });
   };
 
-  if (loading) return <p className="dashboard-loading">Loading financial data...</p>;
+  if (loading) {
+    return (
+      <div className="dashboard-loading-wrap" role="status" aria-live="polite">
+        <p className="dashboard-loading">Loading financial data...</p>
+        {slowLoad && (
+          <p className="dashboard-loading-note">
+            The API is waking up (free tier). This can take up to a minute on the first request.
+          </p>
+        )}
+      </div>
+    );
+  }
   if (error) {
     return (
       <DataErrorState

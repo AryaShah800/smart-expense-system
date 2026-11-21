@@ -1,3 +1,4 @@
+import { budgetState } from "../../utils/budgetState";
 import { isPopulated, type BudgetStatus } from "../../types/models";
 
 const BudgetOverview = ({ budgetStatus }: { budgetStatus: BudgetStatus[] }) => {
@@ -10,7 +11,8 @@ const BudgetOverview = ({ budgetStatus }: { budgetStatus: BudgetStatus[] }) => {
         {budgetStatus.map((item, index) => {
           const category = isPopulated(item.category) ? item.category : null;
           const percent = Math.min((item.spent / item.limit) * 100, 100);
-          const isExceeded = item.spent > item.limit;
+          const state = budgetState(item.spent, item.limit);
+          const isExceeded = state === "over";
           
           return (
             <div key={category?._id ?? index} className="budget-item">
@@ -25,15 +27,17 @@ const BudgetOverview = ({ budgetStatus }: { budgetStatus: BudgetStatus[] }) => {
               
               <div className="progress-track">
                 <div 
-                  className={`progress-fill ${isExceeded ? 'danger' : percent > 80 ? 'warning' : 'success'}`}
+                  className={`progress-fill ${state === 'over' ? 'danger' : state === 'warn' ? 'warning' : 'success'}`}
                   style={{ width: `${percent}%` }}
                 ></div>
               </div>
               
-              <p className="budget-subtext">
-                {isExceeded 
-                  ? `Exceeded by ${Math.round(item.spent - item.limit)}` 
-                  : `${Math.round(100 - percent)}% remaining`}
+              <p className={`budget-subtext ${state}`}>
+                {isExceeded
+                  ? `Over budget by ${new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(item.spent - item.limit)}`
+                  : state === 'warn'
+                    ? `Nearing limit, ${Math.round(100 - percent)}% remaining`
+                    : `${Math.round(100 - percent)}% remaining`}
               </p>
             </div>
           );
