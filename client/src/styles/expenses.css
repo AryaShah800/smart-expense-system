@@ -183,8 +183,6 @@
   font-size: 13px;
   font-weight: 700;
   color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
 }
 
 .date-group-total {

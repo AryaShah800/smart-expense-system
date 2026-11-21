@@ -375,8 +375,6 @@
   font-size: max(12px, 0.75rem);
   font-weight: 600;
   color: rgba(255, 255, 255, 0.8); /* Ensures visibility */
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
 }
 .dashboard-mobile .summary-mobile-balance strong {
   font-size: 1.75rem;
@@ -425,8 +423,6 @@
   font-size: max(12px, 0.75rem);
   color: rgba(255,255,255,0.8);
   font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
 }
 .dashboard-mobile .projection-mobile-card strong {
   font-size: 1.25rem;

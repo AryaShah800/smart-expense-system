@@ -102,24 +102,39 @@ export async function seedDemo() {
   const add = (category, type, amount, date, description, extra = {}) =>
     tx.push({ userId: me._id, categoryId: cat[category], type, amount, date, description, ...extra });
 
+  // Fixed monthly items: salary and rent on the 1st, bills mid-month, one subscription.
   for (let m = 0; m < 6; m++) {
     add("Salary", "income", 55000, monthDay(m, 1), "Monthly salary");
-    add("Rent", "expense", 12000, monthDay(m, 5), "Apartment rent");
-    add("Bills", "expense", 1800 + Math.floor(rand() * 600), monthDay(m, 9), "Electricity and internet");
+    add("Rent", "expense", 12000, monthDay(m, 1), "Apartment rent");
+    add("Bills", "expense", 1900 + Math.floor(rand() * 300), monthDay(m, 9), "Electricity and internet");
     add("Entertainment", "expense", 649, monthDay(m, 12), "Streaming subscription");
-    if (m % 2 === 0) add("Freelance", "income", 8000 + Math.floor(rand() * 9000), monthDay(m, 20), "Freelance project");
+    if (m % 2 === 0) add("Freelance", "income", 9000 + Math.floor(rand() * 4000), monthDay(m, 20), "Freelance project");
   }
-  for (let i = 0; i < 110; i++) {
-    const r = rand();
-    const date = daysAgo(Math.floor(rand() * 180));
-    if (r < 0.42) add("Food", "expense", 80 + Math.floor(rand() * 520), date, rand() > 0.5 ? "Lunch" : "Dinner out");
-    else if (r < 0.68) add("Groceries", "expense", 300 + Math.floor(rand() * 1500), date, "Weekly groceries");
-    else if (r < 0.88) add("Transport", "expense", 40 + Math.floor(rand() * 260), date, "Cab / auto");
-    else if (r < 0.96) add("Shopping", "expense", 400 + Math.floor(rand() * 3200), date, "Online order");
-    else add("Travel", "expense", 1500 + Math.floor(rand() * 5000), date, "Weekend trip");
+  // Day-to-day spending follows a weekly rhythm with +-15% noise, so month-over-month totals stay
+  // within a believable band instead of random clumps. Walks back 180 days from today.
+  const noisy = (base) => Math.round(base * (0.85 + rand() * 0.3));
+  for (let d = 0; d < 180; d++) {
+    const date = daysAgo(d);
+    const weekday = date.getDay();
+    if (weekday === 6) add("Groceries", "expense", noisy(1100), date, "Weekly groceries");
+    if ([1, 3, 5].includes(weekday)) add("Food", "expense", noisy(280), date, rand() > 0.5 ? "Lunch" : "Dinner out");
+    if (weekday === 0) add("Food", "expense", noisy(120), date, "Coffee and snacks");
+    if ([1, 2, 4].includes(weekday)) add("Transport", "expense", noisy(110), date, "Cab / auto");
   }
+  // One shopping purchase and one short trip roughly every month, so no month stands out.
+  add("Shopping", "expense", 3000, daysAgo(160), "Kitchen appliance");
+  add("Shopping", "expense", 3300, daysAgo(130), "Jacket");
+  add("Travel", "expense", 5000, daysAgo(175), "Cab to the airport");
+  add("Travel", "expense", 5600, daysAgo(145), "Weekend trip to Alibaug");
+  add("Travel", "expense", 5100, daysAgo(115), "Bus tickets");
+  add("Shopping", "expense", 3200, daysAgo(100), "Running shoes");
+  add("Shopping", "expense", 3600, daysAgo(70), "Headphones");
+  add("Shopping", "expense", 3100, daysAgo(40), "Home supplies");
+  add("Shopping", "expense", 3400, daysAgo(9), "Backpack");
+  add("Travel", "expense", 5200, daysAgo(85), "Train tickets home");
+  add("Travel", "expense", 5800, daysAgo(55), "Weekend trip to Lonavala");
+  add("Travel", "expense", 5400, daysAgo(25), "Weekend trip to Pune");
   add("Bonus", "income", 20000, daysAgo(40), "Performance bonus");
-  add("Shopping", "expense", 4500, daysAgo(3), "Headphones");
   await Transaction.insertMany(tx);
 
   // ---- Budgets (Food is over budget on purpose, so the alert states show) ----

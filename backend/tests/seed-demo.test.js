@@ -72,3 +72,45 @@ test("seedDemo never touches real users or shared categories", async () => {
   assert.equal(await Category.countDocuments({ user: null }), sharedBefore, "shared categories unchanged");
   assert.equal((await real.agent.get("/api/users/me")).status, 200);
 });
+
+test("seeded spending spans months, avoids single-day spikes and has believable month-over-month changes", async () => {
+  await seedDemo();
+  const me = await User.findOne({ email: DEMO_EMAIL });
+  const expenses = await Transaction.find({ userId: me._id, type: "expense" });
+  const day = (d) => d.toISOString().slice(0, 10);
+
+  const dates = expenses.map((t) => t.date.getTime());
+  const spanDays = (Math.max(...dates) - Math.min(...dates)) / 86400000;
+  assert.ok(spanDays >= 60, `spend should span at least 60 days, got ${Math.round(spanDays)}`);
+
+  const total = expenses.reduce((s, t) => s + t.amount, 0);
+  const perDay = {};
+  for (const t of expenses) perDay[day(t.date)] = (perDay[day(t.date)] || 0) + t.amount;
+  const biggest = Math.max(...Object.values(perDay));
+  assert.ok(biggest / total <= 0.25, `no day should hold more than 25% of spend, got ${(biggest / total * 100).toFixed(1)}%`);
+
+  // Last three complete calendar months: each month within 30% of the previous one.
+  const now = new Date();
+  const monthTotals = [3, 2, 1].map((back) => {
+    const start = new Date(now.getFullYear(), now.getMonth() - back, 1);
+    const end = new Date(now.getFullYear(), now.getMonth() - back + 1, 1);
+    return expenses.filter((t) => t.date >= start && t.date < end).reduce((s, t) => s + t.amount, 0);
+  });
+  for (let i = 1; i < monthTotals.length; i++) {
+    const change = Math.abs(monthTotals[i] - monthTotals[i - 1]) / monthTotals[i - 1];
+    assert.ok(change <= 0.3, `month-over-month change ${(change * 100).toFixed(0)}% is outside the believable range`);
+  }
+});
+
+test("demo categories match what they describe", async () => {
+  await seedDemo();
+  const me = await User.findOne({ email: DEMO_EMAIL });
+  const named = async (description) => {
+    const t = await Transaction.findOne({ userId: me._id, description });
+    return (await Category.findById(t.categoryId)).name;
+  };
+  assert.equal(await named("Monthly salary"), "Salary");
+  assert.equal(await named("Weekly groceries"), "Groceries");
+  assert.equal(await named("Coffee and snacks"), "Food");
+  assert.equal(await named("Apartment rent"), "Rent");
+});
