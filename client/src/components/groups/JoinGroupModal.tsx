@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from "react";
 import api, { apiErrorMessage } from "../../api/axios";
 import "../../styles/Modal.css";
+import { X, AlertTriangle } from "lucide-react";
 
 interface JoinGroupModalProps {
   onClose: () => void;
@@ -36,7 +37,7 @@ function JoinGroupModal({ onClose, onJoined }: JoinGroupModalProps) {
         {/* Header */}
         <div className="modal-header">
           <h3>Join Group</h3>
-          <button className="btn-close" onClick={onClose}>✕</button>
+          <button className="btn-close" onClick={onClose}><X size={18} aria-hidden="true" /></button>
         </div>
 
         {/* Description */}
@@ -47,7 +48,7 @@ function JoinGroupModal({ onClose, onJoined }: JoinGroupModalProps) {
         {/* Error */}
         {error && (
           <div className="modal-error">
-            <span>⚠️</span> {error}
+            <AlertTriangle size={14} aria-hidden="true" /> {error}
           </div>
         )}
 

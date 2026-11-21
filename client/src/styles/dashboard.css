@@ -69,8 +69,8 @@
 
 .range-dropdown:focus {
   outline: none;
-  border-color: #4f46e5;
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(31, 107, 82, 0.1);
 }
 
 /* ===== SUMMARY GRID ===== */
@@ -102,8 +102,6 @@
   font-size: 12px;
   font-weight: 600;
   color: #64748b;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
 }
 
 .summary-card strong {
@@ -115,7 +113,7 @@
 
 /* Card Variations */
 .summary-card.balance {
-  background: linear-gradient(135deg, #4f46e5, #4338ca);
+  background: var(--primary);
   border: none;
 }
 
@@ -445,7 +443,7 @@
 
 /* ===== PROJECTED CARD ===== */
 .summary-card.projected {
-  background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+  background: var(--primary-strong);
   border: none;
   position: relative;
   overflow: hidden;
@@ -459,8 +457,6 @@
   color: rgba(255, 255, 255, 0.8);
   font-size: clamp(12px, 1.8vw, 14px);
   font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
   z-index: 2;
 }
 
@@ -473,27 +469,7 @@
   word-break: break-word;
 }
 
-.summary-card.projected::before {
-  content: "";
-  position: absolute;
-  top: -20px;
-  right: -20px;
-  width: 100px;
-  height: 100px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 50%;
-  z-index: 1;
-}
 
-.summary-card.projected::after {
-  content: "🔮";
-  position: absolute;
-  bottom: 10px;
-  right: 15px;
-  font-size: 40px;
-  opacity: 0.2;
-  z-index: 1;
-}
 
 /* ===== HEADER ACTION BUTTON ===== */
 .header-actions {
@@ -636,7 +612,6 @@
 
   .summary-card span {
     font-size: 12px;
-    letter-spacing: 0px;
   }
 
   .card-row {
@@ -644,3 +619,10 @@
     align-items: flex-start;
   }
 }
+.chart-empty { text-align: center; color: var(--muted); padding: 48px 16px; margin: 0; }
+.donut-total-label { fill: var(--muted); font-size: 12px; }
+.donut-total-value { fill: var(--text); font-size: 18px; font-weight: 600; font-family: var(--font-display); }
+.summary-card.projected { background: var(--card); border: 1px solid var(--border); }
+.summary-card.projected span { color: var(--muted); }
+.summary-card.projected strong { color: var(--text); }
+.projected-note { display: block; margin-top: 6px; font-size: 0.8rem; color: var(--muted); }

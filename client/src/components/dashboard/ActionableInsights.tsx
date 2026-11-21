@@ -2,11 +2,19 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import "../../styles/insights.css";
 import type { Insight } from "../../types/models";
+import { Lightbulb, RefreshCw, X, AlertTriangle, TrendingUp, OctagonAlert, Info } from "lucide-react";
 
 interface ActionableInsightsProps {
   insights?: Insight[];
   onRefresh?: () => void;
   loading?: boolean;
+}
+
+const INSIGHT_ICONS = { warning: AlertTriangle, success: TrendingUp, danger: OctagonAlert, info: Info } as const;
+
+function InsightIcon({ type }: { type?: string }) {
+  const Icon = INSIGHT_ICONS[(type as keyof typeof INSIGHT_ICONS) ?? "info"] ?? Info;
+  return <Icon size={14} aria-hidden="true" />;
 }
 
 export default function ActionableInsights({ insights = [], onRefresh, loading = false }: ActionableInsightsProps) {
@@ -23,7 +31,7 @@ export default function ActionableInsights({ insights = [], onRefresh, loading =
       <div className="insights-container empty-state">
         <div className="insights-header">
           <div className="insights-title-row">
-            <span className="insights-glow-icon">💡</span>
+            <span className="insights-glow-icon"><Lightbulb size={20} aria-hidden="true" /></span>
             <h2>Actionable Financial Intelligence</h2>
           </div>
           {onRefresh && (
@@ -34,12 +42,12 @@ export default function ActionableInsights({ insights = [], onRefresh, loading =
               disabled={loading}
               title="Refresh insights"
             >
-              🔄
+              <RefreshCw size={14} aria-hidden="true" />
             </button>
           )}
         </div>
         <div className="insights-empty-card">
-          <div className="empty-sparkle">✨</div>
+          <div className="empty-sparkle"><Lightbulb size={28} strokeWidth={1.5} aria-hidden="true" /></div>
           <p>
             Your financial intelligence engine is active! As you log expenses and compare this
             month with previous months, proactive alerts and spending trend warnings will appear here.
@@ -53,7 +61,7 @@ export default function ActionableInsights({ insights = [], onRefresh, loading =
     <div className="insights-container">
       <div className="insights-header">
         <div className="insights-title-row">
-          <span className="insights-glow-icon">💡</span>
+          <span className="insights-glow-icon"><Lightbulb size={20} aria-hidden="true" /></span>
           <div>
             <h2>Actionable Financial Insights</h2>
             <span className="insights-subtitle">
@@ -74,7 +82,7 @@ export default function ActionableInsights({ insights = [], onRefresh, loading =
               title="Refresh insights"
               aria-label="Refresh financial insights"
             >
-              🔄
+              <RefreshCw size={14} aria-hidden="true" />
             </button>
           )}
         </div>
@@ -85,7 +93,7 @@ export default function ActionableInsights({ insights = [], onRefresh, loading =
           <div key={insight.id} className={`insight-card ${insight.type || "info"}`}>
             <div className="insight-card-top">
               <div className="insight-badge-row">
-                <span className="insight-type-icon">{insight.icon}</span>
+                <span className="insight-type-icon"><InsightIcon type={insight.type} /></span>
                 <span className="insight-category-tag">{insight.category}</span>
                 {insight.badge && (
                   <span className={`insight-delta-badge ${insight.type}`}>
@@ -100,7 +108,7 @@ export default function ActionableInsights({ insights = [], onRefresh, loading =
                 title="Dismiss"
                 aria-label="Dismiss insight"
               >
-                ✕
+                <X size={14} aria-hidden="true" />
               </button>
             </div>
 

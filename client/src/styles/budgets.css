@@ -43,7 +43,7 @@
   font-size: 14px;
   cursor: pointer;
   transition: all 0.2s;
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
+  box-shadow: 0 4px 12px rgba(31, 107, 82, 0.25);
   white-space: nowrap;
 }
 
@@ -251,8 +251,8 @@
 }
 
 .btn-set-inline {
-  background: rgba(99, 102, 241, 0.1);
-  border: 1px solid rgba(99, 102, 241, 0.2);
+  background: rgba(31, 107, 82, 0.1);
+  border: 1px solid rgba(31, 107, 82, 0.2);
   color: var(--primary);
   font-size: 12px;
   font-weight: 700;
@@ -289,15 +289,15 @@
 }
 
 .progress-fill.success {
-  background: linear-gradient(90deg, #22c55e, #16a34a);
+  background: #22c55e;
 }
 
 .progress-fill.warning {
-  background: linear-gradient(90deg, #f59e0b, #d97706);
+  background: #f59e0b;
 }
 
 .progress-fill.danger {
-  background: linear-gradient(90deg, #ef4444, #dc2626);
+  background: #ef4444;
 }
 
 .progress-label {

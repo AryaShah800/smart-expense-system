@@ -5,6 +5,7 @@ import toast from "react-hot-toast";
 import "../../styles/Modal.css";
 import { getCurrencySymbol } from "../../utils/currencyFormatter";
 import type { MemberSummary } from "../../types/models";
+import { X } from "lucide-react";
 
 interface SettleUpModalProps {
   groupId: string;
@@ -70,7 +71,7 @@ function SettleUpModal({ groupId, groupMembers, onClose, onSettled }: SettleUpMo
       <div className="modal">
         <div className="modal-header">
           <h3>Record Payment</h3>
-          <button className="btn-close" onClick={onClose}>✕</button>
+          <button className="btn-close" onClick={onClose}><X size={18} aria-hidden="true" /></button>
         </div>
 
         <p className="modal-desc">

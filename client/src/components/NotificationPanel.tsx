@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import type { Notification } from "../types/models";
+import { X } from "lucide-react";
 
 interface NotificationPanelProps {
   isOpen: boolean;
@@ -42,7 +43,7 @@ export default function NotificationPanel({ isOpen, onClose, notifications }: No
             className="notification-panel-close"
             aria-label="Close"
           >
-            ✕
+            <X size={16} aria-hidden="true" />
           </button>
         </div>
         <div className="notification-panel-list">

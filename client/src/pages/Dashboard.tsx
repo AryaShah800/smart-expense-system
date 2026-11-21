@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import formatCurrency from "../utils/currencyFormatter";
-import { getCategoryIcon } from "../utils/categoryIcons";
+import CategoryIcon from "../components/CategoryIcon";
 import { populated } from "../types/models";
 import { useIsDesktop } from "../hooks/useMediaQuery";
 import { useTransactions, useBudgetStatus, useInsights } from "../hooks/queries";
@@ -20,6 +20,15 @@ import ActionableInsights from "../components/dashboard/ActionableInsights";
 
 import "../styles/dashboard.css";
 import "../styles/responsive.css";
+import { Download, BarChart3, Repeat } from "lucide-react";
+
+/** Time-of-day greeting using the first name, no emoji. */
+function greeting(username?: string): string {
+  const hour = new Date().getHours();
+  const part = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
+  const first = username?.trim().split(" ")[0];
+  return first ? `${part}, ${first}` : part;
+}
 
 function Dashboard() {
   const [range, setRange] = useState("90d");
@@ -143,13 +152,13 @@ function Dashboard() {
         {/* HEADER */}
         <div className="dashboard-header-row">
           <div className="welcome-section">
-            <h1>Hello, {user?.username?.split(" ")[0] || "User"}! 👋</h1>
-            <p className="dashboard-subtitle">Financial Overview & Projections</p>
+            <h1>{greeting(user?.username)}</h1>
+            <p className="dashboard-subtitle">Where your money went, and where this month is heading.</p>
           </div>
 
           <div className="header-actions">
             <button onClick={handleExport} className="btn-export">
-              <span>📥</span> Export Report
+              <Download size={16} aria-hidden="true" /> Export report
             </button>
 
             <div className="filter-wrapper">
@@ -181,10 +190,11 @@ function Dashboard() {
           />
           {/* FIX: Replaced hardcoded INR format with formatCurrency utility */}
           <div className="summary-card projected">
-            <span>Projected (Month End)</span>
+            <span>Projected month-end spend</span>
             <strong>
               {formatCurrency(projection, user?.currency)}
             </strong>
+            <small className="projected-note">Estimate from your pace so far this month</small>
           </div>
         </div>
 
@@ -197,7 +207,7 @@ function Dashboard() {
 
         {transactions.length === 0 ? (
           <div className="empty-dashboard">
-            <div className="empty-icon">📊</div>
+            <div className="empty-icon"><BarChart3 size={32} strokeWidth={1.5} aria-hidden="true" /></div>
             <h3>No transactions yet</h3>
             <p>Start tracking your expenses to see insights here.</p>
             <Link to="/add-transaction" className="cta-button">
@@ -239,7 +249,7 @@ function Dashboard() {
                     .map((t) => (
                       <div key={t._id} className="expenses-card mini">
                         <div className={`card-icon ${t.type}`}>
-                          {getCategoryIcon(t.categoryId, t.type)}
+                          <CategoryIcon category={t.categoryId} type={t.type} />
                         </div>
 
                         <div className="card-content">
@@ -290,14 +300,14 @@ function Dashboard() {
             <option value="all">All time</option>
           </select>
           <button type="button" onClick={handleExport} className="btn-export" style={{ padding: "0.5rem 1rem", fontSize: "0.875rem" }}>
-            📥 Export
+            <Download size={14} aria-hidden="true" /> Export
           </button>
         </div>
 
         <Notifications />
 
         <div className="summary-mobile-balance">
-          <span>Total Balance</span>
+          <span>Total balance</span>
           <strong>{formatCurrency(summary.balance, user?.currency)}</strong>
         </div>
 
@@ -314,7 +324,7 @@ function Dashboard() {
 
         {/* FIX: Ensure formatCurrency receives user.currency explicitly to prevent default mismatches */}
         <div className="projection-mobile-card">
-          <span>Projected (Month End)</span>
+          <span>Projected month-end spend</span>
           <strong>{formatCurrency(projection, user?.currency)}</strong>
         </div>
 
@@ -326,7 +336,7 @@ function Dashboard() {
             <span>+</span> Add Income
           </Link>
           <Link to="/recurring" className="quick-action-pill recurring">
-            <span>🔁</span> Recurring
+            <Repeat size={14} aria-hidden="true" /> Recurring
           </Link>
         </div>
 
@@ -339,7 +349,7 @@ function Dashboard() {
 
         {transactions.length === 0 ? (
           <div className="summary-mobile-card" style={{ textAlign: "center", padding: "1.5rem" }}>
-            <div style={{ fontSize: "1.5rem", marginBottom: "0.5rem" }}>📊</div>
+            <div style={{ marginBottom: "0.5rem" }}><BarChart3 size={26} strokeWidth={1.5} aria-hidden="true" /></div>
             <h3 style={{ margin: "0 0 0.25rem 0", fontSize: "1rem", color: "var(--text)" }}>No transactions yet</h3>
             <p style={{ fontSize: "0.875rem", color: "var(--muted)", marginBottom: "1rem" }}>Start tracking to see insights.</p>
             <Link to="/add-transaction" className="cta-button" style={{ display: "inline-block", padding: "0.5rem 1rem", borderRadius: "0.75rem", background: "var(--primary)", color: "white", textDecoration: "none", fontSize: "0.875rem" }}>
@@ -369,7 +379,7 @@ function Dashboard() {
               {recentTransactions
                 .map((t) => (
                   <div key={t._id} className="recent-item-mobile">
-                    <div className={`icon ${t.type}`}>{getCategoryIcon(t.categoryId, t.type)}</div>
+                    <div className={`icon ${t.type}`}><CategoryIcon category={t.categoryId} type={t.type} /></div>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontWeight: 700, fontSize: "0.9rem", color: "var(--text)" }}>{populated(t.categoryId)?.name || "Other"}</div>
                       <div style={{ fontSize: "0.75rem", color: "var(--muted)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t.description || "No description"}</div>

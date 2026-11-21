@@ -32,7 +32,7 @@
 .logo {
   width: 40px;
   height: 40px;
-  background: linear-gradient(135deg, var(--primary), #4f46e5); /* Theme aware */
+  background: var(--primary); /* Theme aware */
   border-radius: 12px;
   display: flex;
   align-items: center;
@@ -79,11 +79,11 @@
 }
 
 .nav-links a:hover {
-  color: var(--primary); /* Changed from #4f46e5 */
+  color: var(--primary); /* Changed from var(--primary) */
 }
 
 .nav-links a.active {
-  color: var(--primary); /* Changed from #4f46e5 */
+  color: var(--primary); /* Changed from var(--primary) */
   font-weight: 600;
 }
 
@@ -94,7 +94,7 @@
   bottom: -14px;
   width: 100%;
   height: 3px;
-  background: var(--primary); /* Changed from #4f46e5 */
+  background: var(--primary); /* Changed from var(--primary) */
   border-radius: 3px;
 }
 
@@ -150,7 +150,7 @@
 
 .notification-bell:hover {
   background: var(--bg); /* Changed from #f1f5f9 */
-  color: var(--primary); /* Changed from #4f46e5 */
+  color: var(--primary); /* Changed from var(--primary) */
 }
 
 .notification-badge {
@@ -199,8 +199,6 @@
   color: var(--text); /* Changed from #0f172a */
   background: var(--bg); /* Theme aware */
   border-bottom: 1px solid var(--border);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
 }
 
 .dropdown-list {
@@ -235,7 +233,7 @@
 }
 
 .dropdown-item.unread {
-  background: rgba(99, 102, 241, 0.05); /* Theme aware unread bg */
+  background: rgba(31, 107, 82, 0.05); /* Theme aware unread bg */
   border-left: 3px solid var(--primary);
 }
 
@@ -362,3 +360,5 @@
 @media (max-width: 359px) {
   .nav-auth-link.signup { padding: 10px 14px; min-height: var(--touch-min, 44px); display: inline-flex; align-items: center; }
 }
+
+.nav-auth-link { color: var(--text); display: inline-flex; align-items: center; gap: 6px; text-decoration: none; font-weight: 500; }

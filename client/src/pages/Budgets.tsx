@@ -7,7 +7,7 @@ import "../styles/budgets.css";
 import "../styles/responsive.css";
 import { useAuth } from "../hooks/useAuth";
 import formatCurrency, { getCurrencySymbol } from "../utils/currencyFormatter";
-import { getCategoryIcon } from "../utils/categoryIcons";
+import CategoryIcon from "../components/CategoryIcon";
 import Modal from "../components/Modal";
 import DataErrorState from "../components/DataErrorState";
 
@@ -124,7 +124,7 @@ function Budgets() {
                 <option value="">Select Category</option>
                 {categories.map((cat) => (
                   <option key={cat._id} value={cat._id}>
-                    {getCategoryIcon(cat, "expense")} {cat.name}
+                    {cat.name}
                   </option>
                 ))}
               </select>
@@ -159,7 +159,7 @@ function Budgets() {
           <div className="budget-list">
             {categories.map((cat) => {
               const { limit, spent, percent, isExceeded } = getBudgetDetails(cat._id);
-              const icon = getCategoryIcon(cat, "expense");
+              const icon = <CategoryIcon category={cat} type="expense" />;
 
               return (
                 <div key={cat._id} className="budget-row-card">
@@ -260,7 +260,7 @@ function Budgets() {
               <option value="" disabled>Select Category</option>
               {categories.map((cat) => (
                 <option key={cat._id} value={cat._id}>
-                  {getCategoryIcon(cat, "expense")} {cat.name}
+                  {cat.name}
                 </option>
               ))}
             </select>

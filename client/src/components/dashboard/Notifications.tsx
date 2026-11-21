@@ -24,7 +24,7 @@ function Notifications() {
   return (
     <div style={{ marginBottom: "20px", padding: "15px", background: "#fff", border: "1px solid #e2e8f0", borderRadius: "8px", boxShadow: "0 2px 4px rgba(0,0,0,0.05)" }}>
       <h3 style={{ margin: "0 0 10px 0", fontSize: "1rem", color: "#334155", display: "flex", alignItems: "center", gap: "8px" }}>
-        🔔 Pending Invitations
+        Pending invitations
         <span style={{ background: "#ef4444", color: "white", fontSize: "0.75rem", padding: "2px 6px", borderRadius: "10px" }}>
           {invites.length}
         </span>

@@ -123,7 +123,7 @@
   background: var(--bg); /* Theme aware */
 }
 .notification-panel-item.unread {
-  background: rgba(99, 102, 241, 0.05); /* Theme aware */
+  background: rgba(31, 107, 82, 0.05); /* Theme aware */
   border-color: var(--primary); /* Theme aware */
 }
 .notification-panel-message {
@@ -194,7 +194,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 6px rgba(99, 102, 241, 0.35);
+  box-shadow: 0 2px 6px rgba(31, 107, 82, 0.35);
 }
 
 .mobile-header-title {
@@ -303,7 +303,7 @@
 
 .bottom-nav-item.active {
   color: var(--primary);
-  background: rgba(99, 102, 241, 0.08);
+  background: rgba(31, 107, 82, 0.08);
 }
 
 .bottom-nav-icon {
@@ -326,9 +326,9 @@
   height: 3.5rem;
   margin-top: -1.25rem;
   border-radius: 50%;
-  background: linear-gradient(135deg, #4f46e5, #4f46e5);
+  background: var(--primary);
   color: white;
-  box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4);
+  box-shadow: 0 6px 16px rgba(31, 107, 82, 0.4);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -336,7 +336,7 @@
 }
 
 .bottom-nav-center.active-center {
-  background: linear-gradient(135deg, #4f46e5, #4338ca);
+  background: var(--primary);
   transform: scale(1.05);
 }
 
@@ -366,17 +366,15 @@
   gap: 0.5rem;
 }
 .dashboard-mobile .summary-mobile-balance {
-  background: linear-gradient(135deg, #4f46e5, #4338ca);
+  background: var(--primary);
   border-radius: 0.875rem;
   padding: 1.25rem;
-  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+  box-shadow: 0 4px 12px rgba(31, 107, 82, 0.3);
 }
 .dashboard-mobile .summary-mobile-balance span {
   font-size: max(12px, 0.75rem);
   font-weight: 600;
   color: rgba(255, 255, 255, 0.8); /* Ensures visibility */
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
 }
 .dashboard-mobile .summary-mobile-balance strong {
   font-size: 1.75rem;
@@ -412,7 +410,7 @@
 .dashboard-mobile .summary-mobile-card.expense strong { color: var(--danger); }
 
 .dashboard-mobile .projection-mobile-card {
-  background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+  background: var(--primary-strong);
   border: none;
   border-radius: 0.75rem;
   padding: 1rem 1.25rem;
@@ -425,8 +423,6 @@
   font-size: max(12px, 0.75rem);
   color: rgba(255,255,255,0.8);
   font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
 }
 .dashboard-mobile .projection-mobile-card strong {
   font-size: 1.25rem;
@@ -469,9 +465,9 @@
 }
 
 .quick-action-pill.recurring {
-  background: rgba(99, 102, 241, 0.1);
+  background: rgba(31, 107, 82, 0.1);
   color: var(--primary);
-  border: 1px solid rgba(99, 102, 241, 0.25);
+  border: 1px solid rgba(31, 107, 82, 0.25);
 }
 
 .quick-action-pill:active {

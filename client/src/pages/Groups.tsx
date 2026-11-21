@@ -6,6 +6,7 @@ import CreateGroupModal from "../components/groups/CreateGroupModal";
 import JoinGroupModal from "../components/groups/JoinGroupModal";
 import DataErrorState from "../components/DataErrorState";
 import "../styles/groups.css";
+import { Users, Plane, Home, Heart, User, ArrowRight } from "lucide-react";
 
 function Groups() {
   const groupsQuery = useGroups();
@@ -69,7 +70,7 @@ function Groups() {
           />
         ) : groups.length === 0 ? (
           <div className="groups-empty">
-            <div className="empty-icon">👥</div>
+            <div className="empty-icon"><Users size={32} strokeWidth={1.5} aria-hidden="true" /></div>
             <h3>No groups yet</h3>
             <p>Create a group with friends or join one via code!</p>
             <button className="btn-primary mt-4" onClick={() => setShowCreateModal(true)}>
@@ -86,7 +87,7 @@ function Groups() {
               >
                 <div className="group-card-header">
                   <div className={`group-icon ${group.type.toLowerCase()}`}>
-                    {group.type === "Trip" ? "✈️" : group.type === "Home" ? "🏠" : group.type === "Couple" ? "❤️" : "👥"}
+                    {group.type === "Trip" ? <Plane size={20} aria-hidden="true" /> : group.type === "Home" ? <Home size={20} aria-hidden="true" /> : group.type === "Couple" ? <Heart size={20} aria-hidden="true" /> : <Users size={20} aria-hidden="true" />}
                   </div>
                   <span className="group-badge">{group.type}</span>
                 </div>
@@ -95,9 +96,9 @@ function Groups() {
 
                 <div className="group-card-footer">
                   <span className="member-count">
-                    👤 {group.members.length} member{group.members.length !== 1 && 's'}
+                    <User size={13} aria-hidden="true" /> {group.members.length} member{group.members.length !== 1 && 's'}
                   </span>
-                  <div className="arrow-btn">➜</div>
+                  <div className="arrow-btn"><ArrowRight size={16} aria-hidden="true" /></div>
                 </div>
               </div>
             ))}

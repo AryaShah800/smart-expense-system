@@ -5,10 +5,11 @@ import { useCategories, useInvalidateMoneyData, useRecurring } from "../hooks/qu
 import { loadErrorText, toLoadError } from "../store/loadError";
 import { useAuth } from "../hooks/useAuth";
 import formatCurrency from "../utils/currencyFormatter";
-import { getCategoryIcon } from "../utils/categoryIcons";
+import CategoryIcon from "../components/CategoryIcon";
 import toast from "react-hot-toast";
 import DataErrorState from "../components/DataErrorState";
 import "../styles/recurring.css";
+import { Repeat, CalendarClock, Trash2, X } from "lucide-react";
 
 
 interface RecurringForm {
@@ -210,7 +211,7 @@ export default function Recurring() {
       {/* HEADER */}
       <div className="recurring-header">
         <div>
-          <h2>🔁 Recurring Transactions</h2>
+          <h2>Recurring transactions</h2>
           <p className="recurring-subtitle">
             Manage your automated bills, subscriptions, salary, and commitments
           </p>
@@ -224,7 +225,7 @@ export default function Recurring() {
             disabled={syncing}
             title="Scan & execute due recurring items"
           >
-            {syncing ? "Checking..." : "⚡ Sync Due"}
+            {syncing ? "Checking..." : "Sync due"}
           </button>
           <button
             type="button"
@@ -293,7 +294,7 @@ export default function Recurring() {
       {/* RECURRING LIST */}
       {filteredItems.length === 0 ? (
         <div className="recurring-empty">
-          <div className="empty-icon">🔁</div>
+          <div className="empty-icon"><Repeat size={32} strokeWidth={1.5} aria-hidden="true" /></div>
           <h3>No recurring items found</h3>
           <p>
             Track your subscriptions (Netflix, Spotify, Gym) and recurring bills (Rent, Utilities, SIP)
@@ -311,7 +312,7 @@ export default function Recurring() {
         <div className="recurring-list-grid">
           {filteredItems.map((item) => {
             const dueInfo = getDueBadge(item.nextDueDate);
-            const icon = getCategoryIcon(item.categoryId, item.type);
+            const icon = <CategoryIcon category={item.categoryId} type={item.type} />;
 
             return (
               <div
@@ -343,11 +344,11 @@ export default function Recurring() {
 
                 <div className="rec-card-middle">
                   <div className="rec-frequency-badge">
-                    <span>🔁 {item.frequency}</span>
+                    <span><Repeat size={13} aria-hidden="true" /> {item.frequency}</span>
                   </div>
                   {dueInfo && item.status === "active" && (
                     <span className={`rec-due-badge ${dueInfo.class}`}>
-                      📅 {dueInfo.text}
+                      <CalendarClock size={13} aria-hidden="true" /> {dueInfo.text}
                     </span>
                   )}
                 </div>
@@ -368,7 +369,7 @@ export default function Recurring() {
                     title="Remove recurring schedule"
                     aria-label="Delete schedule"
                   >
-                    🗑️
+                    <Trash2 size={16} aria-hidden="true" />
                   </button>
                 </div>
               </div>
@@ -388,7 +389,7 @@ export default function Recurring() {
                 className="btn-close"
                 onClick={() => setIsModalOpen(false)}
               >
-                ✕
+                <X size={14} aria-hidden="true" />
               </button>
             </div>
 

@@ -22,15 +22,15 @@ function IncomeExpenseBar({ transactions }: { transactions: Transaction[] }) {
   });
 
   const chartData = [
-    { name: "Income", amount: income, color: "#22c55e" },
-    { name: "Expense", amount: expense, color: "#ef4444" },
+    { name: "Income", amount: income, color: "#1e6b52" },
+    { name: "Expense", amount: expense, color: "#a24b3c" },
   ];
 
   const { user } = useAuth();
 
   return (
     <>
-      <h3 style={{ marginBottom: "20px", color: "#333" }}>Income vs Expense</h3>
+      
       <ResponsiveContainer width="100%" height={300}>
         <BarChart data={chartData} barSize={60}>
           <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.3} />

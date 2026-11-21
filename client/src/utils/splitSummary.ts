@@ -18,5 +18,5 @@ export function summarizeBalance(
   if (mine.balance < -SETTLED_EPSILON) return `You owe ${formatCurrency(Math.abs(mine.balance), currency)}`;
   if (mine.balance > SETTLED_EPSILON) return `You are owed ${formatCurrency(mine.balance, currency)}`;
 
-  return splits.settlements?.length ? "You are all settled up" : "All settled up ✨";
+  return splits.settlements?.length ? "You are all settled up" : "All settled up";
 }

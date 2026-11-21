@@ -8,9 +8,9 @@ import type { Category, Frequency, TransactionType } from "../types/models";
 import Modal from "../components/Modal";
 import { useAuth } from "../hooks/useAuth";
 import { getCurrencySymbol } from "../utils/currencyFormatter";
-import { getCategoryIcon } from "../utils/categoryIcons";
 import "../styles/addTransaction.css";
 import "../styles/responsive.css";
+import { TrendingDown, TrendingUp } from "lucide-react";
 
 function AddTransaction() {
   const { user } = useAuth();
@@ -103,14 +103,14 @@ function AddTransaction() {
             onClick={() => setType("expense")}
             type="button"
           >
-            📉 Expense
+            <TrendingDown size={16} aria-hidden="true" /> Expense
           </button>
           <button
             className={`toggle-btn ${type === "income" ? "active income" : ""}`}
             onClick={() => setType("income")}
             type="button"
           >
-            📈 Income
+            <TrendingUp size={16} aria-hidden="true" /> Income
           </button>
         </div>
 
@@ -190,7 +190,7 @@ function AddTransaction() {
                 <option value="" disabled>Select Category</option>
                 {categories.map((cat) => (
                   <option key={cat._id} value={cat._id}>
-                    {getCategoryIcon(cat, type)} {cat.name}
+                    {cat.name}
                   </option>
                 ))}
               </select>
@@ -232,7 +232,7 @@ function AddTransaction() {
                 onChange={(e) => setIsRecurring(e.target.checked)}
               />
               <span className="recurring-toggle-text">
-                <strong>🔁 Repeat this transaction</strong>
+                <strong>Repeat this transaction</strong>
                 <small>Automatically track this {type} on a recurring schedule</small>
               </span>
             </label>
@@ -309,7 +309,7 @@ function AddTransaction() {
                     const res = await api.post<Category>("/categories", {
                       name: newCategoryName.trim(),
                       type,
-                      icon: getCategoryIcon(newCategoryName, type),
+                      icon: "",
                     });
                     // Show the new category at once, then let the server list replace it.
                     queryClient.setQueryData<Category[]>(queryKeys.categories, (prev) => [...(prev ?? []), res.data]);

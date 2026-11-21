@@ -85,7 +85,7 @@
 .segment-tab.active {
   background: var(--primary);
   color: white;
-  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+  box-shadow: 0 2px 8px rgba(31, 107, 82, 0.3);
 }
 
 .segment-tab.active.expense {
@@ -183,8 +183,6 @@
   font-size: 13px;
   font-weight: 700;
   color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
 }
 
 .date-group-total {

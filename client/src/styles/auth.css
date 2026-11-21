@@ -22,7 +22,7 @@
 .brand-logo {
   width: 56px;
   height: 56px;
-  background: linear-gradient(135deg, var(--primary), #4f46e5);
+  background: var(--primary);
   color: white;
   border-radius: 16px;
   display: flex;

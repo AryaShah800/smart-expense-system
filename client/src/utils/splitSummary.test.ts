@@ -33,8 +33,8 @@ describe("summarizeBalance", () => {
   });
 
   it("treats balances within a cent of zero as settled", () => {
-    expect(summarizeBalance(splits(0.01), "me")).toBe("All settled up ✨");
-    expect(summarizeBalance(splits(-0.005), "me")).toBe("All settled up ✨");
+    expect(summarizeBalance(splits(0.01), "me")).toBe("All settled up");
+    expect(summarizeBalance(splits(-0.005), "me")).toBe("All settled up");
   });
 
   it("uses a different label when settled but other people still owe each other", () => {

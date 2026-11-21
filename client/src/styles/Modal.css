@@ -101,8 +101,6 @@
   font-weight: 600;
   color: var(--muted);
   margin-bottom: 8px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
 }
 
 /* INPUTS */
@@ -121,7 +119,7 @@
 .modal-input:focus, .modal-select:focus {
   outline: none;
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+  box-shadow: 0 0 0 3px rgba(31, 107, 82, 0.1);
 }
 
 .modal-select {
@@ -234,7 +232,7 @@
 }
 
 .member-row:hover { background: var(--bg); }
-.member-row.selected { background: rgba(99, 102, 241, 0.1); border: 1px solid var(--primary); }
+.member-row.selected { background: rgba(31, 107, 82, 0.1); border: 1px solid var(--primary); }
 
 .member-name { color: var(--text); font-weight: 600; }
 .unit-label { color: var(--muted); margin-left: 4px; }
@@ -293,7 +291,7 @@
   font-weight: 700;
   cursor: pointer;
   transition: background-color 0.15s ease, box-shadow 0.15s ease;
-  box-shadow: 0 6px 18px rgba(99,102,241,0.12);
+  box-shadow: 0 6px 18px rgba(31, 107, 82,0.12);
 }
 .primary-submit-btn:hover { background-color: color-mix(in srgb, var(--primary) 80%, black); }
 
@@ -317,7 +315,7 @@
 }
 
 .split-member-item.selected {
-  border-color: #4f46e5;
+  border-color: var(--primary);
   background-color: #f8faff;
 }
 
@@ -331,14 +329,13 @@
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background-color: #4f46e5;
+  background-color: var(--primary);
   color: white;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 600;
   font-size: 14px;
-  text-transform: uppercase;
   flex-shrink: 0;
 }
 
