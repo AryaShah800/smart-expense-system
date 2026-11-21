@@ -58,6 +58,17 @@ npm run dev                 # http://localhost:5173
 
 Sign-up sends an OTP email through Brevo, so `BREVO_API_KEY` and a verified sender are required to create accounts.
 
+## Demo mode
+
+Set these to let visitors try the app without signing up (off by default):
+
+| Where | Variable | Value |
+|---|---|---|
+| API (Render) | `DEMO_MODE` | `true` |
+| API (Render) | `DEMO_RESET_MINUTES` | optional, default `30` |
+
+When on, the login page shows **Try the demo** (the client asks `GET /api/users/demo-status`). `POST /api/users/demo-login` signs into a seeded sandbox user with six months of sample data, budgets, recurring items and two groups. Guards, each covered by `backend/tests/demo-mode.test.js`: off unless `DEMO_MODE=true`; demo accounts cannot use password login; the demo user cannot change email or password; no email is sent for demo addresses; data is rebuilt on login when older than `DEMO_RESET_MINUTES`; the endpoint is rate limited (10 per 15 minutes per IP).
+
 ## Tests
 
 ```bash

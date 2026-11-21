@@ -87,3 +87,6 @@
   border-radius: 10px;
   text-align: center;
 }
+.demo-box { margin-top: 1rem; text-align: center; }
+.demo-btn { background: transparent; color: inherit; border: 1px solid currentColor; }
+.demo-note { font-size: 0.8rem; opacity: 0.7; margin-top: 0.5rem; }

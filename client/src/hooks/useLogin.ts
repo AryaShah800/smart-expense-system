@@ -37,5 +37,22 @@ export default function useLogin() {
     [setAuthUser]
   );
 
-  return { submit, loading, error, setError };
+  const demo = useCallback(async (): Promise<AuthUser> => {
+    setError(null);
+    setLoading(true);
+    try {
+      const res = await api.post<AuthUser>("/users/demo-login");
+      setAuthUser(res.data);
+      return res.data;
+    } catch (err) {
+      const message = apiErrorMessage(err, "The demo is unavailable right now");
+      setError(message);
+      toast.error(message);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, [setAuthUser]);
+
+  return { submit, demo, loading, error, setError };
 }

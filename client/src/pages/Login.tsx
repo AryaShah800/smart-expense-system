@@ -1,8 +1,9 @@
-import { useState, useCallback, type ChangeEvent, type FormEvent } from "react";
+import { useState, useCallback, useEffect, type ChangeEvent, type FormEvent } from "react";
 import { Link, useNavigate, Navigate } from "react-router-dom";
 import Branding from "../components/Branding";
 import { useAppSelector, selectUser } from "../store/hooks";
 import useLogin from "../hooks/useLogin";
+import api from "../api/axios";
 import "../styles/auth.css";
 
 const SUBMIT_BUTTON_CLASSES = "submit-btn login-btn";
@@ -10,7 +11,26 @@ const SUBMIT_BUTTON_CLASSES = "submit-btn login-btn";
 function Login() {
   const navigate = useNavigate();
   const signedIn = useAppSelector(selectUser) !== null;
-  const { submit: submitLogin, loading, error, setError } = useLogin();
+  const { submit: submitLogin, demo, loading, error, setError } = useLogin();
+  const [demoEnabled, setDemoEnabled] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    api
+      .get<{ enabled: boolean }>("/users/demo-status")
+      .then((res) => { if (!cancelled) setDemoEnabled(res.data.enabled === true); })
+      .catch(() => { /* demo button simply stays hidden */ });
+    return () => { cancelled = true; };
+  }, []);
+
+  const openDemo = useCallback(async () => {
+    try {
+      await demo();
+      navigate("/dashboard");
+    } catch {
+      // error shown by the hook
+    }
+  }, [demo, navigate]);
 
   const [credentials, setCredentials] = useState({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
@@ -94,6 +114,15 @@ function Login() {
             {loading ? "Signing in..." : "Sign in"}
           </button>
         </form>
+
+        {demoEnabled && (
+          <div className="demo-box">
+            <button type="button" onClick={openDemo} disabled={loading} className="submit-btn demo-btn">
+              Try the demo
+            </button>
+            <p className="demo-note">Sample data, no sign-up or email needed. It resets regularly.</p>
+          </div>
+        )}
 
         <div className="auth-footer">
           Don’t have an account? <Link to="/signup">Create one</Link>
