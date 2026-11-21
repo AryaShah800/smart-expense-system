@@ -9,30 +9,12 @@ import {
 } from "recharts";
 import { useAuth } from "../../hooks/useAuth";
 import formatCurrency from "../../utils/currencyFormatter";
+import { buildCashFlowSeries } from "../../utils/cashFlowSeries";
 import type { Transaction } from "../../types/models";
 
 function CashFlowLine({ transactions }: { transactions: Transaction[] }) {
   const { user } = useAuth();
-  const sorted = [...transactions].sort(
-    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
-  );
-
-  let balance = 0;
-  const dateMap = new Map();
-  sorted.forEach((t) => {
-    balance += t.type === "income" ? t.amount : -t.amount;
-    const dateLabel = new Date(t.date).toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: sorted.length > 200 ? "2-digit" : undefined,
-    });
-    dateMap.set(dateLabel, balance);
-  });
-
-  const data = Array.from(dateMap.entries()).map(([date, bal]) => ({
-    date,
-    balance: bal,
-  }));
+  const data = buildCashFlowSeries(transactions);
 
   if (data.length < 2) {
     return (
