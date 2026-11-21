@@ -1,3 +1,4 @@
+import { budgetState } from "../utils/budgetState";
 import { useMemo, useState, type FormEvent } from "react";
 import { apiErrorMessage } from "../api/axios";
 import { populated } from "../types/models";
@@ -76,7 +77,7 @@ function Budgets() {
     const percent = limit > 0 ? Math.min(Math.round((spent / limit) * 100), 100) : 0;
     const isExceeded = limit > 0 && spent > limit;
 
-    return { limit, spent, percent, isExceeded };
+    return { limit, spent, percent, isExceeded, state: budgetState(spent, limit) };
   };
 
   const currencySymbol = getCurrencySymbol(user?.currency);
@@ -158,7 +159,7 @@ function Budgets() {
 
           <div className="budget-list">
             {categories.map((cat) => {
-              const { limit, spent, percent, isExceeded } = getBudgetDetails(cat._id);
+              const { limit, spent, percent, isExceeded, state } = getBudgetDetails(cat._id);
               const icon = <CategoryIcon category={cat} type="expense" />;
 
               return (
@@ -215,17 +216,17 @@ function Budgets() {
                       <div className="progress-bar">
                         <div
                           className={`progress-fill ${
-                            isExceeded ? "danger" : percent > 80 ? "warning" : "success"
+                            state === "over" ? "danger" : state === "warn" ? "warning" : "success"
                           }`}
                           style={{ width: `${percent}%` }}
                         ></div>
                       </div>
                       <div className="progress-label">
                         <span>{percent}% used</span>
-                        <span className={isExceeded ? "text-danger" : ""}>
+                        <span className={isExceeded ? "text-danger" : state === "warn" ? "text-warning" : ""}>
                           {isExceeded
-                            ? `Exceeded by ${formatCurrency(spent - limit, user?.currency)}`
-                            : `${formatCurrency(Math.max(0, limit - spent), user?.currency)} left`}
+                            ? `Over budget by ${formatCurrency(spent - limit, user?.currency)}`
+                            : `${state === "warn" ? "Nearing limit, " : ""}${formatCurrency(Math.max(0, limit - spent), user?.currency)} left`}
                         </span>
                       </div>
                     </div>

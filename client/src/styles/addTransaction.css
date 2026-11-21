@@ -86,10 +86,10 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 .toggle-btn.expense.active {
-  background: #ef4444;
+  background: var(--danger);
 }
 .toggle-btn.income.active {
-  background: #22c55e;
+  background: var(--primary);
 }
 
 /* Form */

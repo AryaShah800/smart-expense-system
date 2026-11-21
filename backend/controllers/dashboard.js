@@ -118,8 +118,8 @@ export const generateInsights = async (userId, stats) => {
       icon: "📈",
       category: topSurge.category,
       badge: `+${topSurge.pct}% vs last month`,
-      title: `${topSurge.category} Spending Surge`,
-      message: `You spent ${topSurge.pct}% more on ${topSurge.category.toLowerCase()} this month compared to last month.`,
+      title: `${topSurge.category} spending is up`,
+      message: `${topSurge.category} spending is ${topSurge.pct}% higher than last month: ₹${topSurge.current.toLocaleString()} against ₹${topSurge.last.toLocaleString()}.`,
       metric: `₹${topSurge.current.toLocaleString()} (was ₹${topSurge.last.toLocaleString()})`,
       actionText: "View Transactions",
       actionFilter: topSurge.category,
@@ -139,8 +139,8 @@ export const generateInsights = async (userId, stats) => {
       icon: "📉",
       category: topCut.category,
       badge: `${topCut.pct}% vs last month`,
-      title: `Great Discipline in ${topCut.category}`,
-      message: `You spent ${Math.abs(topCut.pct)}% less on ${topCut.category.toLowerCase()} this month compared to last month. Great job keeping expenses down!`,
+      title: `${topCut.category} spending is down`,
+      message: `${topCut.category} spending is ${Math.abs(topCut.pct)}% lower than last month: ₹${topCut.current.toLocaleString()} against ₹${topCut.last.toLocaleString()}.`,
       metric: `₹${topCut.current.toLocaleString()} (down from ₹${topCut.last.toLocaleString()})`,
       actionText: "View Category",
       actionFilter: topCut.category,
@@ -158,11 +158,11 @@ export const generateInsights = async (userId, stats) => {
         icon: overallPct > 0 ? "⚡" : "🌟",
         category: "Total Spending",
         badge: `${overallPct > 0 ? "+" : ""}${overallPct}% overall`,
-        title: overallPct > 0 ? "Higher Spending Pace" : "Lower Spending Pace",
+        title: overallPct > 0 ? "Spending is higher than last month" : "Spending is lower than last month",
         message:
           overallPct > 0
-            ? `Your overall expenses are ${overallPct}% higher than last month. Keep an eye on non-essential purchases.`
-            : `Your total spending is ${Math.abs(overallPct)}% lower than last month at this point. Excellent fiscal control!`,
+            ? `Total expenses are ${overallPct}% higher than last month.`
+            : `Total expenses are ${Math.abs(overallPct)}% lower than last month.`,
         metric: `₹${totalExpenseThisMonth.toLocaleString()} vs ₹${totalExpenseLastMonth.toLocaleString()} last month`,
       });
     }
@@ -180,8 +180,8 @@ export const generateInsights = async (userId, stats) => {
         icon: "🏷️",
         category: topCat[0],
         badge: `${topCatShare}% of total`,
-        title: "Major Outflow Driver",
-        message: `${topCat[0]} accounts for ${topCatShare}% of your total spending this month. Optimizing here will have the highest financial impact.`,
+        title: `${topCat[0]} is your largest expense`,
+        message: `${topCat[0]} makes up ${topCatShare}% of this month's spending.`,
         metric: `₹${topCat[1].total.toLocaleString()} spent`,
       });
     }
@@ -198,8 +198,8 @@ export const generateInsights = async (userId, stats) => {
         icon: "💰",
         category: "Savings Rate",
         badge: `${savingsRate}% saved`,
-        title: "Strong Savings Rate",
-        message: `You've saved ${savingsRate}% of your income this month, beating the recommended 20% financial milestone!`,
+        title: "Savings on track",
+        message: `You have kept ${savingsRate}% of this month's income, above the common 20% target.`,
         metric: `₹${savings.toLocaleString()} net surplus`,
       });
     } else if (savingsRate < 0) {
@@ -209,8 +209,8 @@ export const generateInsights = async (userId, stats) => {
         icon: "⚠️",
         category: "Cash Flow",
         badge: "Deficit",
-        title: "Negative Cash Flow Alert",
-        message: `Your expenses exceed your income by ₹${Math.abs(savings).toLocaleString()} this month. Consider curtailing discretionary categories.`,
+        title: "Spending exceeds income",
+        message: `Expenses are ₹${Math.abs(savings).toLocaleString()} more than income this month.`,
         metric: `-₹${Math.abs(savings).toLocaleString()} deficit`,
       });
     }
@@ -234,8 +234,8 @@ export const generateInsights = async (userId, stats) => {
           icon: "🚨",
           category: catName,
           badge: `${burnPct}% used`,
-          title: `${catName} Budget Exceeded`,
-          message: `You have exceeded your monthly ${catName} budget by ₹${(spent - budgetLimit).toLocaleString()}.`,
+          title: `${catName} budget exceeded`,
+          message: `${catName} is ₹${(spent - budgetLimit).toLocaleString()} over its monthly budget.`,
           metric: `₹${spent.toLocaleString()} / ₹${budgetLimit.toLocaleString()}`,
         });
       } else if (burnPct > monthProgressPct + 20 && burnPct >= 65) {
@@ -245,8 +245,8 @@ export const generateInsights = async (userId, stats) => {
           icon: "⚡",
           category: catName,
           badge: `${burnPct}% spent`,
-          title: `Rapid Burn: ${catName}`,
-          message: `You've used ${burnPct}% of your ${catName} budget, but only ${monthProgressPct}% of the month has elapsed.`,
+          title: `${catName} budget is running ahead`,
+          message: `${burnPct}% of the ${catName} budget is used, with ${monthProgressPct}% of the month gone.`,
           metric: `₹${(budgetLimit - spent).toLocaleString()} remaining`,
         });
       }
@@ -275,8 +275,8 @@ export const generateInsights = async (userId, stats) => {
         icon: "📅",
         category: "Recurring Bills",
         badge: `${upcomingRecurring.length} due soon`,
-        title: "Upcoming Scheduled Bills",
-        message: `You have ${upcomingRecurring.length} scheduled payment(s) (${itemNames}${andMore}) totaling ₹${totalUpcoming.toLocaleString()} due within the next 7 days.`,
+        title: "Bills due this week",
+        message: `${upcomingRecurring.length} recurring ${upcomingRecurring.length === 1 ? "payment is" : "payments are"} due in the next 7 days (${itemNames}${andMore}), ₹${totalUpcoming.toLocaleString()} in total.`,
         metric: `₹${totalUpcoming.toLocaleString()} upcoming`,
         actionText: "Manage Recurring",
         actionLink: "/recurring",

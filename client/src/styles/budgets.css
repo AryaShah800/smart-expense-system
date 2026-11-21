@@ -289,15 +289,15 @@
 }
 
 .progress-fill.success {
-  background: #22c55e;
+  background: var(--primary);
 }
 
 .progress-fill.warning {
-  background: #f59e0b;
+  background: var(--warning);
 }
 
 .progress-fill.danger {
-  background: #ef4444;
+  background: var(--danger);
 }
 
 .progress-label {
@@ -310,6 +310,11 @@
 
 .text-danger {
   color: var(--danger) !important;
+  font-weight: 600;
+}
+
+.text-warning {
+  color: var(--warning) !important;
   font-weight: 600;
 }
 

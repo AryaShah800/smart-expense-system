@@ -10,6 +10,7 @@
   --success: #15803d;
   --success-text: #166534; /* for text on tinted green backgrounds */
   --danger: #b91c1c;
+  --warning: #b7791f;
   --border: #e4e0d5;
 
   /* UI */
@@ -57,6 +58,7 @@
   --border: #2e343a;    /* Dark border color */
   --success: #4ade80;   /* lighter status colours keep AA contrast on dark cards */
   --danger: #f87171;
+  --warning: #e0a84a;
   --success-text: #4ade80;
   --shadow: 0 10px 25px rgba(0, 0, 0, 0.4); /* Stronger shadow */
 }

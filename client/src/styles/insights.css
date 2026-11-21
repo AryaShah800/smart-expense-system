@@ -29,7 +29,8 @@
 
 .insights-glow-icon {
   font-size: 1.4rem;
-  background: rgba(245, 158, 11, 0.15);
+  background: rgba(30, 107, 82, 0.1);
+  color: var(--primary);
   border-radius: 10px;
   padding: 4px 8px;
   display: inline-flex;
@@ -94,11 +95,39 @@
 /* Insight Cards Grid */
 .insights-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: 1fr;
   gap: clamp(12px, 2vw, 16px);
 }
 
+/* Two columns once there is room; an odd last card spans the row instead of dangling. */
+@media (min-width: 720px) {
+  .insights-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .insight-card:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
+}
+
+.insights-more-btn {
+  display: block;
+  margin: 14px auto 0;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--primary);
+  cursor: pointer;
+}
+
+.insights-more-btn:hover {
+  background: var(--bg);
+}
+
 .insight-card {
+  text-align: left;
   border-radius: 14px;
   padding: 14px 16px;
   display: flex;
@@ -111,35 +140,32 @@
   overflow: hidden;
 }
 
-.insight-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
-}
 
 /* Card Themes */
 .insight-card.warning {
-  border-left: 4px solid #f59e0b;
+  border-left: 4px solid var(--warning);
   background: rgba(245, 158, 11, 0.05);
 }
 
 .insight-card.danger {
-  border-left: 4px solid #ef4444;
+  border-left: 4px solid var(--danger);
   background: rgba(239, 68, 68, 0.06);
 }
 
 .insight-card.success {
-  border-left: 4px solid #10b981;
-  background: rgba(16, 185, 129, 0.05);
+  border-left: 4px solid var(--primary);
+  background: rgba(30, 107, 82, 0.05);
 }
 
 .insight-card.info {
-  border-left: 4px solid #3b82f6;
-  background: rgba(59, 130, 246, 0.05);
+  border-left: 4px solid var(--muted);
+  background: transparent;
 }
 
 /* Card Header */
 .insight-card-top {
   display: flex;
+  gap: 8px;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 8px;
@@ -180,13 +206,13 @@
 }
 
 .insight-delta-badge.success {
-  background: rgba(16, 185, 129, 0.15);
-  color: #047857;
+  background: rgba(30, 107, 82, 0.12);
+  color: var(--success-text);
 }
 
 .insight-delta-badge.info {
-  background: rgba(59, 130, 246, 0.15);
-  color: #1d4ed8;
+  background: var(--border);
+  color: var(--muted);
 }
 
 .insight-dismiss-btn {
@@ -229,7 +255,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-top: 1px dashed var(--border, #e2e8f0);
+  border-top: 1px solid var(--border, #e2e8f0);
   padding-top: 8px;
   margin-top: auto;
   gap: 8px;
@@ -278,39 +304,3 @@
   line-height: 1.4;
 }
 
-/* Dark mode adjustments */
-[data-theme="dark"] .insight-card {
-  background: #1e293b;
-}
-
-[data-theme="dark"] .insight-card.warning {
-  background: rgba(245, 158, 11, 0.1);
-}
-
-[data-theme="dark"] .insight-card.danger {
-  background: rgba(239, 68, 68, 0.1);
-}
-
-[data-theme="dark"] .insight-card.success {
-  background: rgba(16, 185, 129, 0.1);
-}
-
-[data-theme="dark"] .insight-card.info {
-  background: rgba(59, 130, 246, 0.1);
-}
-
-[data-theme="dark"] .insight-delta-badge.warning {
-  color: #fbbf24;
-}
-
-[data-theme="dark"] .insight-delta-badge.danger {
-  color: #f87171;
-}
-
-[data-theme="dark"] .insight-delta-badge.success {
-  color: #34d399;
-}
-
-[data-theme="dark"] .insight-delta-badge.info {
-  color: #60a5fa;
-}
