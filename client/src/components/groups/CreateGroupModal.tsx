@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from "react";
 import api from "../../api/axios";
 import "../../styles/Modal.css";
+import { X } from "lucide-react";
 
 interface CreateGroupModalProps {
   onClose: () => void;
@@ -34,7 +35,7 @@ function CreateGroupModal({ onClose, onCreated }: CreateGroupModalProps) {
         {/* Header */}
         <div className="modal-header">
           <h3>Create New Group</h3>
-          <button className="btn-close" onClick={onClose}>✕</button>
+          <button className="btn-close" onClick={onClose}><X size={18} aria-hidden="true" /></button>
         </div>
 
         <p className="modal-desc">
@@ -61,11 +62,11 @@ function CreateGroupModal({ onClose, onCreated }: CreateGroupModalProps) {
             value={type}
             onChange={(e) => setType(e.target.value)}
           >
-            <option value="Trip">✈️ Trip</option>
-            <option value="Home">🏠 Home</option>
-            <option value="Couple">❤️ Couple</option>
-            <option value="Event">🎉 Event</option>
-            <option value="Other">👥 Other</option>
+            <option value="Trip">Trip</option>
+            <option value="Home">Home</option>
+            <option value="Couple">Couple</option>
+            <option value="Event">Event</option>
+            <option value="Other">Other</option>
           </select>
 
           <div className="modal-actions">

@@ -4,6 +4,7 @@ import { useAuth } from "../hooks/useAuth";
 import NotificationPanel from "./NotificationPanel";
 import { useAppDispatch, useAppSelector, selectNotifications, selectUnreadCount } from "../store/hooks";
 import { markAllRead } from "../store/notificationsSlice";
+import { Bell, Settings } from "lucide-react";
 
 const routeTitles: Record<string, string> = {
   "/dashboard": "Dashboard",
@@ -69,7 +70,7 @@ export default function Header() {
                 className="mobile-header-icon-btn"
                 aria-label="Notifications"
               >
-                <span className="mobile-header-bell-icon">🔔</span>
+                <span className="mobile-header-bell-icon"><Bell size={18} aria-hidden="true" /></span>
                 {unreadCount > 0 && (
                   <span className="mobile-header-badge">
                     {unreadCount > 9 ? "9+" : unreadCount}
@@ -82,7 +83,7 @@ export default function Header() {
                 className={`mobile-header-icon-btn ${location.pathname === "/settings" ? "active" : ""}`}
                 aria-label="Settings"
               >
-                ⚙️
+                <Settings size={18} aria-hidden="true" />
               </Link>
             </>
           )}

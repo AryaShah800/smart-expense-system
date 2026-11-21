@@ -30,7 +30,7 @@ function IncomeExpenseBar({ transactions }: { transactions: Transaction[] }) {
 
   return (
     <>
-      <h3 style={{ marginBottom: "20px", color: "#333" }}>Income vs Expense</h3>
+      
       <ResponsiveContainer width="100%" height={300}>
         <BarChart data={chartData} barSize={60}>
           <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.3} />

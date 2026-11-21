@@ -11,6 +11,7 @@ import SettleUpModal from "../components/groups/SettleUpModal";
 import InviteMemberModal from "../components/groups/InviteMemberModal";
 import "../styles/GroupDetails.css";
 import formatCurrency from "../utils/currencyFormatter"; // 🔥 Removed getCurrencySymbol
+import { ClipboardList, HandCoins, Trash2 } from "lucide-react";
 
 function GroupDetails() {
   const { id = "" } = useParams();
@@ -104,7 +105,7 @@ function GroupDetails() {
               onClick={copyJoinCode}
               title="Copy Invite Code to share"
             >
-              <span>📋</span>
+              <ClipboardList size={16} aria-hidden="true" />
               {copySuccess || (group.joinCode ? `Code: ${group.joinCode}` : "Copy ID")}
             </button>
           </div>
@@ -134,7 +135,7 @@ function GroupDetails() {
           onClick={() => setShowSettleModal(true)}
         >
           {/* 🔥 Removed hardcoded currency symbol requirement */}
-          <span>💸</span> Settle Up
+          <HandCoins size={16} aria-hidden="true" /> Settle up
         </button>
       </div>
 
@@ -171,7 +172,7 @@ function GroupDetails() {
                       onClick={() => handleDeleteExpense(exp._id)}
                       title="Delete Expense"
                     >
-                      🗑️
+                      <Trash2 size={16} aria-hidden="true" />
                     </button>
                   )}
                 </div>

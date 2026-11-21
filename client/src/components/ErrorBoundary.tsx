@@ -1,5 +1,6 @@
 import { Component, type ErrorInfo, type ReactNode } from "react";
 import { reportError } from "../lib/sentry";
+import { AlertTriangle } from "lucide-react";
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -56,7 +57,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
             padding: "32px 24px",
             textAlign: "center"
           }}>
-            <div style={{ fontSize: "48px", marginBottom: "16px" }}>⚠️</div>
+            <div style={{ marginBottom: "16px" }}><AlertTriangle size={44} strokeWidth={1.5} aria-hidden="true" /></div>
             <h2 style={{ fontSize: "20px", fontWeight: "800", marginBottom: "8px" }}>
               Something went wrong
             </h2>
@@ -84,7 +85,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
                   cursor: "pointer"
                 }}
               >
-                🔄 Reload
+                Reload
               </button>
               <button
                 type="button"
@@ -101,7 +102,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
                   cursor: "pointer"
                 }}
               >
-                🏠 Dashboard
+                Dashboard
               </button>
             </div>
           </div>

@@ -1,11 +1,12 @@
 import { Link, useLocation } from "react-router-dom";
+import { Home, CreditCard, Plus, PieChart, Users } from "lucide-react";
 
 const navItems = [
-  { path: "/dashboard", label: "Home", icon: "🏠" },
-  { path: "/expenses", label: "Expenses", icon: "💳" },
-  { path: "/add-transaction", label: "Add", icon: "+", isCenter: true },
-  { path: "/budgets", label: "Budgets", icon: "📊" },
-  { path: "/groups", label: "Groups", icon: "👥" },
+  { path: "/dashboard", label: "Home", icon: <Home size={20} /> },
+  { path: "/expenses", label: "Expenses", icon: <CreditCard size={20} /> },
+  { path: "/add-transaction", label: "Add", icon: <Plus size={22} />, isCenter: true },
+  { path: "/budgets", label: "Budgets", icon: <PieChart size={20} /> },
+  { path: "/groups", label: "Groups", icon: <Users size={20} /> },
 ];
 
 export default function BottomNavigation() {

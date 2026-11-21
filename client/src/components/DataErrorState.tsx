@@ -1,3 +1,4 @@
+import { WifiOff, RefreshCw } from "lucide-react";
 interface DataErrorStateProps {
   title?: string;
   message?: string;
@@ -33,7 +34,7 @@ export default function DataErrorState({
           boxShadow: "var(--shadow, 0 10px 25px rgba(0,0,0,0.06))",
         }}
       >
-        <div style={{ fontSize: "44px", marginBottom: "16px" }}>📡</div>
+        <div style={{ marginBottom: "16px" }}><WifiOff size={40} strokeWidth={1.5} aria-hidden="true" /></div>
         <h3
           style={{
             fontSize: "18px",
@@ -74,7 +75,7 @@ export default function DataErrorState({
               gap: "8px",
             }}
           >
-            <span>🔄</span> Try Again
+            <RefreshCw size={16} aria-hidden="true" /> Try again
           </button>
         )}
       </div>

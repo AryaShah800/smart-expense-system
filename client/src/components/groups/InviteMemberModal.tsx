@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from "react";
 import api, { apiErrorMessage } from "../../api/axios";
 import "../../styles/Modal.css";
+import { X, AlertTriangle, Check } from "lucide-react";
 
 interface InviteMemberModalProps {
   groupId: string;
@@ -46,15 +47,15 @@ function InviteMemberModal({ groupId, onClose, onInvited }: InviteMemberModalPro
       <div className="modal">
         <div className="modal-header">
           <h3>Invite Member</h3>
-          <button className="btn-close" onClick={onClose}>✕</button>
+          <button className="btn-close" onClick={onClose}><X size={18} aria-hidden="true" /></button>
         </div>
 
         <p className="modal-desc">
           Enter the email address of the person you want to invite.
         </p>
 
-        {error && <div className="modal-error"><span>⚠️</span> {error}</div>}
-        {successMsg && <div className="modal-success" style={{ color: '#10b981', background: '#ecfdf5', padding: '10px', borderRadius: '8px', marginBottom: '20px' }}>✅ {successMsg}</div>}
+        {error && <div className="modal-error"><AlertTriangle size={14} aria-hidden="true" /> {error}</div>}
+        {successMsg && <div className="modal-success" style={{ color: '#10b981', background: '#ecfdf5', padding: '10px', borderRadius: '8px', marginBottom: '20px' }}><Check size={14} aria-hidden="true" /> {successMsg}</div>}
 
         <form onSubmit={handleSubmit}>
           <label className="modal-section-label" htmlFor="invitemembermodal-user-email">User Email</label>

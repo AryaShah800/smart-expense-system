@@ -1,18 +1,20 @@
 :root {
   /* Colors */
-  --bg: #f8fafc;
-  --card: #ffffff;
-  --text: #0f172a;
-  --muted: #586579;
-  --primary: #4f46e5;
+  --bg: #f6f4ee;
+  --card: #fffdf9;
+  --text: #1d1c19;
+  --muted: #5c5a52;
+  --primary: #1e6b52;
+  --primary-strong: #15503d;
+  --font-display: "Newsreader", Georgia, "Times New Roman", serif;
   --success: #15803d;
   --success-text: #166534; /* for text on tinted green backgrounds */
   --danger: #b91c1c;
-  --border: #e5e7eb;
+  --border: #e4e0d5;
 
   /* UI */
-  --radius: 14px;
-  --shadow: 0 10px 25px rgba(0, 0, 0, 0.06);
+  --radius: 10px;
+  --shadow: 0 1px 2px rgba(29, 28, 25, 0.06);
 
   /* Spacing - Responsive */
   --gap-xs: clamp(4px, 1vw, 8px);
@@ -46,11 +48,13 @@
 
 /* --- 🔥 Dark Mode Overrides --- */
 [data-theme="dark"] {
-  --bg: #0f172a;        /* Deep blue/black background */
-  --card: #1e293b;      /* Slightly lighter card background */
-  --text: #f8fafc;      /* White/light gray text */
-  --muted: #94a3b8;     /* Muted text color */
-  --border: #334155;    /* Dark border color */
+  --primary: #5fbf9f;
+  --primary-strong: #86d4b8;
+  --bg: #14171a;        /* Deep blue/black background */
+  --card: #1c2024;      /* Slightly lighter card background */
+  --text: #ece9e1;      /* White/light gray text */
+  --muted: #a19d92;     /* Muted text color */
+  --border: #2e343a;    /* Dark border color */
   --success: #4ade80;   /* lighter status colours keep AA contrast on dark cards */
   --danger: #f87171;
   --success-text: #4ade80;

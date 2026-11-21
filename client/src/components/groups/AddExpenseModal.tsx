@@ -6,6 +6,7 @@ import "../../styles/Modal.css";
 import { getCurrencySymbol } from "../../utils/currencyFormatter";
 import { useGroupCategories } from "../../hooks/queries";
 import type { MemberSummary, SplitType } from "../../types/models";
+import { Check } from "lucide-react";
 
 interface AddExpenseModalProps {
   groupId: string;
@@ -198,7 +199,7 @@ function AddExpenseModal({ groupId, groupMembers, onClose, onAdded }: AddExpense
                 value={categoryId}
                 onChange={(e) => setCategoryId(e.target.value)}
               >
-                <option value="">⚙️ General</option>
+                <option value="">General</option>
                 {categories.map(cat => (
                   <option key={cat._id} value={cat._id}>{cat.icon} {cat.name}</option>
                 ))}
@@ -275,7 +276,7 @@ function AddExpenseModal({ groupId, groupMembers, onClose, onAdded }: AddExpense
                       {/* Contextual Action Area */}
                       <div onClick={(e) => e.stopPropagation()}>
                         {splitType === "equal" ? (
-                          isSelected && <span className="check-icon">✓</span>
+                          isSelected && <span className="check-icon"><Check size={14} aria-hidden="true" /></span>
                         ) : (
                           <div className="split-input-container">
                             <input

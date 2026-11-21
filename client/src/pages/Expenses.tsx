@@ -7,9 +7,10 @@ import "../styles/responsive.css";
 import { exportTransactionsPdf } from "../utils/exportPdf";
 import { useAuth } from "../hooks/useAuth";
 import formatCurrency from "../utils/currencyFormatter";
-import { getCategoryIcon } from "../utils/categoryIcons";
+import CategoryIcon from "../components/CategoryIcon";
 import { Link } from "react-router-dom";
 import DataErrorState from "../components/DataErrorState";
+import { FileDown, CreditCard, X } from "lucide-react";
 
 function Expenses() {
   const { user } = useAuth();
@@ -117,7 +118,7 @@ function Expenses() {
         </div>
 
         <button className="export-btn" onClick={handleExport} aria-label="Export PDF">
-          <span>📄</span> Download PDF
+          <FileDown size={16} aria-hidden="true" /> Download PDF
         </button>
       </div>
 
@@ -200,7 +201,7 @@ function Expenses() {
       {/* TRANSACTIONS LIST */}
       {filtered.length === 0 ? (
         <div className="empty-expenses">
-          <span className="empty-icon">💳</span>
+          <span className="empty-icon"><CreditCard size={32} strokeWidth={1.5} aria-hidden="true" /></span>
           <h3>No transactions found</h3>
           <p>Try clearing your filters or add a new transaction.</p>
           <Link to="/add-transaction" className="btn-primary" style={{ display: "inline-block", marginTop: "12px", textDecoration: "none" }}>
@@ -220,7 +221,7 @@ function Expenses() {
 
               <div className="date-group-list">
                 {group.items.map((t) => {
-                  const icon = getCategoryIcon(t.categoryId, t.type);
+                  const icon = <CategoryIcon category={t.categoryId} type={t.type} />;
 
                   return (
                     <div key={t._id} className="expenses-card">
@@ -250,7 +251,7 @@ function Expenses() {
                             title="Delete"
                             aria-label="Delete transaction"
                           >
-                            ✕
+                            <X size={14} aria-hidden="true" />
                           </button>
                         </div>
                       </div>

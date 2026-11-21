@@ -34,25 +34,27 @@ function CashFlowLine({ transactions }: { transactions: Transaction[] }) {
     balance: bal,
   }));
 
-  // use shared formatter
+  if (data.length < 2) {
+    return (
+      <p className="chart-empty">
+        {data.length === 0
+          ? "No transactions in this range."
+          : "A trend needs transactions on at least two different days. Add a few more and the line will appear."}
+      </p>
+    );
+  }
 
   return (
     <>
-      <h3 style={{ marginBottom: "20px", color: "#333" }}>Cash Flow</h3>
+      
       <ResponsiveContainer width="100%" height={300}>
         <AreaChart data={data}>
-          <defs>
-            <linearGradient id="colorBalance" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="#22c55e" stopOpacity={0.8} />
-              <stop offset="95%" stopColor="#22c55e" stopOpacity={0} />
-            </linearGradient>
-          </defs>
           <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.3} />
           <XAxis
             dataKey="date"
             axisLine={false}
             tickLine={false}
-            tick={{ fill: "#666", fontSize: 12 }}
+            tick={{ fill: "var(--muted)", fontSize: 12 }}
             minTickGap={30}
           />
           <YAxis
@@ -72,10 +74,11 @@ function CashFlowLine({ transactions }: { transactions: Transaction[] }) {
           <Area
             type="monotone"
             dataKey="balance"
-            stroke="#22c55e"
-            strokeWidth={3}
-            fillOpacity={1}
-            fill="url(#colorBalance)"
+            stroke="var(--primary)"
+            strokeWidth={2}
+            fill="var(--primary)"
+            fillOpacity={0.1}
+            dot={data.length <= 12}
           />
         </AreaChart>
       </ResponsiveContainer>

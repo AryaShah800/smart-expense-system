@@ -84,3 +84,7 @@ input, select, textarea, button {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Headings and money figures use the display face; numerals are tabular so columns align. */
+h1, h2, .balance-card h2 { font-family: var(--font-display); font-weight: 600; letter-spacing: -0.01em; }
+.amount, [class*="amount"], .stat-value, .balance-card h2, td { font-variant-numeric: tabular-nums; }

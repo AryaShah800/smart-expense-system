@@ -4,6 +4,7 @@ import { useAuth } from "../hooks/useAuth";
 import { useAppDispatch, useAppSelector, selectNotifications, selectUnreadCount } from "../store/hooks";
 import { markAllRead } from "../store/notificationsSlice";
 import "../styles/navbar.css";
+import { Menu, Bell, Settings } from "lucide-react";
 
 function Navbar() {
   const location = useLocation();
@@ -68,7 +69,7 @@ function Navbar() {
               aria-label="Toggle navigation menu"
               aria-expanded={mobileMenuOpen}
             >
-              ☰
+              <Menu size={20} aria-hidden="true" />
             </button>
 
             <div className="nav-right">
@@ -79,7 +80,7 @@ function Navbar() {
                   aria-label={unreadCount > 0 ? `Notifications, ${unreadCount} unread` : "Notifications"}
                   aria-expanded={showDropdown}
                 >
-                  🔔
+                  <Bell size={18} aria-hidden="true" />
                   {unreadCount > 0 && <span className="notification-badge">{unreadCount}</span>}
                 </button>
 
@@ -106,7 +107,7 @@ function Navbar() {
 
               {/* Swap the logout button for a link to the new settings page */}
               <Link to="/settings" className="nav-auth-link" style={{ marginLeft: '15px' }}>
-                ⚙️ Settings
+                <Settings size={16} aria-hidden="true" /> Settings
               </Link>
             </div>
           </>
