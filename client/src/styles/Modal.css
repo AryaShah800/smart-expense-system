@@ -101,8 +101,6 @@
   font-weight: 600;
   color: var(--muted);
   margin-bottom: 8px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
 }
 
 /* INPUTS */
@@ -338,7 +336,6 @@
   justify-content: center;
   font-weight: 600;
   font-size: 14px;
-  text-transform: uppercase;
   flex-shrink: 0;
 }
 

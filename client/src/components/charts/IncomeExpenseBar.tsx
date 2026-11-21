@@ -22,8 +22,8 @@ function IncomeExpenseBar({ transactions }: { transactions: Transaction[] }) {
   });
 
   const chartData = [
-    { name: "Income", amount: income, color: "#22c55e" },
-    { name: "Expense", amount: expense, color: "#ef4444" },
+    { name: "Income", amount: income, color: "#1e6b52" },
+    { name: "Expense", amount: expense, color: "#a24b3c" },
   ];
 
   const { user } = useAuth();

@@ -14,17 +14,17 @@ function SummaryCards({ income, expense, balance }: SummaryCardsProps) {
   return (
     <>
       <div className="summary-card balance">
-        <span>Total Balance</span>
+        <span>Total balance</span>
         <strong>{format(balance)}</strong>
       </div>
 
       <div className="summary-card income">
-        <span>Total Income</span>
+        <span>Total income</span>
         <strong>{format(income)}</strong>
       </div>
 
       <div className="summary-card expense">
-        <span>Total Expense</span>
+        <span>Total expense</span>
         <strong>{format(expense)}</strong>
       </div>
     </>

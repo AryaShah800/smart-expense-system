@@ -33,8 +33,6 @@
   font-size: 13px;
   font-weight: 700;
   color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 1px;
   margin-bottom: 12px;
   margin-left: 16px; /* Aligns perfectly with card inner padding */
 }
