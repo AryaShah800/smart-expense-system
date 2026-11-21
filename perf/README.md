@@ -6,34 +6,60 @@ A [k6](https://k6.io) script that puts 50 virtual users on the endpoints behind 
 
 ## Run it
 
+One command reproduces a run (needs Docker, Node and the backend dependencies; images `mongo:7` and
+`grafana/k6:0.54.0`):
+
 ```bash
-# 1. a throwaway database and the API against it
+perf/run.sh after 1      # starts MongoDB, seeds 50,000 transactions, starts the API, runs k6, cleans up
+```
+
+It writes `perf/results/<label>-<n>.json` (k6 `--summary-export`), `.txt` (console summary) and the API log.
+The manual steps, if you prefer them:
+
+```bash
 cd backend
 export MONGO_URI=mongodb://127.0.0.1:27017/perf JWT_SECRET=perf-secret
 npm run seed:perf          # one user, 50,000 transactions over 12 months (only touches that user)
 PORT=7100 npm start &
-
-# 2. the test (install k6 from https://grafana.com/docs/k6/latest/set-up/install-k6/)
 k6 run -e BASE_URL=http://localhost:7100 perf/dashboard.js
 ```
 
 Options: `-e VUS=50 -e DURATION=40s`, `PERF_TX=100000 npm run seed:perf`.
-Pass criteria (thresholds in the script): zero failed requests, every check passes, dashboard p95 under 2 s.
+The script's thresholds are: zero failed requests, every check passes, dashboard p95 under 2 s.
 
 ## Results
 
-Same machine, same data, same script. 2 vCPU / 8 GB sandbox where the API, MongoDB and k6 all share the two
-cores, so the absolute numbers are pessimistic. The ratio is what matters. Each row is the average of two
-40-second runs at 50 VUs, with a 0.2 s pause between page views.
+Measured on 2026-11-21 with the raw output committed in [`perf/results/`](results/). 50 VUs, 40 s, 0.2 s
+pause between page views, 50,000 transactions, two runs per column (both shown).
 
-| | Before | After |
+Machine: Intel Core i5-13420H (8 cores / 12 threads), 15.7 GB RAM, Windows 11, Docker 29.6.2, Node 22.20.
+MongoDB 7 runs in a Docker container, the API runs natively under Node, k6 0.54.0 runs in a Docker container,
+so all three compete for the same CPU.
+
+"After" is `main`. "Before" is `main` with only `backend/controllers/dashboard.js` replaced by its version from
+`d05011d^` (the commit before the aggregation change, which touched nothing else in the backend), run through
+the same script and data:
+
+```bash
+git show d05011d^:backend/controllers/dashboard.js > backend/controllers/dashboard.js
+perf/run.sh before 1
+git checkout backend/controllers/dashboard.js
+```
+
+| `GET /api/dashboard` | Before (run 1 / run 2) | After (run 1 / run 2) |
 | --- | --- | --- |
-| `GET /api/dashboard` p50 | 8.1 s | 1.1 s |
-| `GET /api/dashboard` p95 | 9.1 s | 1.5 s |
-| Throughput (all dashboard-page requests) | 9.4 req/s | 54 req/s |
-| Failed requests | 0% | 0% |
+| p50 | 13.7 s / 23.0 s | 1.78 s / 1.90 s |
+| p95 | 14.8 s / 23.9 s | 3.88 s / 3.08 s |
+| Throughput, all dashboard-page requests | 4.0 / 3.3 req/s | 31.2 / 29.6 req/s |
+| Failed requests | 0% / 0% | 0% / 0% |
 
-That is roughly 7x lower median latency and 5.7x the throughput.
+Roughly 8 to 12x lower median latency and about 8x the throughput. Runs vary (the two "before" runs differ
+by 70% in the median, because at 3 to 4 req/s only 150 to 200 requests complete), so read this as an order of
+magnitude, not a precise ratio.
+
+On this machine the "after" p95 is above the script's 2 s threshold, so k6 exits non-zero for those runs. An
+earlier, unreproduced table in this file (p95 9.1 s to 1.5 s, 9.4 to 54 req/s on a 2 vCPU sandbox) was replaced
+by the figures above, since only these have raw output in the repo. The `before` runs fail the same threshold.
 
 ## What was slow
 

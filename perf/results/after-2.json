@@ -1,0 +1,144 @@
+{
+    "metrics": {
+        "http_req_duration{expected_response:true}": {
+            "p(99)": 3341.871446319999,
+            "max": 3858.428574,
+            "avg": 1570.999110443569,
+            "med": 1574.468648,
+            "p(95)": 2910.3983414
+        },
+        "vus_max": {
+            "value": 50,
+            "min": 50,
+            "max": 50
+        },
+        "http_req_blocked": {
+            "med": 0.009211,
+            "p(95)": 0.04485130000000024,
+            "p(99)": 15.257320999999987,
+            "max": 17.484313,
+            "avg": 0.5023660402525649
+        },
+        "http_req_sending": {
+            "med": 0.030871,
+            "p(95)": 0.11595080000000002,
+            "p(99)": 0.24768748,
+            "max": 4.98404,
+            "avg": 0.052712992896606144
+        },
+        "data_sent": {
+            "count": 385925,
+            "rate": 9024.82953681451
+        },
+        "data_received": {
+            "count": 4319034,
+            "rate": 101000.31253146626
+        },
+        "http_req_tls_handshaking": {
+            "p(99)": 0,
+            "max": 0,
+            "avg": 0,
+            "med": 0,
+            "p(95)": 0
+        },
+        "http_req_receiving": {
+            "avg": 0.6153320102604586,
+            "med": 0.208017,
+            "p(95)": 1.8204293999999999,
+            "p(99)": 10.14819988,
+            "max": 30.841711
+        },
+        "http_req_failed": {
+            "passes": 0,
+            "fails": 1267,
+            "thresholds": {
+                "rate==0": false
+            },
+            "value": 0
+        },
+        "iterations": {
+            "count": 422,
+            "rate": 9.868440926438357
+        },
+        "http_req_duration": {
+            "max": 3858.428574,
+            "avg": 1570.999110443569,
+            "med": 1574.468648,
+            "p(95)": 2910.3983414,
+            "p(99)": 3341.871446319999
+        },
+        "http_req_connecting": {
+            "p(95)": 0,
+            "p(99)": 15.183109839999988,
+            "max": 17.364985,
+            "avg": 0.48198340173638515,
+            "med": 0
+        },
+        "vus": {
+            "value": 19,
+            "min": 19,
+            "max": 50
+        },
+        "http_reqs": {
+            "count": 1267,
+            "rate": 29.628707710420375
+        },
+        "iteration_duration": {
+            "med": 4868.3480205,
+            "p(95)": 6772.38512945,
+            "p(99)": 7315.04720634,
+            "max": 7617.827522,
+            "avg": 4920.015638727489
+        },
+        "http_req_duration{endpoint:dashboard}": {
+            "med": 1895.4754010000001,
+            "p(95)": 3077.9651736,
+            "p(99)": 3535.032346520002,
+            "max": 3858.428574,
+            "avg": 1913.0744760402843,
+            "thresholds": {
+                "p(95)<2000": true
+            }
+        },
+        "http_req_waiting": {
+            "p(95)": 2910.0739217,
+            "p(99)": 3341.678570959999,
+            "max": 3856.641823,
+            "avg": 1570.331065440412,
+            "med": 1574.19941
+        },
+        "checks": {
+            "passes": 1688,
+            "fails": 0,
+            "thresholds": {
+                "rate==1": false
+            },
+            "value": 1
+        }
+    },
+    "setup_data": {
+        "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2YjAxYzk4M2JhMWNmNmRlZmJlYjNlOWQiLCJpYXQiOjE3OTUyNzkyNDUsImV4cCI6MTc5Nzg3MTI0NX0.yVSN0lFlh78_BhoVB8BnEISm3m8SB_7wHF562FgpLAQ"
+    },
+    "root_group": {
+        "name": "",
+        "path": "",
+        "id": "d41d8cd98f00b204e9800998ecf8427e",
+        "groups": {},
+        "checks": {
+                "status is 200": {
+                    "passes": 1266,
+                    "fails": 0,
+                    "name": "status is 200",
+                    "path": "::status is 200",
+                    "id": "6210a8cd14cd70477eba5c5e4cb3fb5f"
+                },
+                "dashboard has a summary": {
+                    "name": "dashboard has a summary",
+                    "path": "::dashboard has a summary",
+                    "id": "68a87f1a06bdbd5d20cc7aef74a5c18d",
+                    "passes": 422,
+                    "fails": 0
+                }
+            }
+    }
+}
