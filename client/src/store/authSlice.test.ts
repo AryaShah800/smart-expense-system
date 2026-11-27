@@ -8,9 +8,23 @@ import { httpError, notification, serverDownError, user } from "../test/fixtures
 const stored = () => JSON.parse(localStorage.getItem(USER_STORAGE_KEY) ?? "null");
 
 describe("auth slice", () => {
-  it("restores the signed-in user from localStorage", () => {
-    localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user));
-    expect(makeStore().getState().auth.user).toEqual(user);
+  it("restores the signed-in user from localStorage, without any legacy token", () => {
+    localStorage.setItem(USER_STORAGE_KEY, JSON.stringify({ ...user, accessToken: "old", data: { token: "old" } }));
+    const withoutToken = { ...user };
+    delete withoutToken.token;
+    expect(makeStore().getState().auth.user).toEqual(withoutToken);
+  });
+
+  it("sends no Authorization header, even with an old token in storage (cookie-only auth)", async () => {
+    localStorage.setItem(USER_STORAGE_KEY, JSON.stringify({ ...user, token: "legacy-jwt" }));
+    let seen: Record<string, unknown> | undefined;
+    await api.get("/anything", {
+      adapter: async (config) => {
+        seen = { ...config.headers };
+        return { data: {}, status: 200, statusText: "OK", headers: {}, config };
+      },
+    });
+    expect(seen?.Authorization).toBeUndefined();
   });
 
   it("ignores a corrupted stored session", () => {
