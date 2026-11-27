@@ -97,24 +97,22 @@ export const getBudgetStatus = async (req, res) => {
     const timezone = typeof req.query.timezone === "string" && req.query.timezone ? req.query.timezone : "UTC";
     const { start: startOfMonth, end: startOfNextMonth } = currentMonthRange(timezone);
 
-    const stats = await Promise.all(budgets.map(async (budget) => {
-      const expenses = await Transaction.aggregate([
-        {
-          $match: {
-            userId: req.user._id,
-            categoryId: budget.categoryId._id,
-            type: 'expense',
-            date: { $gte: startOfMonth, $lt: startOfNextMonth }
-          }
-        },
-        {
-          $group: {
-            _id: null,
-            total: { $sum: "$amount" }
-          }
+    // One aggregate for all budgeted categories (was one query per budget).
+    const totals = budgets.length === 0 ? [] : await Transaction.aggregate([
+      {
+        $match: {
+          userId: req.user._id,
+          categoryId: { $in: budgets.map((budget) => budget.categoryId._id) },
+          type: 'expense',
+          date: { $gte: startOfMonth, $lt: startOfNextMonth }
         }
-      ]);
-      const spent = expenses.length > 0 ? expenses[0].total : 0;
+      },
+      { $group: { _id: "$categoryId", total: { $sum: "$amount" } } }
+    ]);
+    const spentByCategory = new Map(totals.map((row) => [String(row._id), row.total]));
+
+    const stats = budgets.map((budget) => {
+      const spent = spentByCategory.get(String(budget.categoryId._id)) ?? 0;
       return {
         category: budget.categoryId,
         limit: budget.amount,
@@ -122,7 +120,7 @@ export const getBudgetStatus = async (req, res) => {
         remaining: budget.amount - spent,
         exceeded: spent > budget.amount
       };
-    }));
+    });
 
     res.json(stats);
   } catch (error) {
