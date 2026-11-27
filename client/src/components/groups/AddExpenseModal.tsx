@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent, type KeyboardEvent } from "react";
 import { useAuth } from "../../hooks/useAuth";
 import api, { apiErrorMessage } from "../../api/axios";
 import toast from "react-hot-toast";
@@ -273,6 +273,19 @@ function AddExpenseModal({ groupId, groupMembers, onClose, onAdded }: AddExpense
                     key={member._id}
                     className={`split-member-item ${isSelected ? 'selected' : ''}`}
                     onClick={() => splitType === 'equal' && toggleInvolvedUser(member._id)}
+                    // In an equal split each row is a checkbox: focusable and toggled with Space or Enter.
+                    {...(splitType === 'equal' && {
+                      role: 'checkbox',
+                      'aria-checked': isSelected,
+                      'aria-label': member.username,
+                      tabIndex: 0,
+                      onKeyDown: (e: KeyboardEvent<HTMLDivElement>) => {
+                        if (e.key === ' ' || e.key === 'Enter') {
+                          e.preventDefault();
+                          toggleInvolvedUser(member._id);
+                        }
+                      },
+                    })}
                   >
                     <div className="split-member-info">
                       <div className="split-member-avatar">{(member.username || '?').charAt(0)}</div>
@@ -288,6 +301,7 @@ function AddExpenseModal({ groupId, groupMembers, onClose, onAdded }: AddExpense
                           <input
                             type="number"
                             className="split-value-input"
+                            aria-label={`${member.username} ${splitType === 'percentage' ? 'percent' : 'amount'}`}
                             placeholder="0"
                             min="0"
                             step="0.01"
