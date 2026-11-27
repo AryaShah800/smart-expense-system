@@ -273,9 +273,11 @@ export const addGroupExpense = async (req, res) => {
           return res.status(400).json({ message: "Split amounts cannot be negative" });
         }
       }
-      const totalExact = splits.reduce((sum, s) => sum + Number(s.shareAmount), 0);
-      if (Math.abs(totalExact - numericAmount) > 0.05) return res.status(400).json({ message: "Exact amounts must match total amount" });
-      finalSplits = splits.map(s => ({ userId: s.userId, shareAmount: Number(s.shareAmount) }));
+      // Compare in whole paise: a tolerance let shares be off by up to 5 paise, which then never settled to zero.
+      const shareCents = splits.map(s => toCents(s.shareAmount));
+      const totalExactCents = shareCents.reduce((sum, c) => sum + c, 0);
+      if (totalExactCents !== toCents(numericAmount)) return res.status(400).json({ message: "Exact amounts must match total amount" });
+      finalSplits = splits.map((s, index) => ({ userId: s.userId, shareAmount: shareCents[index] / 100 }));
     }
     else {
       return res.status(400).json({ message: "Invalid split type" });
@@ -360,16 +362,18 @@ export const getGroupSplits = async (req, res) => {
     const expenses = await GroupExpense.find({ groupId });
     const settlementsDB = await Settlement.find({ groupId });
 
+    // Balances are summed in whole paise (integers), so they add up to exactly zero across the group;
+    // summing rupee floats drifted by fractions of a paisa and could leave un-settleable remainders.
     const balancesMap = {};
     group.members.forEach(m => balancesMap[m._id.toString()] = 0);
 
     expenses.forEach(exp => {
       const payerId = exp.paidBy.toString();
-      if (balancesMap[payerId] !== undefined) balancesMap[payerId] += exp.amount;
+      if (balancesMap[payerId] !== undefined) balancesMap[payerId] += toCents(exp.amount);
 
       exp.splits.forEach(split => {
         const uid = split.userId.toString();
-        if (balancesMap[uid] !== undefined) balancesMap[uid] -= split.shareAmount;
+        if (balancesMap[uid] !== undefined) balancesMap[uid] -= toCents(split.shareAmount);
       });
     });
 
@@ -377,37 +381,31 @@ export const getGroupSplits = async (req, res) => {
       const fromId = s.fromUser.toString();
       const toId = s.toUser.toString();
 
-      if (balancesMap[fromId] !== undefined) balancesMap[fromId] += s.amount;
-      if (balancesMap[toId] !== undefined) balancesMap[toId] -= s.amount;
+      if (balancesMap[fromId] !== undefined) balancesMap[fromId] += toCents(s.amount);
+      if (balancesMap[toId] !== undefined) balancesMap[toId] -= toCents(s.amount);
     });
 
-    const balances = group.members.map(member => ({
+    const centsOf = group.members.map(member => ({
       userId: member._id,
       username: member.username,
-      balance: Number((balancesMap[member._id.toString()] || 0).toFixed(2))
+      cents: balancesMap[member._id.toString()] || 0,
     }));
+    const balances = centsOf.map(({ userId, username, cents }) => ({ userId, username, balance: cents / 100 }));
 
-    const debtors = balances.filter(b => b.balance < -0.01).map(b => ({ ...b, balance: Math.abs(b.balance) }));
-    const creditors = balances.filter(b => b.balance > 0.01).map(b => ({ ...b })); // copies: the loop below mutates them
+    const debtors = centsOf.filter(b => b.cents < 0).map(b => ({ ...b, cents: -b.cents }));
+    const creditors = centsOf.filter(b => b.cents > 0).map(b => ({ ...b })); // copies: the loop below mutates them
     const settlements = [];
 
     let i = 0, j = 0;
     while (i < debtors.length && j < creditors.length) {
-        const amount = Math.min(debtors[i].balance, creditors[j].balance);
+        const amount = Math.min(debtors[i].cents, creditors[j].cents);
+        settlements.push({ from: debtors[i].username, to: creditors[j].username, amount: amount / 100 });
 
-        if (amount > 0) {
-            settlements.push({
-                from: debtors[i].username,
-                to: creditors[j].username,
-                amount: Number(amount.toFixed(2))
-            });
-        }
+        debtors[i].cents -= amount;
+        creditors[j].cents -= amount;
 
-        debtors[i].balance -= amount;
-        creditors[j].balance -= amount;
-
-        if (debtors[i].balance < 0.01) i++;
-        if (creditors[j].balance < 0.01) j++;
+        if (debtors[i].cents === 0) i++;
+        if (creditors[j].cents === 0) j++;
     }
 
     res.json({ balances, settlements });

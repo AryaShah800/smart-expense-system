@@ -135,6 +135,24 @@ test("exact split must match the total and cannot be negative", async () => {
   assert.equal((await addExpense(a, group, { description: "Dinner", amount: 3000, splitType: "exact", splits: split(800, 2200) })).status, 201);
   assert.equal((await addExpense(a, group, { description: "Dinner", amount: 3000, splitType: "exact", splits: split(800, 2000) })).status, 400);
   assert.equal((await addExpense(a, group, { description: "Dinner", amount: 3000, splitType: "exact", splits: split(-100, 3100) })).status, 400);
+  // Off by 4 paise used to pass a 0.05 tolerance and leave a balance that could never reach zero.
+  assert.equal((await addExpense(a, group, { description: "Dinner", amount: 100, splitType: "exact", splits: split(33.33, 66.63) })).status, 400);
+});
+
+test("exact split in paise keeps balances summing to exactly zero", async () => {
+  const a = await createUser(app, { username: "exca" });
+  const b = await createUser(app, { username: "excb" });
+  const c = await createUser(app, { username: "excc" });
+  const group = await makeGroup(a, [b, c]);
+  const shares = [[a, 33.33], [b, 33.33], [c, 33.34]].map(([u, v]) => ({ userId: id(u), shareAmount: v }));
+  assert.equal((await addExpense(a, group, { description: "Taxi", amount: 100, splitType: "exact", splits: shares })).status, 201);
+  assert.equal((await addExpense(b, group, { description: "Snacks", amount: 0.3, splitType: "equal" })).status, 201);
+
+  const { byName, settlements } = await balancesOf(a, group);
+  assert.equal(Object.values(byName).reduce((s, v) => s + cents(v), 0), 0);
+  for (const v of Object.values(byName)) assert.equal(Number(v.toFixed(2)), v, "balances are whole paise");
+  for (const s of settlements) assert.equal(Number(s.amount.toFixed(2)), s.amount);
+  assert.equal(settlements.reduce((sum, s) => sum + cents(s.amount), 0), cents(byName[a.user.username]));
 });
 
 test("expense validation: amount, description, split type and payer", async () => {
