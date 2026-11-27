@@ -1,8 +1,13 @@
 import { budgetState } from "../../utils/budgetState";
 import { isPopulated, type BudgetStatus } from "../../types/models";
+import { useAuth } from "../../hooks/useAuth";
+import formatCurrency from "../../utils/currencyFormatter";
 
 const BudgetOverview = ({ budgetStatus }: { budgetStatus: BudgetStatus[] }) => {
+  const { user } = useAuth();
   if (!budgetStatus || budgetStatus.length === 0) return null;
+  // The user's chosen currency (Settings), like every other amount on the dashboard.
+  const money = (value: number) => formatCurrency(value, user?.currency);
 
   return (
     <div className="chart-card">
@@ -19,9 +24,9 @@ const BudgetOverview = ({ budgetStatus }: { budgetStatus: BudgetStatus[] }) => {
               <div className="budget-header">
                 <span className="budget-name">{category?.name ?? "Category"}</span>
                 <span className="budget-values">
-                  {new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(item.spent)} 
+                  {money(item.spent)} 
                   {' / '}
-                  {new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(item.limit)}
+                  {money(item.limit)}
                 </span>
               </div>
               
@@ -34,7 +39,7 @@ const BudgetOverview = ({ budgetStatus }: { budgetStatus: BudgetStatus[] }) => {
               
               <p className={`budget-subtext ${state}`}>
                 {isExceeded
-                  ? `Over budget by ${new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(item.spent - item.limit)}`
+                  ? `Over budget by ${money(item.spent - item.limit)}`
                   : state === 'warn'
                     ? `Nearing limit, ${Math.round(100 - percent)}% remaining`
                     : `${Math.round(100 - percent)}% remaining`}
