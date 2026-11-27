@@ -11,7 +11,7 @@ test('demo button signs in without OTP and shows a populated dashboard', async (
 test('password login is refused for the demo account', async ({ page }) => {
   await page.goto('/login');
   await page.getByLabel('Email Address').fill('demo@smartexpense.app');
-  await page.getByLabel('Password').fill('Demo@1234');
+  await page.getByLabel('Password', { exact: true }).fill('Demo@1234');
   await page.getByRole('button', { name: 'Sign in' }).click();
   await expect(page).toHaveURL(/\/login$/);
 });
