@@ -4,7 +4,7 @@ import GroupExpense from "../models/GroupExpense.js";
 import Settlement from "../models/Settlement.js";
 import User from "../models/user.js";
 import GroupCategory from "../models/GroupCategory.js";
-import { pushNotification } from "../utils/pushNotification.js";
+import { pushNotificationToMany } from "../utils/pushNotification.js";
 
 // Works whether `members` holds ObjectIds or populated users (a populated document's
 // toString() is not its id, which previously made members look like outsiders).
@@ -314,11 +314,9 @@ export const addGroupExpense = async (req, res) => {
     const message = `${payer.username} added a new expense: "${description}" for ₹${amount}.`;
     const io = req.app.get("io");
 
+    // One update for every member instead of one round trip each, then the live events.
+    await pushNotificationToMany(notifyUsers, { message });
     for (const memberId of notifyUsers) {
-      // 1. Save to DB
-      await pushNotification(memberId, { message });
-
-      // 2. Emit Real-Time Socket Event
       if (io) {
         io.to(memberId.toString()).emit("new_notification", {
           message,
