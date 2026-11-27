@@ -1,5 +1,6 @@
 import type { jsPDF } from "jspdf";
 import { isPopulated, type Transaction } from "../types/models";
+import { todayLocal } from "./localDate";
 
 type Rgb = [number, number, number];
 
@@ -341,5 +342,5 @@ export async function exportTransactionsPdf({
     );
   }
 
-  doc.save(`SmartExpense_${userName}_${new Date().toISOString().split("T")[0]}.pdf`);
+  doc.save(`SmartExpense_${userName}_${todayLocal()}.pdf`);
 }

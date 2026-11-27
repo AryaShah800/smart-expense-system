@@ -11,6 +11,7 @@ import CategoryIcon from "../components/CategoryIcon";
 import { Link, useSearchParams } from "react-router-dom";
 import DataErrorState from "../components/DataErrorState";
 import { FileDown, CreditCard, X } from "lucide-react";
+import { startOfLocalDay, startOfNextLocalDay } from "../utils/localDate";
 
 function Expenses() {
   const { user } = useAuth();
@@ -57,8 +58,9 @@ function Expenses() {
     return transactions.filter((t) => {
       if (typeFilter !== "all" && t.type !== typeFilter) return false;
       if (categoryFilter !== "all" && populated(t.categoryId)?.name !== categoryFilter) return false;
-      if (fromDate && new Date(t.date) < new Date(fromDate)) return false;
-      if (toDate && new Date(t.date) > new Date(toDate)) return false;
+      // Whole local days: "to 27 Nov" includes everything on 27 Nov, not just up to UTC midnight.
+      if (fromDate && new Date(t.date) < startOfLocalDay(fromDate)) return false;
+      if (toDate && new Date(t.date) >= startOfNextLocalDay(toDate)) return false;
       return true;
     });
   }, [transactions, typeFilter, categoryFilter, fromDate, toDate]);
