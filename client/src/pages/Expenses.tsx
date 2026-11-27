@@ -102,6 +102,7 @@ function Expenses() {
       transactions: filtered,
       fromDate,
       toDate,
+      currency: user?.currency,
     });
   };
 
