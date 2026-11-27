@@ -43,4 +43,7 @@ const groupExpenseSchema = new mongoose.Schema({
   }
 });
 
+// Group pages list a group's expenses newest first.
+groupExpenseSchema.index({ groupId: 1, createdAt: -1 });
+
 export default mongoose.model("GroupExpense", groupExpenseSchema);
