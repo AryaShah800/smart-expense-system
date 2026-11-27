@@ -164,6 +164,20 @@ test("budget status skips a budget whose category was deleted instead of failing
   assert.equal(res.body[0].limit, 50);
 });
 
+test("budget status totals each category separately in one pass", async () => {
+  const { agent, user } = await createUser(app, { username: "twobudgets" });
+  const travel = await Category.create({ name: "Travel", type: "expense", user: user._id });
+  await agent.post("/api/budgets").send({ categoryId: food._id, amount: 100 });
+  await agent.post("/api/budgets").send({ categoryId: travel._id, amount: 1000 });
+  await agent.post("/api/transactions").send(expense(30));
+  await agent.post("/api/transactions").send(expense(45, { categoryId: travel._id }));
+  await agent.post("/api/transactions").send(expense(5, { categoryId: travel._id }));
+
+  const status = (await agent.get("/api/budgets/status")).body;
+  const byName = Object.fromEntries(status.map((s) => [s.category.name, s.spent]));
+  assert.deepEqual(byName, { Food: 30, Travel: 50 });
+});
+
 test("isolation: budgets are per user", async () => {
   const mine = await createUser(app, { username: "budgetowner" });
   const other = await createUser(app, { username: "budgetpeeker" });
