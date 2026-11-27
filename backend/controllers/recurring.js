@@ -37,8 +37,29 @@ export const calculateNextDueDate = (baseDate, frequency, anchorDay = new Date(b
   }
 };
 
+/** A schedule that fell far behind (server asleep for weeks) catches up at most this many cycles per run. */
+export const MAX_CATCH_UP = 366;
+
+const anchorDayOf = (item) => new Date(item.startDate || item.nextDueDate).getDate();
+
+/**
+ * The latest occurrence of the schedule at or before `now`, starting from its nextDueDate.
+ * Used when a paused schedule is resumed, so the paused months are skipped, not back-filled.
+ */
+export const latestOccurrenceAtOrBefore = (item, now = new Date()) => {
+  let date = new Date(item.nextDueDate);
+  for (let i = 0; i < 10000; i++) {
+    const next = calculateNextDueDate(date, item.frequency, anchorDayOf(item));
+    if (next > now) break;
+    date = next;
+  }
+  return date;
+};
+
 /**
  * Process all active recurring transactions that have reached or passed their nextDueDate.
+ * Every missed cycle is recorded (up to MAX_CATCH_UP), so a daily bill that was 5 days behind
+ * gets its 5 transactions in one run instead of one per run.
  */
 export const processDueRecurring = async (targetUserId = null) => {
   const now = new Date();
@@ -55,44 +76,47 @@ export const processDueRecurring = async (targetUserId = null) => {
   const createdTransactions = [];
 
   for (const item of dueItems) {
-    // The unique recurringId/date pair makes retries safe after a timeout or
-    // a process restart between recording a transaction and advancing the due date.
-    const dueDate = item.nextDueDate;
-    const newTx = await Transaction.findOneAndUpdate(
-      { recurringId: item._id, date: dueDate },
-      { $setOnInsert: {
-        userId: item.userId,
-        categoryId: item.categoryId,
-        type: item.type,
-        amount: item.amount,
-        date: dueDate,
-        description: item.description,
-        recurringId: item._id,
-        isRecurring: true,
-      } },
-      { upsert: true, new: true, setDefaultsOnInsert: true }
-    );
-    createdTransactions.push(newTx);
+    let dueDate = item.nextDueDate;
+    let recorded = 0;
+    while (dueDate <= now && recorded < MAX_CATCH_UP) {
+      // The unique recurringId/date pair makes retries safe after a timeout or
+      // a process restart between recording a transaction and advancing the due date.
+      const newTx = await Transaction.findOneAndUpdate(
+        { recurringId: item._id, date: dueDate },
+        { $setOnInsert: {
+          userId: item.userId,
+          categoryId: item.categoryId,
+          type: item.type,
+          amount: item.amount,
+          date: dueDate,
+          description: item.description,
+          recurringId: item._id,
+          isRecurring: true,
+        } },
+        { upsert: true, new: true, setDefaultsOnInsert: true }
+      );
+      createdTransactions.push(newTx);
 
-    // Compute the subsequent due date
-    const nextDate = calculateNextDueDate(
-      item.nextDueDate,
-      item.frequency,
-      new Date(item.startDate || item.nextDueDate).getDate()
-    );
+      // Compute the subsequent due date
+      const nextDate = calculateNextDueDate(dueDate, item.frequency, anchorDayOf(item));
 
-    const advanced = await RecurringTransaction.findOneAndUpdate(
-      { _id: item._id, status: "active", nextDueDate: dueDate },
-      { $set: { lastProcessedDate: now, nextDueDate: nextDate } }
-    );
-    if (!advanced) continue;
+      // Only the run that moves the schedule from this exact date may continue (overlapping runs stop here).
+      const advanced = await RecurringTransaction.findOneAndUpdate(
+        { _id: item._id, status: "active", nextDueDate: dueDate },
+        { $set: { lastProcessedDate: now, nextDueDate: nextDate } }
+      );
+      if (!advanced) break;
+      recorded += 1;
+      dueDate = nextDate;
+    }
+    if (recorded === 0) continue;
 
     // Notify the user in-app
     try {
       await User.findByIdAndUpdate(item.userId, {
         $push: {
           notifications: {
-            message: `🔁 Recurring ${item.type === "expense" ? "bill paid" : "income credited"}: "${item.description}" for ₹${item.amount}.`,
+            message: `🔁 Recurring ${item.type === "expense" ? "bill paid" : "income credited"}: "${item.description}" for ₹${item.amount}${recorded > 1 ? ` (${recorded} missed cycles recorded)` : ""}.`,
             isRead: false,
             createdAt: now,
           },
@@ -281,6 +305,11 @@ export const updateRecurringTransaction = async (req, res) => {
     }
 
     if (status && ["active", "paused", "completed"].includes(status)) {
+      // Resuming skips the paused period: jump to the latest occurrence that is due now,
+      // so at most the current cycle is recorded instead of every cycle while it was paused.
+      if (status === "active" && recurring.status !== "active") {
+        recurring.nextDueDate = latestOccurrenceAtOrBefore(recurring);
+      }
       recurring.status = status;
     }
 
