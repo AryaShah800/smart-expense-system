@@ -20,8 +20,8 @@ export function useNotificationsSocket() {
     if (!userId) return;
     dispatch(fetchNotifications());
 
+    // The server puts each authenticated socket in its own user room; the client never picks a room.
     socket.connect();
-    const joinRoom = () => socket.emit("join_room", userId);
     const onNotification = (notification: Notification) => {
       dispatch(notificationReceived(notification));
       // A notification usually means a group changed (new expense, member joined, settlement).
@@ -32,13 +32,10 @@ export function useNotificationsSocket() {
       qc.invalidateQueries({ queryKey: queryKeys.invitations });
     };
 
-    socket.on("connect", joinRoom);
     socket.on("new_notification", onNotification);
     socket.on("new_invite", onInvite);
-    if (socket.connected) joinRoom();
 
     return () => {
-      socket.off("connect", joinRoom);
       socket.off("new_notification", onNotification);
       socket.off("new_invite", onInvite);
       socket.disconnect();
