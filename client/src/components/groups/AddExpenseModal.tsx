@@ -2,7 +2,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import { useAuth } from "../../hooks/useAuth";
 import api, { apiErrorMessage } from "../../api/axios";
 import toast from "react-hot-toast";
-import "../../styles/Modal.css";
+import Modal from "../Modal";
 import { getCurrencySymbol } from "../../utils/currencyFormatter";
 import { useGroupCategories } from "../../hooks/queries";
 import type { MemberSummary, SplitType } from "../../types/models";
@@ -145,171 +145,176 @@ function AddExpenseModal({ groupId, groupMembers, onClose, onAdded }: AddExpense
   };
 
   return (
-    <div className="modal-overlay">
-      <div className="modal modal-lg modal-content"> {/* modal-content provides relative positioning */}
-        <button className="modal-close-btn" onClick={onClose} aria-label="Close">×</button>
+    <Modal
+      isOpen
+      onClose={onClose}
+      title="Add Expense"
+      className="modal modal-lg modal-content"
+      bodyClassName=""
+      renderHeader={(titleId, title) => (
+        <>
+          <button type="button" className="modal-close-btn" onClick={onClose} aria-label="Close">&times;</button>
+          <div className="modal-header centered">
+            <h3 id={titleId}>{title}</h3>
+          </div>
+        </>
+      )}
+    >
+      <form onSubmit={handleSubmit} className="expense-form">
 
-        <div className="modal-header centered">
-          <h3>Add Expense</h3>
+        {/* 1. CENTERED AMOUNT INPUT */}
+        <div className="amount-section">
+          <label className="input-label-center" htmlFor="addexpensemodal-total-amount">Total Amount</label>
+            <div className="amount-display-wrapper">
+            <span className="currency-symbol-big">{getCurrencySymbol(currentUser?.currency)}</span>
+            <input
+              id="addexpensemodal-total-amount"
+              type="number"
+              className="amount-input-big"
+              placeholder="0"
+              value={amount}
+              min="0.01"
+              step="0.01"
+              onKeyDown={(e) => ["-", "+", "e", "E"].includes(e.key) && e.preventDefault()}
+              onChange={(e) => setAmount(e.target.value)}
+              onWheel={(e) => e.currentTarget.blur()}
+              required
+            />
+          </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="expense-form">
-
-          {/* 1. CENTERED AMOUNT INPUT */}
-          <div className="amount-section">
-            <label className="input-label-center" htmlFor="addexpensemodal-total-amount">Total Amount</label>
-              <div className="amount-display-wrapper">
-              <span className="currency-symbol-big">{getCurrencySymbol(currentUser?.currency)}</span>
-              <input
-                id="addexpensemodal-total-amount"
-                type="number"
-                className="amount-input-big"
-                placeholder="0"
-                value={amount}
-                min="0.01"
-                step="0.01"
-                onKeyDown={(e) => ["-", "+", "e", "E"].includes(e.key) && e.preventDefault()}
-                onChange={(e) => setAmount(e.target.value)}
-                onWheel={(e) => e.currentTarget.blur()}
-                required
-                autoFocus
-              />
-            </div>
+        {/* 2. DESCRIPTION & CATEGORY & PAIDBY */}
+        <div className="form-row">
+          <div className="form-group flex-grow">
+            <label htmlFor="addexpensemodal-description">Description</label>
+            <input
+              id="addexpensemodal-description"
+              type="text"
+              className="modal-input"
+              placeholder="What is this for?"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+            />
           </div>
 
-          {/* 2. DESCRIPTION & CATEGORY & PAIDBY */}
-          <div className="form-row">
-            <div className="form-group flex-grow">
-              <label htmlFor="addexpensemodal-description">Description</label>
-              <input
-                id="addexpensemodal-description"
-                type="text"
-                className="modal-input"
-                placeholder="What is this for?"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-              />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="addexpensemodal-category">Category</label>
-              <select
-                id="addexpensemodal-category"
-                className="modal-select"
-                value={categoryId}
-                onChange={(e) => setCategoryId(e.target.value)}
-              >
-                <option value="">General</option>
-                {categories.map(cat => (
-                  <option key={cat._id} value={cat._id}>{cat.icon} {cat.name}</option>
-                ))}
-              </select>
-            </div>
+          <div className="form-group">
+            <label htmlFor="addexpensemodal-category">Category</label>
+            <select
+              id="addexpensemodal-category"
+              className="modal-select"
+              value={categoryId}
+              onChange={(e) => setCategoryId(e.target.value)}
+            >
+              <option value="">General</option>
+              {categories.map(cat => (
+                <option key={cat._id} value={cat._id}>{cat.icon} {cat.name}</option>
+              ))}
+            </select>
           </div>
+        </div>
 
-          {/* Fix #1: Add Paid By selector */}
-          <div className="form-row">
-            <div className="form-group">
-              <label htmlFor="addexpensemodal-paid-by">Paid By</label>
-              <select
-                id="addexpensemodal-paid-by"
-                className="modal-select"
-                value={paidBy}
-                onChange={(e) => setPaidBy(e.target.value)}
-              >
-                <option value="">Select payer</option>
-                {uniqueMembers.map(member => (
-                  <option key={member._id} value={member._id}>
-                    {member._id === currentUser?._id ? "You" : member.username}
-                  </option>
-                ))}
-              </select>
-            </div>
+        {/* Fix #1: Add Paid By selector */}
+        <div className="form-row">
+          <div className="form-group">
+            <label htmlFor="addexpensemodal-paid-by">Paid By</label>
+            <select
+              id="addexpensemodal-paid-by"
+              className="modal-select"
+              value={paidBy}
+              onChange={(e) => setPaidBy(e.target.value)}
+            >
+              <option value="">Select payer</option>
+              {uniqueMembers.map(member => (
+                <option key={member._id} value={member._id}>
+                  {member._id === currentUser?._id ? "You" : member.username}
+                </option>
+              ))}
+            </select>
           </div>
+        </div>
 
-          {/* 3. SPLIT TYPE TABS */}
-          <div className="split-type-section">
-            <label>Split Method</label>
-            <div className="split-tabs">
-              <button
-                type="button"
-                className={`split-tab ${splitType === 'equal' ? 'active' : ''}`}
-                onClick={() => setSplitType('equal')}
-              >
-                = Equally
-              </button>
-              <button
-                type="button"
-                className={`split-tab ${splitType === 'exact' ? 'active' : ''}`}
-                onClick={() => setSplitType('exact')}
-              >
-                {getCurrencySymbol(currentUser?.currency)} Exact
-              </button>
-              <button
-                type="button"
-                className={`split-tab ${splitType === 'percentage' ? 'active' : ''}`}
-                onClick={() => setSplitType('percentage')}
-              >
-                % Percent
-              </button>
-            </div>
-          </div>
-
-          {/* 4. MEMBER SELECTION LIST */}
-          <div className="members-section">
-            <label>Split With</label>
-            <div className="members-list-scroll">
-              <div className="split-member-list">
-                {groupMembers?.map((member) => {
-                  const isSelected = involvedUsers.includes(member._id) && splitType === 'equal';
-                  return (
-                    <div
-                      key={member._id}
-                      className={`split-member-item ${isSelected ? 'selected' : ''}`}
-                      onClick={() => splitType === 'equal' && toggleInvolvedUser(member._id)}
-                    >
-                      <div className="split-member-info">
-                        <div className="split-member-avatar">{(member.username || '?').charAt(0)}</div>
-                        <span className="split-member-name">{member.username}</span>
-                      </div>
-
-                      {/* Contextual Action Area */}
-                      <div onClick={(e) => e.stopPropagation()}>
-                        {splitType === "equal" ? (
-                          isSelected && <span className="check-icon"><Check size={14} aria-hidden="true" /></span>
-                        ) : (
-                          <div className="split-input-container">
-                            <input
-                              type="number"
-                              className="split-value-input"
-                              placeholder="0"
-                              min="0"
-                              step="0.01"
-                              onKeyDown={(e) => ["-", "+", "e", "E"].includes(e.key) && e.preventDefault()}
-                              value={customSplits.find(s => s.userId === member._id)?.value || ""}
-                              onChange={(e) => handleCustomSplitChange(member._id, e.target.value)}
-                              onWheel={(e) => e.currentTarget.blur()}
-                            />
-                            <span className="unit-label">{splitType === 'percentage' ? '%' : getCurrencySymbol(currentUser?.currency)}</span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-
-          <div className="modal-footer">
-            <button type="submit" className="primary-submit-btn" disabled={loading}>
-              {loading ? "Adding Expense..." : "Add Expense"}
+        {/* 3. SPLIT TYPE TABS */}
+        <div className="split-type-section">
+          <label>Split Method</label>
+          <div className="split-tabs">
+            <button
+              type="button"
+              className={`split-tab ${splitType === 'equal' ? 'active' : ''}`}
+              onClick={() => setSplitType('equal')}
+            >
+              = Equally
+            </button>
+            <button
+              type="button"
+              className={`split-tab ${splitType === 'exact' ? 'active' : ''}`}
+              onClick={() => setSplitType('exact')}
+            >
+              {getCurrencySymbol(currentUser?.currency)} Exact
+            </button>
+            <button
+              type="button"
+              className={`split-tab ${splitType === 'percentage' ? 'active' : ''}`}
+              onClick={() => setSplitType('percentage')}
+            >
+              % Percent
             </button>
           </div>
+        </div>
 
-        </form>
-      </div>
-    </div>
+        {/* 4. MEMBER SELECTION LIST */}
+        <div className="members-section">
+          <label>Split With</label>
+          <div className="members-list-scroll">
+            <div className="split-member-list">
+              {groupMembers?.map((member) => {
+                const isSelected = involvedUsers.includes(member._id) && splitType === 'equal';
+                return (
+                  <div
+                    key={member._id}
+                    className={`split-member-item ${isSelected ? 'selected' : ''}`}
+                    onClick={() => splitType === 'equal' && toggleInvolvedUser(member._id)}
+                  >
+                    <div className="split-member-info">
+                      <div className="split-member-avatar">{(member.username || '?').charAt(0)}</div>
+                      <span className="split-member-name">{member.username}</span>
+                    </div>
+
+                    {/* Contextual Action Area */}
+                    <div onClick={(e) => e.stopPropagation()}>
+                      {splitType === "equal" ? (
+                        isSelected && <span className="check-icon"><Check size={14} aria-hidden="true" /></span>
+                      ) : (
+                        <div className="split-input-container">
+                          <input
+                            type="number"
+                            className="split-value-input"
+                            placeholder="0"
+                            min="0"
+                            step="0.01"
+                            onKeyDown={(e) => ["-", "+", "e", "E"].includes(e.key) && e.preventDefault()}
+                            value={customSplits.find(s => s.userId === member._id)?.value || ""}
+                            onChange={(e) => handleCustomSplitChange(member._id, e.target.value)}
+                            onWheel={(e) => e.currentTarget.blur()}
+                          />
+                          <span className="unit-label">{splitType === 'percentage' ? '%' : getCurrencySymbol(currentUser?.currency)}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        <div className="modal-footer">
+          <button type="submit" className="primary-submit-btn" disabled={loading}>
+            {loading ? "Adding Expense..." : "Add Expense"}
+          </button>
+        </div>
+
+      </form>
+    </Modal>
   );
 }
 

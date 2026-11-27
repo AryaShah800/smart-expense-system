@@ -6,14 +6,22 @@ interface ModalProps {
   onClose: () => void;
   title: ReactNode;
   children: ReactNode;
+  // Layout overrides keep specialized dialogs' existing styles and headers.
+  className?: string;
+  bodyClassName?: string;
+  renderHeader?: (titleId: string, title: ReactNode) => ReactNode;
 }
 
 const FOCUSABLE =
   'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
-const Modal = ({ isOpen, onClose, title, children }: ModalProps) => {
+const Modal = ({
+  isOpen, onClose, title, children,
+  className = "modal-content", bodyClassName = "modal-body", renderHeader,
+}: ModalProps) => {
   const titleId = useId();
   const dialogRef = useRef<HTMLDivElement>(null);
+  const bodyRef = useRef<HTMLDivElement>(null);
   // Keep the latest onClose without re-running the focus effect on every render.
   const onCloseRef = useRef(onClose);
   useEffect(() => {
@@ -26,7 +34,7 @@ const Modal = ({ isOpen, onClose, title, children }: ModalProps) => {
     const dialog = dialogRef.current;
 
     // Move focus into the dialog (first field, otherwise the dialog itself).
-    const first = dialog?.querySelector<HTMLElement>(`.modal-body ${FOCUSABLE.split(", ").join(", .modal-body ")}`);
+    const first = bodyRef.current?.querySelector<HTMLElement>(FOCUSABLE);
     (first ?? dialog)?.focus();
 
     const onKeyDown = (e: KeyboardEvent) => {
@@ -63,20 +71,22 @@ const Modal = ({ isOpen, onClose, title, children }: ModalProps) => {
     <div className="modal-overlay" onClick={onClose}>
       <div
         ref={dialogRef}
-        className="modal-content"
+        className={className}
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
         tabIndex={-1}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="modal-header">
-          <h2 id={titleId}>{title}</h2>
-          <button type="button" className="modal-close" onClick={onClose} aria-label="Close dialog">
-            &times;
-          </button>
-        </div>
-        <div className="modal-body">{children}</div>
+        {renderHeader ? renderHeader(titleId, title) : (
+          <div className="modal-header">
+            <h2 id={titleId}>{title}</h2>
+            <button type="button" className="modal-close" onClick={onClose} aria-label="Close">
+              &times;
+            </button>
+          </div>
+        )}
+        <div ref={bodyRef} className={bodyClassName}>{children}</div>
       </div>
     </div>
   );

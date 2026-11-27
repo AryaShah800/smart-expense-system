@@ -5,6 +5,7 @@ import { useCategories, useInvalidateMoneyData, useRecurring } from "../hooks/qu
 import { loadErrorText, toLoadError } from "../store/loadError";
 import { useAuth } from "../hooks/useAuth";
 import formatCurrency from "../utils/currencyFormatter";
+import Modal from "../components/Modal";
 import CategoryIcon from "../components/CategoryIcon";
 import toast from "react-hot-toast";
 import DataErrorState from "../components/DataErrorState";
@@ -381,150 +382,156 @@ export default function Recurring() {
 
       {/* CREATE MODAL */}
       {isModalOpen && (
-        <div className="modal-overlay">
-          <div className="modal recurring-modal">
+        <Modal
+          isOpen
+          onClose={() => setIsModalOpen(false)}
+          title="Create Recurring Schedule"
+          className="modal recurring-modal"
+          bodyClassName=""
+          renderHeader={(titleId, title) => (
             <div className="modal-header">
-              <h3>Create Recurring Schedule</h3>
+              <h3 id={titleId}>{title}</h3>
               <button
                 type="button"
                 className="btn-close"
                 onClick={() => setIsModalOpen(false)}
+                aria-label="Close"
               >
                 <X size={14} aria-hidden="true" />
               </button>
             </div>
+          )}
+        >
+          <form onSubmit={handleSubmit} className="recurring-form">
+            {/* TYPE SWITCH */}
+            <div className="rec-type-selector">
+              <button
+                type="button"
+                className={`type-btn ${form.type === "expense" ? "active expense" : ""}`}
+                onClick={() => setForm({ ...form, type: "expense", categoryId: "" })}
+              >
+                Expense / Bill
+              </button>
+              <button
+                type="button"
+                className={`type-btn ${form.type === "income" ? "active income" : ""}`}
+                onClick={() => setForm({ ...form, type: "income", categoryId: "" })}
+              >
+                Income / Deposit
+              </button>
+            </div>
 
-            <form onSubmit={handleSubmit} className="recurring-form">
-              {/* TYPE SWITCH */}
-              <div className="rec-type-selector">
-                <button
-                  type="button"
-                  className={`type-btn ${form.type === "expense" ? "active expense" : ""}`}
-                  onClick={() => setForm({ ...form, type: "expense", categoryId: "" })}
-                >
-                  Expense / Bill
-                </button>
-                <button
-                  type="button"
-                  className={`type-btn ${form.type === "income" ? "active income" : ""}`}
-                  onClick={() => setForm({ ...form, type: "income", categoryId: "" })}
-                >
-                  Income / Deposit
-                </button>
-              </div>
+            {/* TITLE */}
+            <div className="form-group">
+              <label htmlFor="recurring-description-name">Description / Name</label>
+              <input
+                id="recurring-description-name"
+                type="text"
+                className="modal-input"
+                placeholder="e.g. Netflix, Apartment Rent, Gym"
+                value={form.description}
+                onChange={(e) => setForm({ ...form, description: e.target.value })}
+                required
+              />
+            </div>
 
-              {/* TITLE */}
+            {/* AMOUNT & FREQUENCY */}
+            <div className="form-row-2">
               <div className="form-group">
-                <label htmlFor="recurring-description-name">Description / Name</label>
+                <label htmlFor="recurring-amount">Amount</label>
                 <input
-                  id="recurring-description-name"
-                  type="text"
+                  id="recurring-amount"
+                  type="number"
                   className="modal-input"
-                  placeholder="e.g. Netflix, Apartment Rent, Gym"
-                  value={form.description}
-                  onChange={(e) => setForm({ ...form, description: e.target.value })}
+                  placeholder="0.00"
+                  min="0.01"
+                  step="0.01"
+                  value={form.amount}
+                  onKeyDown={(e) => ["-", "+", "e", "E"].includes(e.key) && e.preventDefault()}
+                  onChange={(e) => setForm({ ...form, amount: e.target.value })}
                   required
                 />
               </div>
 
-              {/* AMOUNT & FREQUENCY */}
-              <div className="form-row-2">
-                <div className="form-group">
-                  <label htmlFor="recurring-amount">Amount</label>
-                  <input
-                    id="recurring-amount"
-                    type="number"
-                    className="modal-input"
-                    placeholder="0.00"
-                    min="0.01"
-                    step="0.01"
-                    value={form.amount}
-                    onKeyDown={(e) => ["-", "+", "e", "E"].includes(e.key) && e.preventDefault()}
-                    onChange={(e) => setForm({ ...form, amount: e.target.value })}
-                    required
-                  />
-                </div>
+              <div className="form-group">
+                <label htmlFor="recurring-frequency">Frequency</label>
+                <select
+                  id="recurring-frequency"
+                  className="modal-select"
+                  value={form.frequency}
+                  onChange={(e) => setForm({ ...form, frequency: e.target.value as Frequency })}
+                >
+                  <option value="monthly">Monthly</option>
+                  <option value="weekly">Weekly</option>
+                  <option value="daily">Daily</option>
+                  <option value="yearly">Yearly</option>
+                </select>
+              </div>
+            </div>
 
-                <div className="form-group">
-                  <label htmlFor="recurring-frequency">Frequency</label>
-                  <select
-                    id="recurring-frequency"
-                    className="modal-select"
-                    value={form.frequency}
-                    onChange={(e) => setForm({ ...form, frequency: e.target.value as Frequency })}
-                  >
-                    <option value="monthly">Monthly</option>
-                    <option value="weekly">Weekly</option>
-                    <option value="daily">Daily</option>
-                    <option value="yearly">Yearly</option>
-                  </select>
-                </div>
+            {/* CATEGORY & START DATE */}
+            <div className="form-row-2">
+              <div className="form-group">
+                <label htmlFor="recurring-category">Category</label>
+                <select
+                  id="recurring-category"
+                  className="modal-select"
+                  value={form.categoryId}
+                  onChange={(e) => setForm({ ...form, categoryId: e.target.value })}
+                  required
+                >
+                  <option value="">Select Category</option>
+                  {availableCategories.map((c) => (
+                    <option key={c._id} value={c._id}>
+                      {c.icon} {c.name}
+                    </option>
+                  ))}
+                </select>
               </div>
 
-              {/* CATEGORY & START DATE */}
-              <div className="form-row-2">
-                <div className="form-group">
-                  <label htmlFor="recurring-category">Category</label>
-                  <select
-                    id="recurring-category"
-                    className="modal-select"
-                    value={form.categoryId}
-                    onChange={(e) => setForm({ ...form, categoryId: e.target.value })}
-                    required
-                  >
-                    <option value="">Select Category</option>
-                    {availableCategories.map((c) => (
-                      <option key={c._id} value={c._id}>
-                        {c.icon} {c.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="form-group">
-                  <label htmlFor="recurring-start-date">Start Date</label>
-                  <input
-                    id="recurring-start-date"
-                    type="date"
-                    className="modal-input"
-                    value={form.startDate}
-                    onChange={(e) => setForm({ ...form, startDate: e.target.value })}
-                    required
-                  />
-                </div>
-              </div>
-
-              {/* RECORD INITIAL TRANSACTION CHECKBOX */}
-              <label className="checkbox-label">
+              <div className="form-group">
+                <label htmlFor="recurring-start-date">Start Date</label>
                 <input
-                  type="checkbox"
-                  checked={form.createInitialTransaction}
-                  onChange={(e) =>
-                    setForm({ ...form, createInitialTransaction: e.target.checked })
-                  }
+                  id="recurring-start-date"
+                  type="date"
+                  className="modal-input"
+                  value={form.startDate}
+                  onChange={(e) => setForm({ ...form, startDate: e.target.value })}
+                  required
                 />
-                <span>Record first payment transaction immediately</span>
-              </label>
-
-              <div className="modal-actions">
-                <button
-                  type="button"
-                  className="modal-btn secondary"
-                  onClick={() => setIsModalOpen(false)}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="modal-btn primary"
-                  disabled={submitting}
-                >
-                  {submitting ? "Saving..." : "Start Schedule"}
-                </button>
               </div>
-            </form>
-          </div>
-        </div>
+            </div>
+
+            {/* RECORD INITIAL TRANSACTION CHECKBOX */}
+            <label className="checkbox-label">
+              <input
+                type="checkbox"
+                checked={form.createInitialTransaction}
+                onChange={(e) =>
+                  setForm({ ...form, createInitialTransaction: e.target.checked })
+                }
+              />
+              <span>Record first payment transaction immediately</span>
+            </label>
+
+            <div className="modal-actions">
+              <button
+                type="button"
+                className="modal-btn secondary"
+                onClick={() => setIsModalOpen(false)}
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="modal-btn primary"
+                disabled={submitting}
+              >
+                {submitting ? "Saving..." : "Start Schedule"}
+              </button>
+            </div>
+          </form>
+        </Modal>
       )}
     </div>
   );

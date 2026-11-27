@@ -2,7 +2,7 @@ import { useState, type FormEvent } from "react";
 import { useAuth } from "../../hooks/useAuth";
 import api, { apiErrorMessage } from "../../api/axios";
 import toast from "react-hot-toast";
-import "../../styles/Modal.css";
+import Modal from "../Modal";
 import { getCurrencySymbol } from "../../utils/currencyFormatter";
 import type { MemberSummary } from "../../types/models";
 import { X } from "lucide-react";
@@ -77,78 +77,83 @@ function SettleUpModal({ groupId, groupMembers, onClose, onSettled }: SettleUpMo
   };
 
   return (
-    <div className="modal-overlay">
-      <div className="modal">
+    <Modal
+      isOpen
+      onClose={onClose}
+      title="Record Payment"
+      className="modal"
+      bodyClassName=""
+      renderHeader={(titleId, title) => (
         <div className="modal-header">
-          <h3>Record Payment</h3>
-          <button className="btn-close" onClick={onClose}><X size={18} aria-hidden="true" /></button>
+          <h3 id={titleId}>{title}</h3>
+          <button type="button" className="btn-close" onClick={onClose} aria-label="Close"><X size={18} aria-hidden="true" /></button>
+        </div>
+      )}
+    >
+      <p className="modal-desc">
+        Record a cash payment to settle debt between group members.
+      </p>
+
+      <form onSubmit={handleSubmit}>
+        {/* Fix #2: Add Paid From selector */}
+        <label className="modal-section-label" htmlFor="settleupmodal-paid-from">Paid From</label>
+        <select
+          id="settleupmodal-paid-from"
+          className="modal-select"
+          value={fromUserId}
+          onChange={(e) => changePayer(e.target.value)}
+        >
+          <option value="">You (Me)</option>
+          {groupMembers?.map((member) => (
+            <option key={member._id} value={member._id}>
+              {member.username}
+            </option>
+          ))}
+        </select>
+
+        <label className="modal-section-label" htmlFor="settleupmodal-paid-to">Paid To</label>
+        <select
+          id="settleupmodal-paid-to"
+          className="modal-select"
+          value={toUserId}
+          onChange={(e) => setToUserId(e.target.value)}
+          required
+        >
+          {!fromUserId && <option value="">Select Recipient</option>}
+          {recipients.map((member) => (
+            <option key={member._id} value={member._id}>
+              {member.username}
+            </option>
+          ))}
+        </select>
+
+        <label className="modal-section-label" htmlFor="settleupmodal-amount">Amount</label>
+        <div className="modal-amount-wrapper small">
+          <span className="currency-symbol">{getCurrencySymbol(user?.currency)}</span>
+          <input
+            id="settleupmodal-amount"
+            type="number"
+            className="modal-input"
+            placeholder="0.00"
+            min="0.01"
+            step="0.01"
+            onKeyDown={(e) => ["-", "+", "e", "E"].includes(e.key) && e.preventDefault()}
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            required
+          />
         </div>
 
-        <p className="modal-desc">
-          Record a cash payment to settle debt between group members.
-        </p>
-
-        <form onSubmit={handleSubmit}>
-          {/* Fix #2: Add Paid From selector */}
-          <label className="modal-section-label" htmlFor="settleupmodal-paid-from">Paid From</label>
-          <select
-            id="settleupmodal-paid-from"
-            className="modal-select"
-            value={fromUserId}
-            onChange={(e) => changePayer(e.target.value)}
-          >
-            <option value="">You (Me)</option>
-            {groupMembers?.map((member) => (
-              <option key={member._id} value={member._id}>
-                {member.username}
-              </option>
-            ))}
-          </select>
-
-          <label className="modal-section-label" htmlFor="settleupmodal-paid-to">Paid To</label>
-          <select
-            id="settleupmodal-paid-to"
-            className="modal-select"
-            value={toUserId}
-            onChange={(e) => setToUserId(e.target.value)}
-            required
-          >
-            {!fromUserId && <option value="">Select Recipient</option>}
-            {recipients.map((member) => (
-              <option key={member._id} value={member._id}>
-                {member.username}
-              </option>
-            ))}
-          </select>
-
-          <label className="modal-section-label" htmlFor="settleupmodal-amount">Amount</label>
-          <div className="modal-amount-wrapper small">
-            <span className="currency-symbol">{getCurrencySymbol(user?.currency)}</span>
-            <input
-              id="settleupmodal-amount"
-              type="number"
-              className="modal-input"
-              placeholder="0.00"
-              min="0.01"
-              step="0.01"
-              onKeyDown={(e) => ["-", "+", "e", "E"].includes(e.key) && e.preventDefault()}
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              required
-            />
-          </div>
-
-          <div className="modal-actions">
-            <button type="button" className="modal-btn secondary" onClick={onClose}>
-              Cancel
-            </button>
-            <button type="submit" className="modal-btn primary" disabled={loading}>
-              {loading ? "Recording..." : "Record Payment"}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+        <div className="modal-actions">
+          <button type="button" className="modal-btn secondary" onClick={onClose}>
+            Cancel
+          </button>
+          <button type="submit" className="modal-btn primary" disabled={loading}>
+            {loading ? "Recording..." : "Record Payment"}
+          </button>
+        </div>
+      </form>
+    </Modal>
   );
 }
 
