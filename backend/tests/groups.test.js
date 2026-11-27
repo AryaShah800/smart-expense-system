@@ -5,6 +5,7 @@ import User from "../models/user.js";
 import Group from "../models/Group.js";
 import GroupExpense from "../models/GroupExpense.js";
 import Settlement from "../models/Settlement.js";
+import GroupCategory from "../models/GroupCategory.js";
 import { startDb, stopDb, createUser } from "./helpers/setup.js";
 
 before(startDb);
@@ -346,6 +347,37 @@ test("group categories: defaults are provided, members can add their own, duplic
   assert.equal((await a.agent.post(`/api/groups/${group._id}/categories`).send({ name: "Pets" })).status, 400);
   assert.equal((await outsider.agent.post(`/api/groups/${group._id}/categories`).send({ name: "Spy" })).status, 403);
   assert.ok((await a.agent.get(`/api/groups/${group._id}/categories`)).body.some((c) => c.name === "Pets"));
+});
+
+test("two members adding the same category at once create it only once", async () => {
+  const a = await createUser(app, { username: "racea" });
+  const b = await createUser(app, { username: "raceb" });
+  const group = await makeGroup(a, [b]);
+  await GroupCategory.init(); // make sure the unique index exists before racing
+
+  const results = await Promise.all([
+    a.agent.post(`/api/groups/${group._id}/categories`).send({ name: "Fuel" }),
+    b.agent.post(`/api/groups/${group._id}/categories`).send({ name: "Fuel" }),
+    a.agent.post(`/api/groups/${group._id}/categories`).send({ name: "Fuel" }),
+  ]);
+  assert.deepEqual(results.map((r) => r.status).sort(), [201, 400, 400]);
+  assert.equal(await GroupCategory.countDocuments({ groupId: group._id, name: "Fuel" }), 1);
+});
+
+test("an expense can use a default or this group's category, not another group's", async () => {
+  const a = await createUser(app, { username: "cata" });
+  const other = await createUser(app, { username: "catother" });
+  const group = await makeGroup(a);
+  const otherGroup = await makeGroup(other);
+  const defaults = (await a.agent.get(`/api/groups/${group._id}/categories`)).body;
+  const mine = (await a.agent.post(`/api/groups/${group._id}/categories`).send({ name: "Mine" })).body;
+  const theirs = (await other.agent.post(`/api/groups/${otherGroup._id}/categories`).send({ name: "Theirs" })).body;
+  const spend = (categoryId) => addExpense(a, group, { description: "x", amount: 10, splitType: "equal", categoryId });
+
+  assert.equal((await spend(defaults.find((c) => c.isDefault)._id)).status, 201);
+  assert.equal((await spend(mine._id)).status, 201);
+  assert.equal((await spend(theirs._id)).status, 400);
+  assert.equal((await spend("not-an-id")).status, 400);
 });
 
 test("only the admin can delete a group, and deleting removes its expenses and settlements", async () => {

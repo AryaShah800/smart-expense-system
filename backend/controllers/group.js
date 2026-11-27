@@ -172,6 +172,8 @@ export const addGroupCategory = async (req, res) => {
     await category.save();
     res.status(201).json(category);
   } catch (error) {
+    // Two members adding the same name at once: the unique index rejects the second one.
+    if (error?.code === 11000) return res.status(400).json({ message: "Category already exists" });
     res.status(500).json({ message: error.message });
   }
 };
@@ -226,6 +228,13 @@ export const addGroupExpense = async (req, res) => {
     const group = await Group.findById(groupId);
     if (!group) return res.status(404).json({ message: "Group not found" });
     if (!group.members.some(m => m.equals(req.user._id))) return res.status(403).json({ message: "Access denied" });
+
+    // A category must be a default one or belong to this group, not another group's private category.
+    if (categoryId) {
+      const usable = mongoose.isValidObjectId(categoryId)
+        && await GroupCategory.exists({ _id: categoryId, $or: [{ groupId }, { isDefault: true }] });
+      if (!usable) return res.status(400).json({ message: "Invalid category for this group" });
+    }
 
     // Fix #1: Allow paidBy to be passed in request body with fallback to req.user._id
     const paidByUserId = paidBy || req.user._id;

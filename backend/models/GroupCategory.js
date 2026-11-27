@@ -27,7 +27,12 @@ const groupCategorySchema = new mongoose.Schema({
   }
 }, { timestamps: true });
 
-// Prevent duplicate names within the same group (but allow same name in different groups)
-groupCategorySchema.index({ groupId: 1, name: 1 }, { unique: true, partialFilterExpression: { groupId: { $type: "string" } } });
+// Prevent duplicate names within the same group (but allow same name in different groups).
+// groupId is an ObjectId: the old filter ($type: "string") matched no document, so it never enforced anything.
+// A new name, so it is built next to the old index instead of clashing with it.
+groupCategorySchema.index(
+  { groupId: 1, name: 1 },
+  { unique: true, name: "group_category_name_unique", partialFilterExpression: { groupId: { $type: "objectId" } } }
+);
 
 export default mongoose.model("GroupCategory", groupCategorySchema);
