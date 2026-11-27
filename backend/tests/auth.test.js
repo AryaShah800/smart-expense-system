@@ -2,8 +2,10 @@ import test, { before, after } from "node:test";
 import assert from "node:assert/strict";
 import request from "supertest";
 import jwt from "jsonwebtoken";
+import express from "express";
 import app from "../app.js";
 import User from "../models/user.js";
+import { generateOtp, hashOtp, otpMatches } from "../utils/otp.js";
 import { startDb, stopDb, stubEmail, createUser } from "./helpers/setup.js";
 
 const email = stubEmail();
@@ -14,6 +16,25 @@ after(async () => {
 });
 
 const cookieOf = (res) => (res.headers["set-cookie"] || []).find((c) => c.startsWith("jwt="));
+const emailedOtp = (addr) => email.sent.findLast((m) => m.to[0].email === addr).htmlContent.match(/\b\d{6}\b/)[0];
+
+test("generateOtp always returns a six-digit string", () => {
+  for (let i = 0; i < 1000; i++) assert.match(generateOtp(), /^[1-9]\d{5}$/);
+});
+
+test("otpMatches validates candidates and supports hashed and legacy codes", () => {
+  const otp = "123456";
+  assert.match(hashOtp(otp), /^[a-f0-9]{64}$/);
+  for (const stored of [hashOtp(otp), otp]) {
+    assert.equal(otpMatches(stored, otp), true);
+    for (const candidate of [undefined, null, 123456, {}, [otp], "", "12345", "1234567", "abcdef", "123456\n", "654321"]) {
+      assert.equal(otpMatches(stored, candidate), false);
+    }
+  }
+  for (const stored of [undefined, null, 123456, {}, "", "12345", "g".repeat(64), "a".repeat(63)]) {
+    assert.equal(otpMatches(stored, otp), false);
+  }
+});
 
 test("signup creates an unverified user, emails an OTP and never returns it", async () => {
   const res = await request(app).post("/api/users/signup").send({ username: "newbie", email: "newbie@test.dev", password: "Passw0rd!" });
@@ -22,8 +43,10 @@ test("signup creates an unverified user, emails an OTP and never returns it", as
   const user = await User.findOne({ email: "newbie@test.dev" });
   assert.equal(user.isVerified, false);
   assert.notEqual(user.password, "Passw0rd!", "password must be hashed");
-  assert.match(user.otp, /^\d{6}$/);
-  assert.ok(email.sent.some((m) => m.to[0].email === "newbie@test.dev" && m.htmlContent.includes(user.otp)));
+  const otp = emailedOtp(user.email);
+  assert.notEqual(user.otp, otp);
+  assert.match(user.otp, /^[a-f0-9]{64}$/);
+  assert.equal(user.otp, hashOtp(otp));
 });
 
 test("signup rejects a duplicate email or username", async () => {
@@ -42,21 +65,32 @@ test("login is refused until the email is verified", async () => {
 test("verify-otp rejects a wrong or expired code, and accepts the right one with a cookie only", async () => {
   await request(app).post("/api/users/signup").send({ username: "verifyme", email: "verifyme@test.dev", password: "Passw0rd!" });
   const user = await User.findOne({ email: "verifyme@test.dev" });
+  const otp = emailedOtp(user.email);
+  assert.notEqual(user.otp, otp);
+  assert.match(user.otp, /^[a-f0-9]{64}$/);
 
-  const wrong = await request(app).post("/api/users/verify-otp").send({ email: user.email, otp: user.otp === "000000" ? "111111" : "000000" });
+  const wrong = await request(app).post("/api/users/verify-otp").send({ email: user.email, otp: "000000" });
   assert.equal(wrong.status, 400);
 
   await User.updateOne({ _id: user._id }, { otpExpires: new Date(Date.now() - 1000) });
-  const expired = await request(app).post("/api/users/verify-otp").send({ email: user.email, otp: user.otp });
+  const expired = await request(app).post("/api/users/verify-otp").send({ email: user.email, otp });
   assert.equal(expired.status, 400);
 
   await User.updateOne({ _id: user._id }, { otpExpires: new Date(Date.now() + 60000) });
-  const ok = await request(app).post("/api/users/verify-otp").send({ email: user.email, otp: user.otp });
+  const ok = await request(app).post("/api/users/verify-otp").send({ email: user.email, otp });
   assert.equal(ok.status, 200);
   assert.equal("token" in ok.body, false, "JWT must not appear in the JSON body");
   assert.match(cookieOf(ok), /HttpOnly/i);
   assert.equal((await User.findById(user._id)).isVerified, true);
   assert.equal((await User.findById(user._id)).otp, undefined, "OTP is cleared once used");
+  assert.equal((await User.findById(user._id)).otpExpires, undefined, "OTP expiry is cleared once used");
+});
+
+test("verify-otp accepts a pending legacy plaintext code", async () => {
+  await User.create({ username: "legacy", email: "legacy@test.dev", password: "unused", otp: "123456", otpExpires: new Date(Date.now() + 60000) });
+  const res = await request(app).post("/api/users/verify-otp").send({ email: "legacy@test.dev", otp: "123456" });
+  assert.equal(res.status, 200);
+  assert.equal((await User.findOne({ email: "legacy@test.dev" })).otp, undefined);
 });
 
 test("login sets an httpOnly cookie, returns no token, and /me works with it", async () => {
@@ -130,6 +164,36 @@ test("the debug OTP route does not exist unless explicitly enabled", async () =>
   assert.equal(res.status, 404);
 });
 
+test("debug OTP returns the last emailed code only when enabled and clears it after verification", async () => {
+  process.env.ENABLE_DEBUG_OTP = "true";
+  try {
+    const { default: routes } = await import("../routes/user.js?debug-otp-test");
+    const debugApp = express();
+    debugApp.use(express.json());
+    debugApp.use("/api/users", routes);
+    const addr = "debug@test.dev";
+    // Codes created while debug mode was disabled were never cached.
+    const uncached = await request(debugApp).get("/api/users/debug/otp").query({ email: "newbie@test.dev" });
+    assert.equal(uncached.status, 200);
+    assert.equal(uncached.body.otp, undefined);
+    assert.equal((await request(debugApp).post("/api/users/signup").send({ username: "debug", email: addr, password: "Passw0rd!" })).status, 201);
+    for (let i = 0; i < 2; i++) {
+      const res = await request(debugApp).get("/api/users/debug/otp").query({ email: addr });
+      assert.equal(res.status, 200);
+      assert.equal(res.body.otp, emailedOtp(addr));
+      assert.notEqual((await User.findOne({ email: addr })).otp, res.body.otp);
+      if (i === 0) assert.equal((await request(debugApp).post("/api/users/resend-otp").send({ email: addr })).status, 200);
+    }
+    assert.equal((await request(debugApp).post("/api/users/verify-otp").send({ email: addr, otp: emailedOtp(addr) })).status, 200);
+    const cleared = await request(debugApp).get("/api/users/debug/otp").query({ email: addr });
+    assert.equal(cleared.body.otp, undefined);
+    delete process.env.ENABLE_DEBUG_OTP;
+    assert.equal((await request(debugApp).get("/api/users/debug/otp").query({ email: addr })).status, 404);
+  } finally {
+    delete process.env.ENABLE_DEBUG_OTP;
+  }
+});
+
 test("responses carry security headers and oversized bodies are rejected", async () => {
   const res = await request(app).get("/");
   assert.equal(res.headers["x-content-type-options"], "nosniff");
@@ -158,9 +222,12 @@ test("resend-otp issues a fresh code for unverified users only", async () => {
   assert.equal(res.status, 200);
   assert.equal(email.sent.length, sentBefore + 1);
   const after = await User.findOne({ email: "resender@test.dev" });
-  assert.match(after.otp, /^\d{6}$/);
+  const otp = emailedOtp(after.email);
+  assert.notEqual(after.otp, otp);
+  assert.match(after.otp, /^[a-f0-9]{64}$/);
+  assert.equal(after.otp, hashOtp(otp));
   assert.ok(after.otpExpires > before.otpExpires - 1, "expiry is reset");
-  assert.ok(email.sent.at(-1).htmlContent.includes(after.otp));
+  assert.equal((await request(app).post("/api/users/verify-otp").send({ email: after.email, otp })).status, 200);
 
   assert.equal((await request(app).post("/api/users/resend-otp").send({ email: "ghost@test.dev" })).status, 400);
   const { email: verifiedEmail } = await createUser(app);
