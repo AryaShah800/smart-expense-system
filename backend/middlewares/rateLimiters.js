@@ -39,6 +39,11 @@ export const signupLimiter = () => pair(20);
 export const verifyOtpLimiter = () => pair(50);
 export const resendOtpLimiter = () => pair(20);
 
+// Joining by code: per signed-in user (auth runs first), so guessing other groups' codes is slow.
+// Successful joins don't count.
+export const joinGroupLimiter = () =>
+  buildLimiter({ limit: 20, skipSuccessfulRequests: true, keyGenerator: (req) => String(req.user?._id ?? ipKeyGenerator(req.ip)) });
+
 // Demo sessions are keyed by IP only; each one rebuilds data when stale, so keep it modest.
 export const demoLimiter = () =>
   buildLimiter({ limit: 10, keyGenerator: (req) => ipKeyGenerator(req.ip) });

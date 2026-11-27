@@ -1,5 +1,6 @@
 import express from "express";
 import auth from "../middlewares/auth.js";
+import { joinGroupLimiter } from "../middlewares/rateLimiters.js";
 import {
   createGroup,
   getGroups,
@@ -22,7 +23,7 @@ const router = express.Router();
 /* GROUP MANAGEMENT */
 router.post("/", auth, createGroup);
 router.get("/", auth, getGroups);
-router.post("/join", auth, joinGroup);
+router.post("/join", auth, joinGroupLimiter(), joinGroup);
 router.get("/:id", auth, getGroupDetails);
 router.delete("/:id", auth, deleteGroup); // New: Delete Group
 
