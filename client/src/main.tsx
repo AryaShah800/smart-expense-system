@@ -5,9 +5,12 @@ import App from "./App";
 import { store } from "./store";
 import { clearCacheOnUserChange, queryClient } from "./api/queryClient";
 import { initSentry, Sentry } from "./lib/sentry";
+import { installStaleChunkReload } from "./lib/staleChunkReload";
 
 // Start Sentry before anything renders so early errors are captured.
 initSentry();
+// A tab left open across a deploy reloads once instead of showing the error screen.
+installStaleChunkReload();
 import "./index.css";
 import { registerSW } from 'virtual:pwa-register';
 
