@@ -31,7 +31,7 @@ A full-stack expense tracker with email-verified sign-up, budgets, recurring tra
 | Database | MongoDB Atlas |
 | Email | Brevo transactional API |
 | Hosting | Vercel (frontend), Render (API) |
-| Tests | Node test runner + supertest on an in-memory MongoDB (111 API tests), Vitest + React Testing Library (58 client tests), Playwright (6 e2e specs) |
+| Tests | Node test runner + supertest on an in-memory MongoDB (138 API tests), Vitest + React Testing Library (71 client tests), Playwright (6 end-to-end tests) |
 | CI | GitHub Actions: backend tests and `npm audit`; client lint, type check, tests and build; daily API health check |
 
 ## Architecture
@@ -122,11 +122,19 @@ for local use: it falls back to a placeholder `JWT_SECRET` and runs the API in d
 
 See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
 
+## Security notes
+
+- Sessions are an `httpOnly` JWT cookie; Socket.IO uses a short-lived token from `GET /api/users/socket-token`.
+- Request bodies containing MongoDB operators (`$ne`, `$gt`, ...) are rejected with 400 before any route runs.
+- Sign-up, login and OTP routes have a per-IP limit and a stricter per-IP+email limit; joining a group by code is limited per user.
+- OTPs and group join codes come from `crypto`; OTPs are stored only as SHA-256 hashes.
+- CORS allows exact origins from `ALLOWED_ORIGINS` (set it in production); local development hosts are matched by exact host name.
+
 ## What I'd do next
 
-- Add tests for auth, transactions and budgets (only group authorization is covered today)
-- Move the JWT from `localStorage` to an `httpOnly` cookie end to end
-- Add rate limiting on sign-up and OTP endpoints
+- Paginate the transaction list and the group ledger (today the client loads a user's full history and filters it in the browser)
+- Compute dashboard and report months in the user's time zone, as budgets already do
+- Move rate-limit counters to a shared store (Redis) so limits hold across several API instances
 
 
 ## License
