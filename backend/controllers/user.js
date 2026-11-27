@@ -79,7 +79,29 @@ export const signup = async (req, res) => {
   try {
     if (isDemoEmail(email)) return res.status(403).json({ message: "No email is sent for demo accounts" });
     const existingUser = await User.findOne({ $or: [{ email }, { username }] });
-    if (existingUser) return res.status(400).json({ message: "Username or Email already exists" });
+    if (existingUser) {
+      // "Wrong email? Edit" re-submits the form for an account that was saved but never verified.
+      // Let that same person (same username and the same password) move it to the new email and get
+      // a fresh code. Anyone else is refused, so a pending username cannot be taken over.
+      const isPendingRetry = !existingUser.isVerified
+        && existingUser.username === username
+        && typeof password === "string"
+        && await bcrypt.compare(password, existingUser.password);
+      const emailTakenByOther = isPendingRetry && existingUser.email !== email
+        && await User.exists({ email, _id: { $ne: existingUser._id } });
+      if (!isPendingRetry || emailTakenByOther) {
+        return res.status(400).json({ message: "Username or Email already exists" });
+      }
+
+      const otp = generateOtp();
+      await sendEmailViaBrevo(email, "Verify your email", `<b>Your verification code is: ${otp}</b>`);
+      existingUser.email = email;
+      existingUser.otp = hashOtp(otp);
+      existingUser.otpExpires = Date.now() + 10 * 60 * 1000;
+      await existingUser.save();
+      rememberDebugOtp(email, otp);
+      return res.status(201).json({ message: "OTP sent to email.", email });
+    }
 
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
