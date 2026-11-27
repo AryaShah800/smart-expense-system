@@ -4,6 +4,7 @@ import GroupExpense from "../models/GroupExpense.js";
 import Settlement from "../models/Settlement.js";
 import User from "../models/user.js";
 import GroupCategory from "../models/GroupCategory.js";
+import { pushNotification } from "../utils/pushNotification.js";
 
 // Works whether `members` holds ObjectIds or populated users (a populated document's
 // toString() is not its id, which previously made members look like outsiders).
@@ -306,9 +307,7 @@ export const addGroupExpense = async (req, res) => {
 
     for (const memberId of notifyUsers) {
       // 1. Save to DB
-      await User.findByIdAndUpdate(memberId, {
-        $push: { notifications: { message, isRead: false } }
-      });
+      await pushNotification(memberId, { message });
 
       // 2. Emit Real-Time Socket Event
       if (io) {

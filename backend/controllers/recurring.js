@@ -1,7 +1,7 @@
 import RecurringTransaction from "../models/RecurringTransaction.js";
 import Transaction from "../models/Transaction.js";
 import { findUsableCategory } from "../utils/findUsableCategory.js";
-import User from "../models/user.js";
+import { pushNotification } from "../utils/pushNotification.js";
 
 // Moves `date` forward by whole months, landing on `anchorDay` or the last day of a shorter month.
 // (Plain setMonth would turn Jan 31 + 1 month into Mar 3 and skip February.)
@@ -113,14 +113,9 @@ export const processDueRecurring = async (targetUserId = null) => {
 
     // Notify the user in-app
     try {
-      await User.findByIdAndUpdate(item.userId, {
-        $push: {
-          notifications: {
-            message: `🔁 Recurring ${item.type === "expense" ? "bill paid" : "income credited"}: "${item.description}" for ₹${item.amount}${recorded > 1 ? ` (${recorded} missed cycles recorded)` : ""}.`,
-            isRead: false,
-            createdAt: now,
-          },
-        },
+      await pushNotification(item.userId, {
+        message: `🔁 Recurring ${item.type === "expense" ? "bill paid" : "income credited"}: "${item.description}" for ₹${item.amount}${recorded > 1 ? ` (${recorded} missed cycles recorded)` : ""}.`,
+        createdAt: now,
       });
     } catch (e) {
       console.error("Failed to notify user for recurring item:", e.message);
