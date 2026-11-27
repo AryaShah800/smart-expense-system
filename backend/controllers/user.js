@@ -4,6 +4,15 @@ import Group from "../models/Group.js";
 import bcrypt from "bcrypt";
 import { isDemoEmail } from "../config/demo.js";
 import generateToken, { cookieOptions, generateSocketToken } from "../utils/createToken.js";
+import { generateOtp, hashOtp, otpMatches } from "../utils/otp.js";
+
+let debugOtps;
+const rememberDebugOtp = (email, otp) => {
+  if (process.env.ENABLE_DEBUG_OTP === "true") {
+    debugOtps ??= new Map();
+    debugOtps.set(email, otp);
+  }
+};
 
 // Helper function to send email via Brevo API
 const sendEmailViaBrevo = async (toEmail, subject, htmlContent) => {
@@ -41,12 +50,13 @@ export const resendOtp = async (req, res) => {
     if (user.isVerified) return res.status(400).json({ message: "Email is already verified" });
 
     // Generate new OTP and reset timer
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otp = generateOtp();
     const otpExpires = Date.now() + 10 * 60 * 1000;
 
-    user.otp = otp;
+    user.otp = hashOtp(otp);
     user.otpExpires = otpExpires;
     await user.save();
+    rememberDebugOtp(email, otp);
 
     // Send email using Brevo
     await sendEmailViaBrevo(
@@ -73,7 +83,7 @@ export const signup = async (req, res) => {
 
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otp = generateOtp();
     const otpExpires = Date.now() + 10 * 60 * 1000;
 
     // Send the Email using Brevo
@@ -89,10 +99,11 @@ export const signup = async (req, res) => {
       email,
       password: hashedPassword,
       isVerified: false,
-      otp,
+      otp: hashOtp(otp),
       otpExpires
     });
     await newUser.save();
+    rememberDebugOtp(email, otp);
 
     res.status(201).json({ message: "OTP sent to email.", email });
 
@@ -111,7 +122,7 @@ export const verifyEmail = async (req, res) => {
     if (!user) return res.status(400).json({ message: "User not found" });
     if (user.isVerified) return res.status(400).json({ message: "Email already verified" });
 
-    if (user.otp !== otp || user.otpExpires < Date.now()) {
+    if (!otpMatches(user.otp, otp) || user.otpExpires < Date.now()) {
       return res.status(400).json({ message: "Invalid or expired OTP" });
     }
 
@@ -119,6 +130,7 @@ export const verifyEmail = async (req, res) => {
     user.otp = undefined;       
     user.otpExpires = undefined;
     await user.save();
+    debugOtps?.delete(email);
 
     generateToken(res, user._id);
 
@@ -307,7 +319,7 @@ export const debugGetOtp = async (req, res) => {
     if (!email) return res.status(400).json({ message: 'Email required' });
     const user = await User.findOne({ email });
     if (!user) return res.status(404).json({ message: 'User not found' });
-    return res.json({ otp: user.otp });
+    return res.json({ otp: debugOtps?.get(email) });
   } catch (error) {
     console.error('Debug OTP Error:', error);
     res.status(500).json({ message: 'Server error' });
