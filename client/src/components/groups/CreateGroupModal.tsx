@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from "react";
-import api from "../../api/axios";
+import api, { apiErrorMessage } from "../../api/axios";
+import toast from "react-hot-toast";
 import "../../styles/Modal.css";
 import { X } from "lucide-react";
 
@@ -22,8 +23,9 @@ function CreateGroupModal({ onClose, onCreated }: CreateGroupModalProps) {
       await api.post("/groups", { name, type });
       onCreated();
       onClose();
-    } catch {
-      console.error("Failed to create group");
+    } catch (err) {
+      // Keep the modal open with what was typed, and say why it failed.
+      toast.error(apiErrorMessage(err, "Couldn't create the group. Please try again."));
     } finally {
       setLoading(false);
     }
