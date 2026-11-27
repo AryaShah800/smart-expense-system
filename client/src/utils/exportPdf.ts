@@ -8,6 +8,8 @@ export interface PdfExportOptions {
   transactions?: Transaction[];
   fromDate?: string;
   toDate?: string;
+  /** ISO currency code from the user's settings. Printed as a code: the PDF's built-in fonts have no ₹/€ glyphs. */
+  currency?: string;
 }
 
 const categoryName = (t: Transaction): string =>
@@ -18,6 +20,7 @@ export async function exportTransactionsPdf({
   transactions = [],
   fromDate,
   toDate,
+  currency = "INR",
 }: PdfExportOptions): Promise<void> {
   if (!transactions.length) {
     alert("No transactions to export");
@@ -103,7 +106,7 @@ export async function exportTransactionsPdf({
     doc.setTextColor(...color);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(14);
-    doc.text(`INR ${value.toLocaleString()}`, x + 5, startY + 18);
+    doc.text(`${currency} ${value.toLocaleString()}`, x + 5, startY + 18);
   };
 
   drawCard(14, "Total Income", income, COLOR_SUCCESS);
@@ -137,7 +140,7 @@ export async function exportTransactionsPdf({
   doc.rect(30, chart1Y + chart1Height - barHeightIncome, 20, barHeightIncome, "F");
   doc.setFontSize(10);
   doc.setTextColor(...COLOR_SUCCESS);
-  doc.text(`INR ${income}`, 40, chart1Y + chart1Height - barHeightIncome - 2, { align: "center" });
+  doc.text(`${currency} ${income}`, 40, chart1Y + chart1Height - barHeightIncome - 2, { align: "center" });
   doc.setTextColor(100);
   doc.text("Income", 40, chart1Y + chart1Height + 5, { align: "center" });
 
@@ -145,7 +148,7 @@ export async function exportTransactionsPdf({
   doc.setFillColor(...COLOR_DANGER);
   doc.rect(60, chart1Y + chart1Height - barHeightExpense, 20, barHeightExpense, "F");
   doc.setTextColor(...COLOR_DANGER);
-  doc.text(`INR ${expense}`, 70, chart1Y + chart1Height - barHeightExpense - 2, { align: "center" });
+  doc.text(`${currency} ${expense}`, 70, chart1Y + chart1Height - barHeightExpense - 2, { align: "center" });
   doc.setTextColor(100);
   doc.text("Expense", 70, chart1Y + chart1Height + 5, { align: "center" });
 
@@ -193,7 +196,7 @@ export async function exportTransactionsPdf({
 
       // Draw Value
       doc.setTextColor(0);
-      doc.text(`INR ${val.toLocaleString()}`, 50 + maxBarWidth + 5, barY + 5);
+      doc.text(`${currency} ${val.toLocaleString()}`, 50 + maxBarWidth + 5, barY + 5);
 
       barY += 12;
     });
@@ -313,7 +316,7 @@ export async function exportTransactionsPdf({
       new Date(t.date).toLocaleDateString(),
       categoryName(t),
       t.type.toUpperCase(),
-      `${t.type === "expense" ? "-" : "+"} INR ${t.amount}`,
+      `${t.type === "expense" ? "-" : "+"} ${currency} ${t.amount}`,
       t.description || "—",
     ]),
     theme: "grid",

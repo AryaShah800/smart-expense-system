@@ -130,8 +130,10 @@ function Dashboard() {
     exportTransactionsPdf({
       userName: user?.username || "User",
       transactions: filteredTransactions,
-      fromDate: new Date(Date.now() - daysBack * 86400000).toLocaleDateString(),
-      toDate: new Date().toLocaleDateString()
+      // "All time" has no start date (daysBack is 0); the PDF then prints "All".
+      fromDate: daysBack ? new Date(Date.now() - daysBack * 86400000).toLocaleDateString() : undefined,
+      toDate: new Date().toLocaleDateString(),
+      currency: user?.currency,
     });
   };
 
