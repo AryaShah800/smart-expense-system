@@ -19,6 +19,20 @@ async function startApp() {
   return { post, stop: () => server.close() };
 }
 
+test("one IP cycling through many emails still hits the per-IP limit", async () => {
+  const { post, stop } = await startApp();
+  try {
+    for (let i = 1; i <= 50; i++) {
+      const res = await post("/login", { email: `user${i}@x.com`, password: "wrong" });
+      assert.equal(res.status, 400, `attempt ${i} should reach the handler`);
+    }
+    const next = await post("/login", { email: "user51@x.com", password: "wrong" });
+    assert.equal(next.status, 429);
+  } finally {
+    stop();
+  }
+});
+
 test("6th failed login within the window gets HTTP 429", async () => {
   const { post, stop } = await startApp();
   try {
