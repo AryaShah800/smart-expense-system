@@ -18,13 +18,40 @@ export const markAllRead = createAsyncThunk("notifications/markAllRead", async (
 
 const initialState: NotificationsState = { items: [] };
 
+let liveCounter = 0;
+
+/**
+ * Socket payloads are not typed at runtime. Keep only ones with a text message, and fill in what the server
+ * does not send for live events: an id (so list rows keep a stable key when new items are added on top) and
+ * a valid timestamp (otherwise the list shows "Invalid Date").
+ */
+export function toNotification(raw: unknown): Notification | null {
+  if (!raw || typeof raw !== "object") return null;
+  const value = raw as Partial<Record<keyof Notification, unknown>>;
+  if (typeof value.message !== "string" || !value.message.trim()) return null;
+  const createdAt = typeof value.createdAt === "string" && !Number.isNaN(Date.parse(value.createdAt))
+    ? value.createdAt
+    : new Date().toISOString();
+  return {
+    _id: typeof value._id === "string" && value._id ? value._id : `live-${Date.now()}-${++liveCounter}`,
+    message: value.message,
+    isRead: value.isRead === true,
+    createdAt,
+  };
+}
+
 const notificationsSlice = createSlice({
   name: "notifications",
   initialState,
   reducers: {
     /** A real-time notification pushed over the socket. */
-    notificationReceived(state, action: PayloadAction<Notification>) {
-      state.items.unshift(action.payload);
+    notificationReceived: {
+      reducer(state, action: PayloadAction<Notification | null>) {
+        if (action.payload) state.items.unshift(action.payload);
+      },
+      prepare(raw: unknown) {
+        return { payload: toNotification(raw) };
+      },
     },
   },
   extraReducers: (builder) => {

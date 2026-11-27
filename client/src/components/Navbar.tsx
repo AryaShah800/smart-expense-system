@@ -91,8 +91,8 @@ function Navbar() {
                       {notifications.length === 0 ? (
                         <div className="empty-state">No new notifications</div>
                       ) : (
-                        notifications.map((n, idx) => (
-                          <div key={idx} className={`dropdown-item ${n.isRead ? 'read' : 'unread'}`}>
+                        notifications.map((n) => (
+                          <div key={n._id} className={`dropdown-item ${n.isRead ? 'read' : 'unread'}`}>
                             {n.message}
                             <span className="notification-time">
                               {new Date(n.createdAt).toLocaleDateString()}
