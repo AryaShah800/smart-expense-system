@@ -505,6 +505,10 @@ export const joinGroup = async (req, res) => {
     if (!joinCode && !groupId) {
       return res.status(400).json({ message: "Join Code or Group ID is required" });
     }
+    // Both must be plain strings: an object here would be read by MongoDB as a query operator.
+    if ((joinCode && typeof joinCode !== "string") || (!joinCode && (typeof groupId !== "string" || !mongoose.isValidObjectId(groupId)))) {
+      return res.status(400).json({ message: "Join Code or Group ID is invalid" });
+    }
 
     let group;
     // 2. Find group by the secure CODE or by the ID
