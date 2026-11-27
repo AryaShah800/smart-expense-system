@@ -30,3 +30,30 @@ describe("Login demo button", () => {
     await waitFor(() => expect(post).toHaveBeenCalledWith("/users/demo-login"));
   });
 });
+
+describe("Login accessibility", () => {
+  it("announces a failed sign-in and links it to the password field", async () => {
+    get.mockResolvedValue({ data: { enabled: false } });
+    post.mockRejectedValue(Object.assign(new Error("bad"), { isAxiosError: true, response: { data: { message: "Invalid credentials" } } }));
+    renderWithProviders(<Login />, { preloadedState: { auth: { user: null } } });
+
+    await userEvent.type(screen.getByLabelText(/email/i), "a@b.c");
+    await userEvent.type(screen.getByLabelText(/^password$/i), "wrong-pass");
+    await userEvent.click(screen.getByRole("button", { name: /^(sign in|log in|login)/i }));
+
+    const alert = await screen.findByRole("alert");
+    expect(screen.getByLabelText(/^password$/i)).toHaveAttribute("aria-describedby", alert.id);
+  });
+
+  it("the show-password toggle is a named, keyboard-reachable toggle button", async () => {
+    get.mockResolvedValue({ data: { enabled: false } });
+    renderWithProviders(<Login />, { preloadedState: { auth: { user: null } } });
+    const toggle = screen.getByRole("button", { name: "Show password" });
+
+    expect(toggle).not.toHaveAttribute("tabindex", "-1");
+    expect(toggle).toHaveAttribute("aria-pressed", "false");
+    await userEvent.click(toggle);
+    expect(toggle).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByLabelText(/^password$/i)).toHaveAttribute("type", "text");
+  });
+});
