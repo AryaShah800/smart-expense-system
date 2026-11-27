@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
+import axios from "axios";
 import api, { apiErrorMessage } from "../api/axios";
+import DataErrorState from "../components/DataErrorState";
 import { queryKeys } from "../api/queryClient";
 import { useGroupDetails } from "../hooks/queries";
 import { summarizeBalance } from "../utils/splitSummary";
@@ -69,6 +71,19 @@ function GroupDetails() {
   };
 
   if (loading) return <div style={{ padding: 30, color: 'var(--text)' }}>Loading...</div>;
+  if (!group && detailsQuery.error) {
+    // 403/404 really mean "no such group for you"; anything else (offline, 500) is retryable, not "not found".
+    const status = axios.isAxiosError(detailsQuery.error) ? detailsQuery.error.response?.status : undefined;
+    if (status !== 403 && status !== 404) {
+      return (
+        <DataErrorState
+          title="Group unavailable"
+          message={apiErrorMessage(detailsQuery.error, "We couldn't load this group. Check your connection and try again.")}
+          onRetry={() => void detailsQuery.refetch()}
+        />
+      );
+    }
+  }
   if (!group) return <div style={{ padding: 30, color: 'var(--text)' }}>Group not found</div>;
 
   // 🔥 Fixed the deeply nested user reference bug
