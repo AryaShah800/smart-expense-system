@@ -71,7 +71,7 @@ function Signup() {
         <h2>{step === 1 ? "Create account" : "Verify Email"}</h2>
         <p>{step === 1 ? "Start managing your finances" : `Enter the code sent to ${credentials.email}`}</p>
 
-        {error && <p className="error-text">{error}</p>}
+        {error && <p id="signup-error" className="error-text" role="alert">{error}</p>}
 
         {step === 1 ? (
           <form onSubmit={onCreateAccount} noValidate>
@@ -120,7 +120,8 @@ function Signup() {
                   type="button"
                   className="toggle-password"
                   onClick={() => setShowPassword((s) => !s)}
-                  tabIndex={-1}
+                  aria-label="Show password"
+                  aria-pressed={showPassword}
                   title={showPassword ? "Hide password" : "Show password"}
                 >
                   {showPassword ? (

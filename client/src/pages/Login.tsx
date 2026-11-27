@@ -63,7 +63,7 @@ function Login() {
         <Branding />
         <h2>Welcome back</h2>
         <p>Sign in to your account</p>
-        {error && <p className="error-text">{error}</p>}
+        {error && <p id="login-error" className="error-text" role="alert">{error}</p>}
 
         <form onSubmit={onSubmit} noValidate>
           <div className="form-group">
@@ -98,7 +98,8 @@ function Login() {
                 type="button"
                 className="toggle-password"
                 onClick={() => setShowPassword((s) => !s)}
-                tabIndex={-1}
+                aria-label="Show password"
+                aria-pressed={showPassword}
                 title={showPassword ? "Hide password" : "Show password"}
               >
                 {showPassword ? (
