@@ -36,6 +36,37 @@ test("otpMatches validates candidates and supports hashed and legacy codes", () 
   }
 });
 
+test("'Wrong email? Edit': the same person can move a pending sign-up to a new email, nobody else can", async () => {
+  const signup = (body) => request(app).post("/api/users/signup").send(body);
+  const first = { username: "typo", email: "typo@tset.dev", password: "Passw0rd!" };
+  assert.equal((await signup(first)).status, 201);
+
+  // Someone else trying to grab the pending username with their own email and password is refused.
+  assert.equal((await signup({ username: "typo", email: "thief@test.dev", password: "Other1234!" })).status, 400);
+
+  // The real user fixes the typo (same username and password): the account moves and a new code is sent.
+  const fixed = await signup({ ...first, email: "typo@test.dev" });
+  assert.equal(fixed.status, 201);
+  const user = await User.findOne({ username: "typo" });
+  assert.equal(user.email, "typo@test.dev");
+  assert.equal(await User.countDocuments({ username: "typo" }), 1);
+
+  const verified = await request(app).post("/api/users/verify-otp").send({ email: "typo@test.dev", otp: emailedOtp("typo@test.dev") });
+  assert.equal(verified.status, 200);
+
+  // Once verified, the same request is an ordinary duplicate.
+  assert.equal((await signup({ ...first, email: "typo2@test.dev" })).status, 400);
+});
+
+test("a pending sign-up cannot be moved onto an email another account uses", async () => {
+  await createUser(app, { username: "owner" });
+  const taken = (await User.findOne({ username: /^owner/ })).email;
+  const pending = { username: "mover", email: "mover@test.dev", password: "Passw0rd!" };
+  assert.equal((await request(app).post("/api/users/signup").send(pending)).status, 201);
+  assert.equal((await request(app).post("/api/users/signup").send({ ...pending, email: taken })).status, 400);
+  assert.equal((await User.findOne({ username: "mover" })).email, "mover@test.dev");
+});
+
 test("signup creates an unverified user, emails an OTP and never returns it", async () => {
   const res = await request(app).post("/api/users/signup").send({ username: "newbie", email: "newbie@test.dev", password: "Passw0rd!" });
   assert.equal(res.status, 201);
