@@ -50,9 +50,9 @@ export default function NotificationPanel({ isOpen, onClose, notifications }: No
           {notifications.length === 0 ? (
             <p className="notification-panel-empty">No new notifications</p>
           ) : (
-            notifications.map((n, idx) => (
+            notifications.map((n) => (
               <div
-                key={n._id || idx}
+                key={n._id}
                 className={`notification-panel-item ${n.isRead ? "" : "unread"}`}
               >
                 <p className="notification-panel-message">{n.message}</p>
