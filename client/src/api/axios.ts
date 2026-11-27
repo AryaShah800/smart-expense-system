@@ -1,12 +1,9 @@
 import axios, { type AxiosError } from "axios";
 import toast from "react-hot-toast";
-import type { ApiErrorBody, AuthUser } from "../types/models";
+import type { ApiErrorBody } from "../types/models";
 
 /** Axios error with the API's error body, plus a flag set when the server could not be reached. */
 export type ApiError = AxiosError<ApiErrorBody> & { isServerDown?: boolean };
-
-/** Older stored sessions kept the token under different keys. */
-type StoredSession = Partial<AuthUser> & { accessToken?: string; data?: { token?: string } };
 
 const baseURL: string =
   import.meta.env.VITE_API_URL ||
@@ -32,25 +29,8 @@ export function isServerDown(error: unknown): boolean {
   return axios.isAxiosError(error) && (error as ApiError).isServerDown === true;
 }
 
-// Attach JWT token to every request
-api.interceptors.request.use(
-  (config) => {
-    const savedUser = localStorage.getItem("user");
-    if (savedUser) {
-      try {
-        const userData = JSON.parse(savedUser) as StoredSession;
-        const token = userData.token || userData.accessToken || userData.data?.token;
-        if (token) {
-          config.headers.Authorization = `Bearer ${token}`;
-        }
-      } catch (err) {
-        console.error("Failed to parse user from localStorage", err);
-      }
-    }
-    return config;
-  },
-  (error: unknown) => Promise.reject(error)
-);
+// Authentication is the httpOnly session cookie only (withCredentials above). Nothing readable by
+// page scripts is sent as a credential, so an XSS bug could not lift a token from localStorage.
 
 // Robust response error handling
 api.interceptors.response.use(

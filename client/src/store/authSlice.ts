@@ -12,7 +12,13 @@ export interface AuthState {
 export function readStoredUser(): AuthUser | null {
   try {
     const saved = localStorage.getItem(USER_STORAGE_KEY);
-    return saved ? (JSON.parse(saved) as AuthUser) : null;
+    if (!saved) return null;
+    // Sessions saved before the cookie-only login kept a JWT here; drop it so it is not kept around.
+    const user = JSON.parse(saved) as AuthUser & { accessToken?: string; data?: unknown };
+    delete user.token;
+    delete user.accessToken;
+    delete user.data;
+    return user;
   } catch {
     return null;
   }
