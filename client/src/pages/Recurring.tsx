@@ -10,6 +10,7 @@ import toast from "react-hot-toast";
 import DataErrorState from "../components/DataErrorState";
 import "../styles/recurring.css";
 import { Repeat, CalendarClock, Trash2, X } from "lucide-react";
+import { todayLocal } from "../utils/localDate";
 
 
 interface RecurringForm {
@@ -55,7 +56,7 @@ export default function Recurring() {
     type: "expense",
     categoryId: "",
     frequency: "monthly",
-    startDate: new Date().toISOString().slice(0, 10),
+    startDate: todayLocal(),
     createInitialTransaction: true,
   });
   const [submitting, setSubmitting] = useState(false);
@@ -149,7 +150,7 @@ export default function Recurring() {
         type: "expense",
         categoryId: "",
         frequency: "monthly",
-        startDate: new Date().toISOString().slice(0, 10),
+        startDate: todayLocal(),
         createInitialTransaction: true,
       });
       fetchData();

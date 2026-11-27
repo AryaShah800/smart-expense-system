@@ -112,6 +112,17 @@ describe("Expenses", () => {
     expect(get).toHaveBeenCalledTimes(2);
   });
 
+  it("a 'to' date includes the whole of that day", async () => {
+    get.mockResolvedValue({ data });
+    const user = userEvent.setup();
+    renderWithProviders(<Expenses />);
+    await screen.findAllByText("Lunch at cafe"); // 10 March, 12:00 UTC
+
+    await user.type(screen.getByLabelText("To Date"), "2026-03-10");
+
+    expect(screen.getAllByText("Lunch at cafe").length).toBeGreaterThan(0);
+  });
+
   it("filters by category", async () => {
     get.mockResolvedValue({ data });
     const user = userEvent.setup();

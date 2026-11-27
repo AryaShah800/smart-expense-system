@@ -11,6 +11,7 @@ import { getCurrencySymbol } from "../utils/currencyFormatter";
 import "../styles/addTransaction.css";
 import "../styles/responsive.css";
 import { TrendingDown, TrendingUp } from "lucide-react";
+import { todayLocal } from "../utils/localDate";
 
 function AddTransaction() {
   const { user } = useAuth();
@@ -35,7 +36,7 @@ function AddTransaction() {
     : (categories[0]?._id ?? "");
   const [description, setDescription] = useState("");
   // Pre-fill with today's local date for mobile convenience
-  const [date, setDate] = useState(() => new Date().toISOString().split("T")[0]);
+  const [date, setDate] = useState(() => todayLocal());
   const [isRecurring, setIsRecurring] = useState(false);
   const [frequency, setFrequency] = useState<Frequency>("monthly");
   const [error, setError] = useState("");
@@ -72,7 +73,7 @@ function AddTransaction() {
       await api.post("/transactions", {
         amount: Number(amount),
         type,
-        date: date || new Date().toISOString().split("T")[0],
+        date: date || todayLocal(),
         description: description.trim(),
         categoryId,
         isRecurring,
