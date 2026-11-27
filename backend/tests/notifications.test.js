@@ -2,7 +2,7 @@ import test, { before, after } from "node:test";
 import assert from "node:assert/strict";
 import app from "../app.js";
 import User from "../models/user.js";
-import { pushNotification, MAX_NOTIFICATIONS } from "../utils/pushNotification.js";
+import { pushNotification, pushNotificationToMany, MAX_NOTIFICATIONS } from "../utils/pushNotification.js";
 import { startDb, stopDb, createUser } from "./helpers/setup.js";
 
 before(startDb);
@@ -33,4 +33,17 @@ test("the session user does not carry notifications or the OTP; the notification
   const list = await agent.get("/api/users/notifications");
   assert.equal(list.status, 200);
   assert.deepEqual(list.body.map((n) => n.message), ["hello"]);
+});
+
+test("one notification for several users is stored for each of them, still capped", async () => {
+  const a = await createUser(app, { username: "manya" });
+  const b = await createUser(app, { username: "manyb" });
+  for (let i = 0; i < MAX_NOTIFICATIONS; i++) await pushNotification(a.user._id, { message: `old${i}` });
+
+  await pushNotificationToMany([a.user._id, b.user._id], { message: "shared" });
+
+  const [ua, ub] = await Promise.all([User.findById(a.user._id), User.findById(b.user._id)]);
+  assert.equal(ua.notifications.length, MAX_NOTIFICATIONS);
+  assert.equal(ua.notifications.at(-1).message, "shared");
+  assert.deepEqual(ub.notifications.map((n) => n.message), ["shared"]);
 });
