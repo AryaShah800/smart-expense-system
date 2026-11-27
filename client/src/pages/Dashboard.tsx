@@ -342,10 +342,10 @@ function Dashboard() {
         </div>
 
         <div className="mobile-quick-actions">
-          <Link to="/add-transaction" className="quick-action-pill expense">
+          <Link to="/add-transaction?type=expense" className="quick-action-pill expense">
             <span>+</span> Add Expense
           </Link>
-          <Link to="/add-transaction" className="quick-action-pill income">
+          <Link to="/add-transaction?type=income" className="quick-action-pill income">
             <span>+</span> Add Income
           </Link>
           <Link to="/recurring" className="quick-action-pill recurring">

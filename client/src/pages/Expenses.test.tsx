@@ -1,6 +1,7 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { Link, useLocation, useNavigate, useNavigationType } from "react-router-dom";
 import { AxiosError } from "axios";
 import { serverDownError } from "../test/fixtures";
 import Expenses from "./Expenses";
@@ -34,6 +35,20 @@ const data = [
   tx({ _id: "t1", description: "Lunch at cafe", amount: 450 }),
   tx({ _id: "t2", description: "March salary", amount: 55000, type: "income", categoryId: salary, date: "2026-03-01T12:00:00.000Z" }),
 ];
+
+function FilterNavigation() {
+  const location = useLocation();
+  const navigationType = useNavigationType();
+  const navigate = useNavigate();
+  return (
+    <>
+      <output aria-label="Current search">{location.search}</output>
+      <output aria-label="Navigation type">{navigationType}</output>
+      <Link to="/expenses?category=Food">View food</Link>
+      <button onClick={() => navigate(-1)}>Back</button>
+    </>
+  );
+}
 
 describe("Expenses", () => {
   beforeEach(() => {
@@ -107,5 +122,53 @@ describe("Expenses", () => {
 
     await waitFor(() => expect(screen.queryByText("Lunch at cafe")).not.toBeInTheDocument());
     expect(screen.getAllByText("March salary").length).toBeGreaterThan(0);
+  });
+
+  it("filters by the category name in the URL after transactions load", async () => {
+    get.mockResolvedValue({ data });
+    renderWithProviders(<Expenses />, { route: `/expenses?category=${encodeURIComponent(food.name)}` });
+
+    expect(await screen.findByText("Lunch at cafe")).toBeInTheDocument();
+    expect(screen.queryByText("March salary")).not.toBeInTheDocument();
+    expect(screen.getByRole("combobox", { name: /filter by category/i })).toHaveValue(food.name);
+    expect(screen.getByText("1 record found")).toBeInTheDocument();
+  });
+
+  it("shows all transactions for an unknown category in the URL", async () => {
+    get.mockResolvedValue({ data });
+    renderWithProviders(<Expenses />, { route: "/expenses?category=Unknown" });
+
+    expect(await screen.findByText("Lunch at cafe")).toBeInTheDocument();
+    expect(screen.getByText("March salary")).toBeInTheDocument();
+    expect(screen.getByRole("combobox", { name: /filter by category/i })).toHaveValue("all");
+  });
+
+  it("replaces the category in the URL, follows Back, and clears it on reset", async () => {
+    get.mockResolvedValue({ data });
+    const user = userEvent.setup();
+    renderWithProviders(<><Expenses /><FilterNavigation /></>, { route: "/expenses?source=insight" });
+    await screen.findByText("Lunch at cafe");
+
+    const select = screen.getByRole("combobox", { name: /filter by category/i });
+    await user.selectOptions(select, salary.name);
+    expect(screen.getByLabelText("Current search")).toHaveTextContent("?source=insight&category=Salary");
+    expect(screen.getByLabelText("Navigation type")).toHaveTextContent("REPLACE");
+
+    await user.click(screen.getByRole("link", { name: "View food" }));
+    expect(select).toHaveValue(food.name);
+    await user.click(screen.getByRole("button", { name: "Back" }));
+    expect(select).toHaveValue(salary.name);
+    expect(screen.queryByText("Lunch at cafe")).not.toBeInTheDocument();
+    expect(screen.getByText("March salary")).toBeInTheDocument();
+
+    await user.selectOptions(select, "all");
+    expect(screen.getByLabelText("Current search")).toHaveTextContent("?source=insight");
+    expect(screen.getByText("Lunch at cafe")).toBeInTheDocument();
+    await user.selectOptions(select, food.name);
+    await user.click(screen.getByRole("button", { name: "Reset" }));
+    expect(select).toHaveValue("all");
+    expect(screen.getByLabelText("Current search")).toHaveTextContent("?source=insight");
+    expect(screen.getByLabelText("Navigation type")).toHaveTextContent("REPLACE");
+    expect(screen.getByText("March salary")).toBeInTheDocument();
   });
 });

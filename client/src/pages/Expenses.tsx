@@ -8,7 +8,7 @@ import { exportTransactionsPdf } from "../utils/exportPdf";
 import { useAuth } from "../hooks/useAuth";
 import formatCurrency from "../utils/currencyFormatter";
 import CategoryIcon from "../components/CategoryIcon";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import DataErrorState from "../components/DataErrorState";
 import { FileDown, CreditCard, X } from "lucide-react";
 
@@ -30,7 +30,22 @@ function Expenses() {
   };
 
   const [typeFilter, setTypeFilter] = useState("all");
-  const [categoryFilter, setCategoryFilter] = useState("all");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const categoryNames = useMemo(
+    () => [...new Set(transactions.map((t) => populated(t.categoryId)?.name))]
+      .filter((name): name is string => Boolean(name)),
+    [transactions]
+  );
+  const categoryParam = searchParams.get("category") ?? "all";
+  const categoryFilter = categoryNames.includes(categoryParam) ? categoryParam : "all";
+  const setCategoryFilter = (category: string) => {
+    setSearchParams((previous) => {
+      const next = new URLSearchParams(previous);
+      if (category === "all") next.delete("category");
+      else next.set("category", category);
+      return next;
+    }, { replace: true });
+  };
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
   // The page size resets whenever a filter changes (derived from the filter key, no effect needed).
@@ -156,9 +171,7 @@ function Expenses() {
           className="filter-select"
         >
           <option value="all">All Categories</option>
-          {[...new Set(transactions.map((t) => populated(t.categoryId)?.name))]
-            .filter((name): name is string => Boolean(name))
-            .map((c) => (
+          {categoryNames.map((c) => (
               <option key={c} value={c}>{c}</option>
             ))}
         </select>
