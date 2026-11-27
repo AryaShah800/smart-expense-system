@@ -99,6 +99,31 @@ test("processDueRecurring skips paused schedules and picks them up again after r
   assert.equal(await Transaction.countDocuments({ userId: user._id }), 1);
 });
 
+test("processDueRecurring records every missed cycle of a schedule that fell behind", async () => {
+  const { user } = await createUser(app, { username: "behind" });
+  const item = await dueItem(user._id, { frequency: "daily", startDate: daysFromNow(-5), nextDueDate: daysFromNow(-4) });
+
+  const result = await processDueRecurring(user._id);
+  assert.equal(result.processedCount, 1);
+  // Due 4, 3, 2, 1 days ago and today (daysFromNow(0) is earlier today than `now`).
+  assert.equal(await Transaction.countDocuments({ recurringId: item._id }), 5);
+  const after = await RecurringTransaction.findById(item._id);
+  assert.ok(after.nextDueDate > new Date());
+
+  await processDueRecurring(user._id);
+  assert.equal(await Transaction.countDocuments({ recurringId: item._id }), 5, "a second run adds nothing");
+});
+
+test("resuming after a long pause records only the current cycle, not the paused months", async () => {
+  const { agent, user } = await createUser(app, { username: "longpause" });
+  const item = await dueItem(user._id, { frequency: "daily", status: "paused", startDate: daysFromNow(-30), nextDueDate: daysFromNow(-20) });
+
+  const resumed = await agent.put(`/api/recurring/${item._id}`).send({ status: "active" });
+  assert.equal(resumed.status, 200);
+  await processDueRecurring(user._id);
+  assert.equal(await Transaction.countDocuments({ recurringId: item._id }), 1);
+});
+
 test("processDueRecurring ignores schedules that are not due yet and other users' schedules when scoped", async () => {
   const a = await createUser(app, { username: "scopeA" });
   const b = await createUser(app, { username: "scopeB" });
