@@ -2,6 +2,8 @@ import test, { before, after } from "node:test";
 import assert from "node:assert/strict";
 import app from "../app.js";
 import { startDb, stopDb, createUser, defaultCategory } from "./helpers/setup.js";
+import { currentMonthRange, monthStartInZone } from "../controllers/budget.js";
+import Category from "../models/Category.js";
 
 let alice, bob, food, salary;
 before(async () => {
@@ -131,6 +133,35 @@ test("budget status: spent, remaining and exceeded reflect this month's expenses
   assert.equal(status[0].spent, 450);
   assert.equal(status[0].remaining, -50);
   assert.equal(status[0].exceeded, true);
+});
+
+test("budget month starts at local midnight in the caller's time zone", () => {
+  // 1 Dec 2026 00:00 in India is 30 Nov 18:30 UTC.
+  assert.equal(monthStartInZone(2026, 11, "Asia/Kolkata").toISOString(), "2026-11-30T18:30:00.000Z");
+  // Month 12 rolls into January of the next year.
+  assert.equal(monthStartInZone(2026, 12, "Asia/Kolkata").toISOString(), "2026-12-31T18:30:00.000Z");
+  // New York is on EST in December (UTC-5) even though the guess starts from a UTC date.
+  assert.equal(monthStartInZone(2026, 11, "America/New_York").toISOString(), "2026-12-01T05:00:00.000Z");
+
+  // 30 Nov 19:00 UTC is already December in India: the range must be December's.
+  const { start, end } = currentMonthRange("Asia/Kolkata", new Date("2026-11-30T19:00:00Z"));
+  assert.equal(start.toISOString(), "2026-11-30T18:30:00.000Z");
+  assert.equal(end.toISOString(), "2026-12-31T18:30:00.000Z");
+  // An unknown zone falls back to UTC instead of failing.
+  assert.equal(currentMonthRange("Not/AZone", new Date("2026-11-30T19:00:00Z")).start.toISOString(), "2026-11-01T00:00:00.000Z");
+});
+
+test("budget status skips a budget whose category was deleted instead of failing", async () => {
+  const { agent, user } = await createUser(app, { username: "orphanbudget" });
+  const custom = await Category.create({ name: "Hobbies", type: "expense", user: user._id });
+  assert.equal((await agent.post("/api/budgets").send({ categoryId: custom._id, amount: 100 })).status < 300, true);
+  await agent.post("/api/budgets").send({ categoryId: food._id, amount: 50 });
+  await Category.deleteOne({ _id: custom._id });
+
+  const res = await agent.get("/api/budgets/status");
+  assert.equal(res.status, 200);
+  assert.equal(res.body.length, 1);
+  assert.equal(res.body[0].limit, 50);
 });
 
 test("isolation: budgets are per user", async () => {

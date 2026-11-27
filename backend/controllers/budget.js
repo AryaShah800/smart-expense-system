@@ -2,6 +2,47 @@ import Budget from "../models/Budget.js";
 import Transaction from "../models/Transaction.js";
 import { findUsableCategory } from "../utils/findUsableCategory.js";
 
+// How far the wall clock in `timeZone` is ahead of UTC at `date`, in ms (IST: +5h30m).
+const zoneOffsetMs = (date, timeZone) => {
+  const parts = Object.fromEntries(
+    new Intl.DateTimeFormat("en-US", {
+      timeZone, hourCycle: "h23", year: "numeric", month: "2-digit", day: "2-digit",
+      hour: "2-digit", minute: "2-digit", second: "2-digit",
+    }).formatToParts(date).map((p) => [p.type, p.value])
+  );
+  const wall = Date.UTC(+parts.year, +parts.month - 1, +parts.day, +parts.hour, +parts.minute, +parts.second);
+  return wall - Math.floor(date.getTime() / 1000) * 1000;
+};
+
+/**
+ * The instant at which `month` (0-based; 12 rolls into the next year) of `year` starts in `timeZone`.
+ * For IST, 1 December starts at 30 November 18:30 UTC, not at midnight UTC.
+ * Computed twice so a DST change between the guess and the answer still lands on local midnight.
+ */
+export const monthStartInZone = (year, month, timeZone) => {
+  const utcMidnight = Date.UTC(year, month, 1);
+  let start = utcMidnight - zoneOffsetMs(new Date(utcMidnight), timeZone);
+  start = utcMidnight - zoneOffsetMs(new Date(start), timeZone);
+  return new Date(start);
+};
+
+/** [start, end) of the current month in `timeZone`; falls back to UTC for an unknown zone. */
+export const currentMonthRange = (timeZone = "UTC", now = new Date()) => {
+  let zone = timeZone;
+  try {
+    new Intl.DateTimeFormat("en-US", { timeZone: zone });
+  } catch {
+    zone = "UTC";
+  }
+  const parts = Object.fromEntries(
+    new Intl.DateTimeFormat("en-US", { timeZone: zone, year: "numeric", month: "2-digit" })
+      .formatToParts(now).map((p) => [p.type, p.value])
+  );
+  const year = +parts.year;
+  const month = +parts.month - 1;
+  return { start: monthStartInZone(year, month, zone), end: monthStartInZone(year, month + 1, zone) };
+};
+
 export const setBudget = async (req, res) => {
   try {
     const { categoryId, amount } = req.body;
@@ -47,44 +88,14 @@ export const getBudgets = async (req, res) => {
 
 export const getBudgetStatus = async (req, res) => {
   try {
-    const budgets = await Budget.find({ userId: req.user._id }).populate("categoryId");
+    // A budget whose category was deleted populates to null; skip it instead of crashing on ._id.
+    const budgets = (await Budget.find({ userId: req.user._id }).populate("categoryId"))
+      .filter((budget) => budget.categoryId);
 
-    // Fix #5: Accept optional timezone from request query for correct month calculation
-    const timezone = req.query.timezone || 'UTC';
-
-    // Calculate expense for this month for each category
-    let startOfMonth = new Date();
-    startOfMonth.setDate(1);
-    startOfMonth.setHours(0, 0, 0, 0);
-
-    let endOfMonth = new Date();
-    endOfMonth.setMonth(endOfMonth.getMonth() + 1);
-    endOfMonth.setDate(0);
-    endOfMonth.setHours(23, 59, 59, 999);
-
-    // Adjust dates based on timezone (important for IST and other non-UTC timezones)
-    if (timezone && timezone !== 'UTC') {
-      try {
-        // Create dates in the specified timezone
-        const formatter = new Intl.DateTimeFormat('en-US', {
-          timeZone: timezone,
-          year: 'numeric',
-          month: '2-digit',
-          day: '2-digit',
-        });
-
-        const today = new Date();
-        const parts = formatter.formatToParts(today);
-        const year = parseInt(parts.find(p => p.type === 'year').value);
-        const month = parseInt(parts.find(p => p.type === 'month').value) - 1;
-
-        // Create month boundaries in UTC that represent the start and end of month in the timezone
-        startOfMonth = new Date(Date.UTC(year, month, 1, 0, 0, 0, 0));
-        endOfMonth = new Date(Date.UTC(year, month + 1, 0, 23, 59, 59, 999));
-      } catch (e) {
-        console.warn(`Invalid timezone "${timezone}", using UTC`);
-      }
-    }
+    // "This month" is the month in the caller's time zone (e.g. Asia/Kolkata), from local midnight
+    // on the 1st up to, but not including, local midnight on the 1st of the next month.
+    const timezone = typeof req.query.timezone === "string" && req.query.timezone ? req.query.timezone : "UTC";
+    const { start: startOfMonth, end: startOfNextMonth } = currentMonthRange(timezone);
 
     const stats = await Promise.all(budgets.map(async (budget) => {
       const expenses = await Transaction.aggregate([
@@ -93,7 +104,7 @@ export const getBudgetStatus = async (req, res) => {
             userId: req.user._id,
             categoryId: budget.categoryId._id,
             type: 'expense',
-            date: { $gte: startOfMonth, $lte: endOfMonth }
+            date: { $gte: startOfMonth, $lt: startOfNextMonth }
           }
         },
         {
