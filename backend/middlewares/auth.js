@@ -22,7 +22,8 @@ const authenticate = async (req, res, next) => {
 
     const decoded = jwt.verify(token, JWT_SECRET);
 
-    const user = await User.findById(decoded._id).select("-password");
+    // Notifications have their own endpoint; loading them (and the OTP) on every request is wasted work.
+    const user = await User.findById(decoded._id).select("-password -notifications -otp -otpExpires");
     if (!user) {
       return res.status(401).json({ message: "User not found" });
     }

@@ -1,4 +1,5 @@
 import User from "../models/user.js";
+import { pushNotification } from "../utils/pushNotification.js";
 import Group from "../models/Group.js";
 import bcrypt from "bcrypt";
 import { isDemoEmail } from "../config/demo.js";
@@ -222,9 +223,7 @@ export const respondToInvitation = async (req, res) => {
     if (adminId) {
        const message = `${user.username} has ${action}ed your invitation to join "${group.name}".`;
 
-       await User.findByIdAndUpdate(adminId, {
-         $push: { notifications: { message, isRead: false } }
-       });
+       await pushNotification(adminId, { message });
 
        const io = req.app.get("io");
        if (io) {
