@@ -77,7 +77,7 @@ function AddExpenseModal({ groupId, groupMembers, onClose, onAdded }: AddExpense
       return;
     }
     if (numAmount > 1000000000) {
-      toast.error("Amount cannot exceed ₹1,000,000,000");
+      toast.error(`Amount cannot exceed ${getCurrencySymbol(currentUser?.currency)}1,000,000,000`);
       return;
     }
 
@@ -243,7 +243,7 @@ function AddExpenseModal({ groupId, groupMembers, onClose, onAdded }: AddExpense
                 className={`split-tab ${splitType === 'exact' ? 'active' : ''}`}
                 onClick={() => setSplitType('exact')}
               >
-                ₹ Exact
+                {getCurrencySymbol(currentUser?.currency)} Exact
               </button>
               <button
                 type="button"
