@@ -7,6 +7,16 @@ test("allows non-browser requests and local development", () => {
   assert.equal(isAllowedOrigin("http://localhost:5173", {}), true);
 });
 
+test("local development hosts are matched exactly, not by prefix", () => {
+  assert.equal(isAllowedOrigin("http://127.0.0.1:5173", {}), true);
+  assert.equal(isAllowedOrigin("http://192.168.1.20:5173", {}), true);
+  assert.equal(isAllowedOrigin("http://localhost.evil.com", {}), false);
+  assert.equal(isAllowedOrigin("http://localhost@evil.com", {}), false);
+  assert.equal(isAllowedOrigin("http://192.168.evil.com", {}), false);
+  assert.equal(isAllowedOrigin("http://evil.vercel.app", {}), false);
+  assert.equal(isAllowedOrigin("not a url", {}), false);
+});
+
 test("with ALLOWED_ORIGINS set, only those exact origins pass", () => {
   const env = { ALLOWED_ORIGINS: "https://smart-expense.vercel.app, https://app.example.com/" };
   assert.equal(isAllowedOrigin("https://smart-expense.vercel.app", env), true);
