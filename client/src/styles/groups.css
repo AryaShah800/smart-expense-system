@@ -285,3 +285,5 @@
 }
 
 /* Responsive adjustments omitted for brevity, use your existing media queries at the bottom here! */
+/* Group cards are links now: keep the card look. */
+a.group-card { display: block; color: inherit; text-decoration: none; }

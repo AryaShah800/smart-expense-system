@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useGroups, useInvalidateGroups } from "../hooks/queries";
 import { loadErrorText, toLoadError } from "../store/loadError";
 import CreateGroupModal from "../components/groups/CreateGroupModal";
@@ -23,7 +23,6 @@ function Groups() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showJoinModal, setShowJoinModal] = useState(false);
 
-  const navigate = useNavigate();
 
   const fetchGroups = () => {
     groupsQuery.refetch();
@@ -80,11 +79,8 @@ function Groups() {
         ) : (
           <div className="groups-grid">
             {groups.map((group) => (
-              <div
-                key={group._id}
-                className="group-card"
-                onClick={() => navigate(`/groups/${group._id}`)}
-              >
+              // A real link: reachable with Tab, opens with Enter, and can open in a new tab.
+              <Link key={group._id} className="group-card" to={`/groups/${group._id}`}>
                 <div className="group-card-header">
                   <div className={`group-icon ${group.type.toLowerCase()}`}>
                     {group.type === "Trip" ? <Plane size={20} aria-hidden="true" /> : group.type === "Home" ? <Home size={20} aria-hidden="true" /> : group.type === "Couple" ? <Heart size={20} aria-hidden="true" /> : <Users size={20} aria-hidden="true" />}
@@ -100,7 +96,7 @@ function Groups() {
                   </span>
                   <div className="arrow-btn"><ArrowRight size={16} aria-hidden="true" /></div>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         )}
