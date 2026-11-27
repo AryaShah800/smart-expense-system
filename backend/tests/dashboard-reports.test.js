@@ -2,6 +2,7 @@ process.env.TZ = "UTC";
 import test, { before, after } from "node:test";
 import assert from "node:assert/strict";
 import app from "../app.js";
+import { loadMonthStats } from "../controllers/dashboard.js";
 import Budget from "../models/Budget.js";
 import RecurringTransaction from "../models/RecurringTransaction.js";
 import Transaction from "../models/Transaction.js";
@@ -133,6 +134,20 @@ test("report: lists that month's transactions for the caller only", async () => 
   const rows = (await mine.agent.get("/api/reports/monthly").query(reportMonth())).body;
   assert.equal(rows.length, 1);
   assert.deepEqual(rows[0], { date: now().toISOString().slice(0, 10), type: "expense", category: "Food", amount: 42, description: "Coffee" });
+});
+
+test("report and dashboard include a transaction in the last second of the month", async () => {
+  const { agent, user } = await createUser(app, { username: "lastsecond" });
+  const lastSecond = new Date(2026, 1, 28, 23, 59, 59, 500); // 28 Feb 2026, 23:59:59.5 server time
+  await Transaction.create(tx(user, food, "expense", 15, lastSecond, "Late snack"));
+
+  const rows = (await agent.get("/api/reports/monthly").query({ month: 2, year: 2026 })).body;
+  assert.equal(rows.length, 1);
+  assert.equal((await agent.get("/api/reports/monthly").query({ month: 3, year: 2026 })).body.length, 0);
+
+  const stats = await loadMonthStats(user._id, new Date(2026, 1, 15));
+  assert.equal(stats.thisMonth.expense, 15);
+  assert.equal(stats.endOfThisMonth.getDate(), 28);
 });
 
 test("report CSV: header, content type, attachment name and quoting", async () => {

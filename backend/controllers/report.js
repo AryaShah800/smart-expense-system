@@ -22,12 +22,13 @@ export const getMonthlyReport = async (req, res) => {
       return res.status(400).json({ message: "Month must be 1-12 and year a valid 4-digit year" });
     }
 
+    // Half-open month [1st, 1st of next month), so the last second of the month is included.
     const startDate = new Date(y, m - 1, 1);
-    const endDate = new Date(y, m, 0, 23, 59, 59);
+    const startOfNextMonth = new Date(y, m, 1);
 
     const transactions = await Transaction.find({
       userId,
-      date: { $gte: startDate, $lte: endDate }
+      date: { $gte: startDate, $lt: startOfNextMonth }
     }).populate("categoryId", "name");
 
     const reportData = transactions.map(t => ({
