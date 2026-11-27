@@ -21,6 +21,16 @@ function SettleUpModal({ groupId, groupMembers, onClose, onSettled }: SettleUpMo
   const [amount, setAmount] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // You must be one side of every settlement (the API enforces it). So when you paid, pick who received it;
+  // when someone else paid, they paid you, which is how "they paid me back" gets recorded.
+  const recipients = fromUserId
+    ? [{ _id: user?._id ?? "", username: "You (Me)" }]
+    : groupMembers;
+  const changePayer = (payer: string) => {
+    setFromUserId(payer);
+    setToUserId(payer ? user?._id ?? "" : "");
+  };
+
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
@@ -85,7 +95,7 @@ function SettleUpModal({ groupId, groupMembers, onClose, onSettled }: SettleUpMo
             id="settleupmodal-paid-from"
             className="modal-select"
             value={fromUserId}
-            onChange={(e) => setFromUserId(e.target.value)}
+            onChange={(e) => changePayer(e.target.value)}
           >
             <option value="">You (Me)</option>
             {groupMembers?.map((member) => (
@@ -103,8 +113,8 @@ function SettleUpModal({ groupId, groupMembers, onClose, onSettled }: SettleUpMo
             onChange={(e) => setToUserId(e.target.value)}
             required
           >
-            <option value="">Select Recipient</option>
-            {groupMembers.map((member) => (
+            {!fromUserId && <option value="">Select Recipient</option>}
+            {recipients.map((member) => (
               <option key={member._id} value={member._id}>
                 {member.username}
               </option>
