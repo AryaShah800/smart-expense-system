@@ -14,22 +14,23 @@ const UNCATEGORIZED = { name: "Uncategorized", icon: "🏷️" };
  * thousands of Mongoose documents being hydrated, populated and summed in Node.
  */
 export const loadMonthStats = async (userId, now = new Date()) => {
-  const startOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0);
-  const endOfThisMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
-  const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1, 0, 0, 0);
-  const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
+  // Half-open ranges [start, next start): "23:59:59" as an end dropped anything in the month's last second.
+  const startOfNextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+  const startOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const endOfThisMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0); // last day; used for days in month
 
   const byTypeAndCategory = [
     { $group: { _id: { type: "$type", categoryId: "$categoryId" }, total: { $sum: "$amount" }, count: { $sum: 1 } } },
   ];
-  const within = (from, to) => ({ $match: { date: { $gte: from, $lte: to } } });
+  const within = (from, to) => ({ $match: { date: { $gte: from, $lt: to } } });
 
   const [facets] = await Transaction.aggregate([
-    { $match: { userId, date: { $gte: startOfLastMonth, $lte: endOfThisMonth } } },
+    { $match: { userId, date: { $gte: startOfLastMonth, $lt: startOfNextMonth } } },
     {
       $facet: {
-        thisMonth: [within(startOfThisMonth, endOfThisMonth), ...byTypeAndCategory],
-        lastMonth: [within(startOfLastMonth, endOfLastMonth), ...byTypeAndCategory],
+        thisMonth: [within(startOfThisMonth, startOfNextMonth), ...byTypeAndCategory],
+        lastMonth: [within(startOfLastMonth, startOfThisMonth), ...byTypeAndCategory],
       },
     },
   ]);
