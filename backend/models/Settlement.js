@@ -26,5 +26,8 @@ const settlementSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// The ledger and balances read a group's settlements, newest first.
+settlementSchema.index({ groupId: 1, createdAt: -1 });
+
 export default mongoose.models.Settlement ||
   mongoose.model("Settlement", settlementSchema);

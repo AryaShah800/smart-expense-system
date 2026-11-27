@@ -42,4 +42,7 @@ const groupSchema = new mongoose.Schema({
   }
 });
 
+// "My groups" is Group.find({ members: userId }) sorted by newest.
+groupSchema.index({ members: 1, createdAt: -1 });
+
 export default mongoose.model("Group", groupSchema);

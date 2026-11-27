@@ -9,4 +9,7 @@ const categorySchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now },
 });
 
+// Category lists are { user: null } (defaults) or { user: me }.
+categorySchema.index({ user: 1, type: 1, name: 1 });
+
 export default mongoose.models.Category || mongoose.model("Category", categorySchema);
