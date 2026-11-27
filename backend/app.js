@@ -12,6 +12,7 @@ import dashboardRoutes from "./routes/dashboard.js";
 import reportRoutes from "./routes/report.js";
 import recurringRoutes from "./routes/recurring.js";
 import { corsOptions } from "./config/cors.js";
+import { rejectOperatorKeys } from "./middlewares/rejectOperatorKeys.js";
 
 // The Express app, with no server, socket or database attached,
 // so tests can import it and drive it with supertest.
@@ -22,6 +23,7 @@ app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
 // CORS before body parsers so error responses still carry CORS headers
 app.use(cors(corsOptions));
 app.use(express.json({ limit: "50kb" }));
+app.use(rejectOperatorKeys);
 app.use(cookieParser());
 
 app.use("/api/users", userRoutes);
