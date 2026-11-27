@@ -3,10 +3,26 @@ import { screen, act } from "@testing-library/react";
 import Dashboard from "./Dashboard";
 import api from "../api/axios";
 import { renderWithProviders } from "../test/utils";
+import { useIsDesktop } from "../hooks/useMediaQuery";
+
+vi.mock("../hooks/useMediaQuery", () => ({ useIsDesktop: vi.fn(() => true) }));
 
 vi.mock("../api/axios", async () => {
   const actual = await vi.importActual<typeof import("../api/axios")>("../api/axios");
   return { ...actual, default: { get: vi.fn(), post: vi.fn() } };
+});
+
+describe("Dashboard mobile quick actions", () => {
+  afterEach(() => vi.mocked(useIsDesktop).mockReturnValue(true));
+
+  it("links to the selected transaction type", async () => {
+    vi.mocked(useIsDesktop).mockReturnValue(false);
+    vi.mocked(api.get).mockResolvedValue({ data: [] });
+    renderWithProviders(<Dashboard />, { route: "/dashboard" });
+
+    expect(await screen.findByRole("link", { name: /add expense/i })).toHaveAttribute("href", "/add-transaction?type=expense");
+    expect(screen.getByRole("link", { name: /add income/i })).toHaveAttribute("href", "/add-transaction?type=income");
+  });
 });
 
 describe("Dashboard cold start", () => {

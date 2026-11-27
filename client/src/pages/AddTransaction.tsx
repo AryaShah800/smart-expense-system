@@ -1,5 +1,5 @@
 import { useMemo, useState, type FormEvent } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import api, { apiErrorMessage } from "../api/axios";
 import { queryKeys } from "../api/queryClient";
@@ -15,8 +15,11 @@ import { TrendingDown, TrendingUp } from "lucide-react";
 function AddTransaction() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
-  const [type, setType] = useState<TransactionType>("expense");
+  const [type, setType] = useState<TransactionType>(
+    () => searchParams.get("type") === "income" ? "income" : "expense"
+  );
   const [amount, setAmount] = useState("");
   const [selectedCategoryId, setCategoryId] = useState("");
   const categoriesQuery = useCategories();
