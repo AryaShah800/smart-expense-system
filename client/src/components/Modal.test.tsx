@@ -40,7 +40,7 @@ describe("Modal accessibility", () => {
 
   it("gives the close button an accessible name", () => {
     render(<Modal isOpen onClose={() => {}} title="T">x</Modal>);
-    expect(screen.getByRole("button", { name: "Close dialog" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Close" })).toBeInTheDocument();
   });
 
   it("moves focus to the first field on open and restores it to the opener on close", () => {
@@ -72,7 +72,7 @@ describe("Modal accessibility", () => {
   it("keeps Tab focus inside the dialog", async () => {
     const user = userEvent.setup();
     render(<Modal isOpen onClose={() => {}} title="T"><input aria-label="Name" /><button>Save</button></Modal>);
-    const close = screen.getByRole("button", { name: "Close dialog" });
+    const close = screen.getByRole("button", { name: "Close" });
     const save = screen.getByRole("button", { name: "Save" });
 
     save.focus();
